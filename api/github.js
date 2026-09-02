@@ -5,15 +5,14 @@ export default async function handler(req, res) {
   }
 
   const { action, username, hash, salt, data } = req.body;
-  const token = process.env.GITHUB_TOKEN;   // 修正：正确读取 Token
-  const repo = process.env.GITHUB_REPO;     // 修正：添加 repo 变量
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO;
   const basePath = 'users';
 
   if (!token || !repo) {
     return res.status(500).json({ error: 'Server misconfigured' });
   }
 
-  // 修正：fetch 后直接 .then(r => r.json())
   const api = (path, options = {}) => {
     const url = `https://api.github.com/repos/${repo}/contents/${path}`;
     return fetch(url, {
@@ -54,7 +53,6 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 注册
     if (action === 'register') {
       const profilePath = `${basePath}/${username}/profile.json`;
       const dataPath = `${basePath}/${username}/data.json`;
@@ -72,7 +70,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-    // 登录
     if (action === 'login') {
       const profilePath = `${basePath}/${username}/profile.json`;
       const profile = await readFile(profilePath);
@@ -90,7 +87,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // 读取数据
     if (action === 'getData') {
       const dataPath = `${basePath}/${username}/data.json`;
       const result = await readFile(dataPath);
@@ -100,7 +96,6 @@ export default async function handler(req, res) {
       return res.status(200).json(result.content);
     }
 
-    // 写入数据
     if (action === 'setData') {
       const dataPath = `${basePath}/${username}/data.json`;
       if (!data) {
