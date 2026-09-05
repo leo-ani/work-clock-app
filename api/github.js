@@ -1,75 +1,72 @@
 // api/github.js
 export default async function handler(req, res) {
-  // 强制设置响应头为 JSON，防止意外输出 HTML
-  res.setHeader('Content-Type', 'application/json');
+  // 只允许 POST 请求
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { action, username, hash, salt, data } = req.body;
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO;
+  const basePath = 'users';
+
+  if (!token || !repo) {
+    console.error('Missing GITHUB_TOKEN or GITHUB_REPO');
+    return res.status(500).json({ error: 'Server misconfigured' });
+  }
+
+  // GitHub API 调用
+  const api = async (path, options = {}) => {
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+    });
+    const json = await response.json();
+    if (!response.ok) {
+      const err = new Error(`GitHub API error: ${response.status} - ${json.message || 'Unknown'}`);
+      err.status = response.status;
+      throw err;
+    }
+    return json;
+  };
+
+  const readFile = async (path) => {
+    try {
+      const result = await api(path);
+      if (result.content) {
+        const content = Buffer.from(result.content, 'base64').toString('utf-8');
+        return { content: JSON.parse(content), sha: result.sha };
+      }
+      return null;
+    } catch (e) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  };
+
+  const writeFile = async (path, content, message, sha) => {
+    const body = {
+      message: message || 'Update data',
+      content: Buffer.from(JSON.stringify(content, null, 2)).toString('base64'),
+      branch: 'main',
+    };
+    if (sha) body.sha = sha;
+    return await api(path, { method: 'PUT', body: JSON.stringify(body) });
+  };
 
   try {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    const { action, username, hash, salt, data } = req.body;
-    const token = process.env.GITHUB_TOKEN;
-    const repo = process.env.GITHUB_REPO;
-    const basePath = 'users';
-
-    if (!token || !repo) {
-      console.error('Missing env: GITHUB_TOKEN or GITHUB_REPO');
-      return res.status(500).json({ error: 'Server misconfigured' });
-    }
-
-    // GitHub API 调用
-    const api = async (path, options = {}) => {
-      const url = `https://api.github.com/repos/${repo}/contents/${path}`;
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          Authorization: `token ${token}`,
-          Accept: 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json',
-          ...(options.headers || {}),
-        },
-      });
-
-      const json = await response.json();
-      if (!response.ok) {
-        const err = new Error(`GitHub API error: ${response.status} - ${json.message || 'Unknown'}`);
-        err.status = response.status;
-        throw err;
-      }
-      return json;
-    };
-
-    const readFile = async (path) => {
-      try {
-        const result = await api(path);
-        if (result.content) {
-          const content = Buffer.from(result.content, 'base64').toString('utf-8');
-          return { content: JSON.parse(content), sha: result.sha };
-        }
-        return null;
-      } catch (e) {
-        if (e.status === 404) return null;
-        throw e;
-      }
-    };
-
-    const writeFile = async (path, content, message, sha) => {
-      const body = {
-        message: message || 'Update data',
-        content: Buffer.from(JSON.stringify(content, null, 2)).toString('base64'),
-        branch: 'main',
-      };
-      if (sha) body.sha = sha;
-      return await api(path, { method: 'PUT', body: JSON.stringify(body) });
-    };
-
-    // 路由分发
+    // ---------- 注册 ----------
     if (action === 'register') {
       const profilePath = `${basePath}/${username}/profile.json`;
       const dataPath = `${basePath}/${username}/data.json`;
 
-      // 检查用户是否存在
+      // 检查用户是否已存在
       try {
         await api(profilePath);
         return res.status(400).json({ error: '用户名已存在' });
@@ -88,6 +85,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    // ---------- 登录 ----------
     if (action === 'login') {
       const profilePath = `${basePath}/${username}/profile.json`;
       const profile = await readFile(profilePath);
@@ -105,6 +103,7 @@ export default async function handler(req, res) {
       });
     }
 
+    // ---------- 读取数据 ----------
     if (action === 'getData') {
       const dataPath = `${basePath}/${username}/data.json`;
       const result = await readFile(dataPath);
@@ -114,6 +113,7 @@ export default async function handler(req, res) {
       return res.status(200).json(result.content);
     }
 
+    // ---------- 写入数据 ----------
     if (action === 'setData') {
       const dataPath = `${basePath}/${username}/data.json`;
       if (!data) {
@@ -127,8 +127,7 @@ export default async function handler(req, res) {
 
     return res.status(400).json({ error: '无效的 action' });
   } catch (error) {
-    console.error('Unhandled error:', error);
-    // 确保返回 JSON，而不是 HTML
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error('API Error:', error);
+    return res.status(500).json({ error: error.message || '服务器内部错误' });
   }
 }
