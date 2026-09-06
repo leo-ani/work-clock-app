@@ -201,7 +201,7 @@ const Utils = {
 
 // API 调用（指向 Vercel）
 const API = {
-  base: 'https://work-clock-app.vercel.app/api/github',
+  base: 'https://work-clock-api.leo-ani.workers.dev',
   async request(action, payload) {
     const res = await fetch(this.base, {
       method: 'POST',
