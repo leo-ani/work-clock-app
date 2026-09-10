@@ -18,7 +18,7 @@
       background: #fff;
       position: relative;
     }
-    /* 登录注册页 */
+    /* 登录注册页 /
     .auth-page {
       min-height: 100vh;
       display: flex;
@@ -111,7 +111,7 @@
       margin-bottom: 12px;
       min-height: 20px;
     }
-    /* 主页面 */
+    / 主页面 */
     .main-page { display: none; padding-bottom: 80px; }
     .header {
       background: #4a7c59;
@@ -284,7 +284,7 @@
     .tab-item.active { color: #4a7c59; }
     .tab-icon { font-size: 20px; margin-bottom: 2px; }
     .hidden { display: none !important; }
-    
+
     @media (max-width: 480px) {
       .app-container { max-width: 100%; }
     }
@@ -300,7 +300,7 @@
         <div class="error-msg" id="authError"></div>
         <div class="form-group">
           <label>用户名</label>
-          <input type="text" id="username" placeholder="请输入用户名" autocomplete="username">
+          <input type="text" id="username" placeholder="请输入用户名" autocomplete="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]{3,32}">
         </div>
         <div class="form-group">
           <label>密码</label>
@@ -399,20 +399,51 @@
 
   <script>
     // ================== 配置 ==================
-    const API_BASE = 'https://api.leoani.dpdns.org/'; // ⚠️ 请替换为您的 Worker 地址
-    
+    const API_BASE = 'https://api.leoani.dpdns.org/';
+    const USERNAME_RE = /^[A-Za-z0-9_-]{3,32}$/;
+
     // ================== 状态 ==================
     let currentUser = localStorage.getItem('wc_username') || null;
-    let userData = { records: {}, settings: { mode: 'hourly', normalRate: 43, holidayRate: 43 }, goal: 160 };
+    let sessionToken = localStorage.getItem('wc_session') || null;
+    let userData = defaultUserData();
     let isLoginMode = true;
 
+    function defaultUserData() {
+      return {
+        records: {},
+        settings: {
+          mode: 'hourly',
+          normalRate: 43,
+          holidayRate: 43,
+          baseSalary: 0,
+          salaryNormal: 0,
+          salaryOt: 0,
+          salaryWeekend: 0,
+          salaryHoliday: 0,
+          rule: 'fixed'
+        },
+        goal: 160
+      };
+    }
+
     // ================== 初始化 ==================
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       updateTime();
       setInterval(updateTime, 1000);
-      if (currentUser) {
+
+      if (currentUser && sessionToken) {
         showMainPage();
-        loadData();
+        try {
+          await loadData();
+        } catch (err) {
+          if (err.status === 401 || err.status === 403) {
+            forceLogout('登录已失效，请重新登录');
+          } else {
+            alert('加载数据失败: ' + err.message);
+          }
+        }
+      } else {
+        clearSession();
       }
     });
 
@@ -420,9 +451,21 @@
     function updateTime() {
       const now = new Date();
       document.getElementById('currentTime').textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
-      document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', { 
-        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', {
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
       });
+    }
+
+    function getTodayKey(date = new Date()) {
+      // 使用浏览器本地日期，不使用 toISOString()，避免 GMT+8 凌晨被算到前一天。
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return ${y}-${m}-${d};
+    }
+
+    function getCurrentHHMM(date = new Date()) {
+      return ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')};
     }
 
     // ================== 认证页面切换 ==================
@@ -433,11 +476,12 @@
       document.getElementById('confirmGroup').classList.toggle('hidden', isLoginMode);
       document.getElementById('authSwitchText').textContent = isLoginMode ? '还没有账号？' : '已有账号？';
       document.getElementById('authSwitchLink').textContent = isLoginMode ? '注册新账号' : '返回登录';
+      document.getElementById('password').setAttribute('autocomplete', isLoginMode ? 'current-password' : 'new-password');
       document.getElementById('authError').textContent = '';
     }
 
     function showError(msg) {
-      document.getElementById('authError').textContent = msg;
+      document.getElementById('authError').textContent = msg || '';
     }
 
     // ================== 密码哈希 (Web Crypto) ==================
@@ -456,15 +500,38 @@
     }
 
     // ================== API 请求 ==================
-    async function apiCall(action, payload) {
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...payload }),
-      });
-      const data = await res.json();
+    async function apiCall(action, payload = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (sessionToken) headers.Authorization = Bearer ${sessionToken};
+
+      let res;
+      try {
+        res = await fetch(API_BASE, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ action, ...payload })
+        });
+      } catch (networkError) {
+        const err = new Error('无法连接服务器，请检查网络、Worker 域名和 CORS 配置');
+        err.status = 0;
+        throw err;
+      }
+
+      const text = await res.text();
+      let data = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { error: text.slice(0, 300) };
+        }
+      }
+
       if (!res.ok) {
-        throw new Error(data.detail || data.error || `请求失败 (${res.status})`);
+        const err = new Error(data.detail || data.error || 请求失败 (${res.status}));
+        err.status = res.status;
+        err.code = data.code || '';
+        throw err;
       }
       return data;
     }
@@ -473,54 +540,62 @@
     async function handleAuth() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-      const confirm = document.getElementById('confirmPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
       const btn = document.getElementById('authBtn');
-      
+
       if (!username || !password) {
         showError('请输入用户名和密码');
         return;
       }
-      
+      if (!USERNAME_RE.test(username)) {
+        showError('用户名需为 3-32 位，只能包含字母、数字、下划线和连字符');
+        return;
+      }
+
+      if (!isLoginMode) {
+        if (password !== confirmPassword) {
+          showError('两次输入的密码不一致');
+          return;
+        }
+        if (password.length < 6) {
+          showError('密码长度至少为 6 位');
+          return;
+        }
+      }
+
       btn.disabled = true;
       btn.textContent = '请稍候...';
       showError('');
 
       try {
         if (isLoginMode) {
-          // 登录流程：先获取 salt，再计算 hash
+          // 登录：先从私有仓库读取用户 salt，再计算哈希。
           const saltRes = await apiCall('getSalt', { username });
           const hash = await sha256(saltRes.salt + password);
-          await apiCall('login', { username, hash });
-          
+          const loginRes = await apiCall('login', { username, hash });
+
+          if (!loginRes.token) throw new Error('服务器未返回登录令牌');
           currentUser = username;
+          sessionToken = loginRes.token;
           localStorage.setItem('wc_username', username);
+          localStorage.setItem('wc_session', sessionToken);
+
           showMainPage();
-          loadData();
+          await loadData();
         } else {
-          // 注册流程
-          if (password !== confirm) {
-            showError('两次输入的密码不一致');
-            btn.disabled = false;
-            btn.textContent = '注册';
-            return;
-          }
-          if (password.length < 6) {
-            showError('密码长度至少为 6 位');
-            btn.disabled = false;
-            btn.textContent = '注册';
-            return;
-          }
-          
           const salt = generateSalt();
           const hash = await sha256(salt + password);
           await apiCall('register', { username, hash, salt });
-          
+
           alert('注册成功！请登录');
           toggleAuthMode();
           document.getElementById('password').value = '';
           document.getElementById('confirmPassword').value = '';
         }
       } catch (err) {
+        if (isLoginMode && (err.status === 401 || err.status === 403) && sessionToken) {
+          clearSession();
+        }
         showError(err.message);
       } finally {
         btn.disabled = false;
@@ -532,98 +607,112 @@
     function showMainPage() {
       document.getElementById('authPage').style.display = 'none';
       document.getElementById('mainPage').style.display = 'block';
-      document.getElementById('userInfo').textContent = `当前用户: ${currentUser}`;
+      document.getElementById('userInfo').textContent = 当前用户: ${currentUser};
+    }
+
+    function clearSession() {
+      currentUser = null;
+      sessionToken = null;
+      localStorage.removeItem('wc_username');
+      localStorage.removeItem('wc_session');
+    }
+
+    function forceLogout(message = '') {
+      clearSession();
+      userData = defaultUserData();
+      document.getElementById('authPage').style.display = 'flex';
+      document.getElementById('mainPage').style.display = 'none';
+      document.getElementById('password').value = '';
+      document.getElementById('confirmPassword').value = '';
+      if (message) showError(message);
     }
 
     function logout() {
       if (!confirm('确定要退出登录吗？')) return;
-      currentUser = null;
-      localStorage.removeItem('wc_username');
-      userData = { records: {}, settings: {}, goal: 160 };
-      document.getElementById('authPage').style.display = 'flex';
-      document.getElementById('mainPage').style.display = 'none';
       document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('confirmPassword').value = '';
-      showError('');
+      forceLogout('');
     }
 
     function switchTab(tab, el) {
       document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
       if (el) el.classList.add('active');
-      
+
       document.getElementById('clockSection').classList.toggle('hidden', tab !== 'clock');
       document.getElementById('recordsSection').classList.toggle('hidden', tab !== 'records');
       document.getElementById('settingsSection').classList.toggle('hidden', tab !== 'settings');
-      
+
       if (tab === 'records') updateUI();
     }
 
     // ================== 数据操作 ==================
     async function loadData() {
-      try {
-        const data = await apiCall('getData', { username: currentUser });
-        userData = {
-          records: data.records || {},
-          settings: data.settings || { mode: 'hourly', normalRate: 43, holidayRate: 43 },
-          goal: data.goal || 160
-        };
-        applySettings();
-        updateUI();
-      } catch (err) {
-        alert('加载数据失败: ' + err.message);
-      }
+      const data = await apiCall('getData', { username: currentUser });
+      userData = {
+        ...defaultUserData(),
+        ...data,
+        records: data.records || {},
+        settings: {
+          ...defaultUserData().settings,
+          ...(data.settings || {})
+        },
+        goal: Number(data.goal) || 160
+      };
+      applySettings();
+      updateUI();
     }
 
     async function saveData() {
-      try {
-        await apiCall('setData', { username: currentUser, data: userData });
-      } catch (err) {
-        console.error('保存失败:', err);
-        alert('保存数据失败: ' + err.message);
-      }
+      return apiCall('setData', { username: currentUser, data: userData });
     }
 
     function applySettings() {
-      const s = userData.settings;
-      document.getElementById('settingGoal').value = userData.goal || 160;
-      document.getElementById('settingNormalRate').value = s.normalRate || 43;
-      document.getElementById('settingHolidayRate').value = s.holidayRate || 43;
+      const s = userData.settings || defaultUserData().settings;
+      document.getElementById('settingGoal').value = Number(userData.goal) || 160;
+      document.getElementById('settingNormalRate').value = Number(s.normalRate) || 43;
+      document.getElementById('settingHolidayRate').value = Number(s.holidayRate) || 43;
       document.getElementById('settingMode').value = s.mode || 'hourly';
     }
 
     async function saveSettings() {
+      const backup = JSON.parse(JSON.stringify(userData));
       userData.goal = parseFloat(document.getElementById('settingGoal').value) || 160;
       userData.settings.normalRate = parseFloat(document.getElementById('settingNormalRate').value) || 43;
       userData.settings.holidayRate = parseFloat(document.getElementById('settingHolidayRate').value) || 43;
       userData.settings.mode = document.getElementById('settingMode').value;
-      await saveData();
-      alert('设置已保存');
-      updateUI();
+
+      try {
+        await saveData();
+        alert('设置已保存');
+        updateUI();
+      } catch (err) {
+        userData = backup;
+        applySettings();
+        if (err.status === 401 || err.status === 403) {
+          forceLogout('登录已失效，请重新登录');
+        } else {
+          alert('保存设置失败: ' + err.message);
+        }
+      }
     }
 
     // ================== 打卡逻辑 ==================
-    function getTodayKey() {
-      return new Date().toISOString().split('T')[0];
-    }
-
     function updateUI() {
       const todayKey = getTodayKey();
       const todayRecord = userData.records[todayKey] || null;
-      
+
       const btn = document.getElementById('clockBtn');
       const status = document.getElementById('statusText');
-      
+
       if (todayRecord && todayRecord.end) {
         btn.textContent = '已完成';
         btn.className = 'clock-btn';
         btn.disabled = true;
-        status.textContent = `今日已下班 ${todayRecord.end}，工时 ${todayRecord.hours} 小时`;
+        status.textContent = 今日已下班 ${todayRecord.end}，工时 ${Number(todayRecord.hours || 0).toFixed(1)} 小时;
       } else if (todayRecord && todayRecord.start) {
         btn.textContent = '下班打卡';
         btn.className = 'clock-btn clock-out';
         btn.disabled = false;
-        status.textContent = `上班时间 ${todayRecord.start}，工作中...`;
+        status.textContent = 上班时间 ${todayRecord.start}，工作中...;
       } else {
         btn.textContent = '上班打卡';
         btn.className = 'clock-btn';
@@ -631,86 +720,82 @@
         status.textContent = '今日未打卡';
       }
 
-      // 统计
       let todayH = 0;
-      if (todayRecord && todayRecord.hours) todayH = todayRecord.hours;
+      if (todayRecord && Number.isFinite(Number(todayRecord.hours))) todayH = Number(todayRecord.hours);
       document.getElementById('todayHours').textContent = todayH.toFixed(1);
 
       let monthH = 0;
       const currentMonth = todayKey.substring(0, 7);
       Object.entries(userData.records).forEach(([date, rec]) => {
-        if (date.startsWith(currentMonth) && rec.hours) {
-          monthH += rec.hours;
+        if (date.startsWith(currentMonth) && Number.isFinite(Number(rec.hours))) {
+          monthH += Number(rec.hours);
         }
       });
       document.getElementById('monthHours').textContent = monthH.toFixed(1);
 
-      // 记录列表
       const list = document.getElementById('recordList');
       const sorted = Object.entries(userData.records).sort((a, b) => b[0].localeCompare(a[0]));
-      document.getElementById('recordCount').textContent = `${sorted.length} 条`;
-      
+      document.getElementById('recordCount').textContent = ${sorted.length} 条;
+
       if (sorted.length === 0) {
         list.innerHTML = '<div class="empty-state">暂无打卡记录</div>';
         return;
       }
-      
+
       list.innerHTML = sorted.map(([date, rec]) => {
-        const d = new Date(date);
-        const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
-        const timeStr = rec.start ? `${rec.start}${rec.end ? ' - ' + rec.end : ' (工作中)'}` : '-';
-        return `
-          <div class="record-item">
-            <div>
-              <div class="record-date">${dateStr}</div>
-              <div class="record-time">${timeStr}</div>
-            </div>
-            <div class="record-hours">${rec.hours ? rec.hours.toFixed(1) + 'h' : '-'}</div>
-          </div>
-        `;
+        const [year, month, day] = date.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
+        const dateStr = ${d.getMonth() + 1}月${d.getDate()}日;
+        const timeStr = rec.start ? ${rec.start}${rec.end ? ' - ' + rec.end : ' (工作中)'} : '-';
+        const hours = Number(rec.hours);
+        return           <div class="record-item">             <div>               <div class="record-date">${dateStr}</div>               <div class="record-time">${timeStr}</div>             </div>             <div class="record-hours">${Number.isFinite(hours) && hours > 0 ? hours.toFixed(1) + 'h' : '-'}</div>           </div>        ;
       }).join('');
     }
 
     async function toggleClock() {
       const btn = document.getElementById('clockBtn');
       if (btn.disabled) return;
+
+      const backup = JSON.parse(JSON.stringify(userData));
       btn.disabled = true;
-      
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' });
-      const todayKey = getTodayKey();
-      
-      if (btn.textContent === '上班打卡') {
-        // 上班打卡
-        userData.records[todayKey] = {
-          start: timeStr,
-          end: null,
-          hours: 0,
-          type: 'normal'
-        };
+
+      try {
+        const now = new Date();
+        const timeStr = getCurrentHHMM(now);
+        const todayKey = getTodayKey(now);
+
+        if (btn.textContent === '上班打卡') {
+          userData.records[todayKey] = {
+            start: timeStr,
+            end: null,
+            hours: 0,
+            type: 'normal'
+          };
+        } else {
+          const rec = userData.records[todayKey];
+          if (!rec || !rec.start) throw new Error('找不到今日上班打卡记录，请刷新页面后重试');
+
+          rec.end = timeStr;
+          const [sh, sm] = rec.start.split(':').map(Number);
+          const [eh, em] = timeStr.split(':').map(Number);
+          let hours = (eh * 60 + em - sh * 60 - sm) / 60;
+          if (hours < 0) hours += 24;
+          hours = Math.max(0, Math.round(hours * 10) / 10);
+          if (hours > 5) hours = Math.max(0, hours - 1);
+          rec.hours = Math.round(hours * 10) / 10;
+        }
+
         await saveData();
         updateUI();
-      } else {
-        // 下班打卡
-        const rec = userData.records[todayKey];
-        rec.end = timeStr;
-        
-        // 计算工时
-        const [sh, sm] = rec.start.split(':').map(Number);
-        const [eh, em] = timeStr.split(':').map(Number);
-        let hours = (eh * 60 + em - sh * 60 - sm) / 60;
-        if (hours < 0) hours += 24; // 跨天
-        hours = Math.max(0, Math.round(hours * 10) / 10);
-        
-        // 减去午休 1 小时（如果工作时长 > 5 小时）
-        if (hours > 5) hours -= 1;
-        
-        rec.hours = hours;
-        await saveData();
+      } catch (err) {
+        userData = backup;
         updateUI();
+        if (err.status === 401 || err.status === 403) {
+          forceLogout('登录已失效，请重新登录');
+        } else {
+          alert('保存打卡失败: ' + err.message);
+        }
       }
-      
-      btn.disabled = false;
     }
   </script>
 </body>
