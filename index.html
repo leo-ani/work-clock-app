@@ -304,10 +304,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .calc-btn-group .calc-btn.eq{background:var(--primary-gradient);color:#fff;border-color:transparent}
 .calc-display{background:var(--surface);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;border:1px solid var(--border);text-align:right;font-size:32px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-height:68px;display:flex;align-items:flex-end;justify-content:flex-end;overflow:hidden;word-break:break-all}
 .calc-display .calc-expr{font-size:16px;font-weight:500;color:var(--text-tertiary);margin-right:8px}
-.calc-checkbox-group{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
-.calc-checkbox-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);cursor:pointer;padding:6px 12px;border-radius:8px;background:var(--bg);border:1.5px solid var(--border);transition:all .2s;font-weight:500}
-.calc-checkbox-group label.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
-.calc-checkbox-group label input[type=checkbox]{display:none}
+.deduction-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.deduction-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;gap:8px;user-select:none}
+.deduction-item:hover{border-color:var(--primary-light);transform:translateX(2px)}
+.deduction-item.active{border-color:var(--primary);background:var(--primary-light);box-shadow:0 2px 8px rgba(74,125,106,.1)}
+.deduction-info{flex:1;min-width:0}
+.deduction-name{font-size:14px;font-weight:600;color:var(--text-secondary);transition:color .2s}
+.deduction-item.active .deduction-name{color:var(--primary)}
+.deduction-hint{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+.deduction-amount{display:flex;align-items:center;gap:2px;background:var(--surface);border-radius:8px;padding:4px 8px;border:1.5px solid var(--border);flex-shrink:0;transition:border-color .2s}
+.deduction-item.active .deduction-amount{border-color:var(--primary)}
+.deduction-amount .deduction-prefix{font-size:12px;color:var(--text-secondary);font-weight:600}
+.deduction-amount input{width:66px;padding:4px 2px;border:none;outline:none;background:transparent;color:var(--text);font-size:15px;font-weight:700;text-align:right;font-family:inherit;-moz-appearance:textfield}
+.deduction-amount input::-webkit-outer-spin-button,.deduction-amount input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.deduction-amount input:focus{color:var(--primary)}
+#incomeChart{display:block;height:240px;padding:0;gap:0;position:relative}
+.chart-wrap-v2{position:relative;width:100%;height:240px}
+.chart-y-axis{position:absolute;left:0;top:22px;bottom:32px;width:42px;font-size:10px;color:var(--text-tertiary);font-weight:600;font-variant-numeric:tabular-nums}
+.chart-y-axis span{position:absolute;right:6px;transform:translateY(50%);line-height:1;white-space:nowrap}
+.chart-plot{position:absolute;left:48px;right:6px;top:22px;bottom:32px}
+.grid-line{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--border);opacity:.75}
+.chart-plot .grid-line:nth-last-child(2){border-top-style:solid;border-top-color:var(--border);opacity:1}
+.chart-avg-line{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed var(--accent);z-index:3;pointer-events:none}
+.chart-avg-label{position:absolute;right:0;bottom:100%;background:var(--accent);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;transform:translateY(-2px);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.chart-bars{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:flex-end;gap:2px;z-index:2}
+.chart-bar-new{flex:1 1 0;min-width:2px;background:linear-gradient(to top,var(--primary),var(--primary-light));border-radius:3px 3px 0 0;position:relative;cursor:pointer;transition:filter .18s}
+.chart-bar-new:hover{filter:brightness(1.12)}
+.chart-bar-new.weekend{background:linear-gradient(to top,var(--danger),#F5D0C5)}
+.chart-bar-new.holiday{background:linear-gradient(to top,var(--accent),var(--accent-light))}
+.chart-bar-new .bar-value{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:3px 7px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .18s;pointer-events:none;z-index:20;box-shadow:var(--shadow-sm)}
+.chart-bar-new .bar-value::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--text)}
+.chart-bar-new:hover .bar-value{opacity:1}
+.chart-x-axis{position:absolute;left:48px;right:6px;bottom:6px;height:20px;font-size:10px;color:var(--text-tertiary);font-weight:600}
+.chart-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chart-empty{display:flex;align-items:center;justify-content:center;height:200px;color:var(--text-tertiary);font-size:13px;font-weight:500}
+.chart-legend{position:absolute;right:0;top:-4px;display:flex;gap:10px;font-size:10px;color:var(--text-tertiary);font-weight:600}
+.chart-legend-item{display:flex;align-items:center;gap:4px}
+.chart-legend-dot{width:8px;height:8px;border-radius:2px}
 .auth-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4a7c59 0%,#3d6b4a 100%);padding:20px;z-index:1000}
 .auth-box{background:#fff;border-radius:16px;padding:40px 30px;width:100%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
 .auth-title{text-align:center;margin-bottom:8px;color:#4a7c59;font-size:24px;font-weight:600}
@@ -422,7 +455,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       </div>
       <div class="chart-section">
         <div class="chart-title">📊 收入趋势</div>
-        <div class="chart-container" id="incomeChart"></div>
+        <div id="incomeChart"></div>
       </div>
       <div class="chart-section">
         <div class="chart-title">🍩 工时分布</div>
@@ -449,22 +482,77 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
             <div class="calc-input-wrap"><span class="calc-prefix">养老</span><input type="number" id="taxPension" value="8" step=".5" min="0" max="20" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
             <div class="calc-input-wrap"><span class="calc-prefix">医疗</span><input type="number" id="taxMedical" value="2" step=".5" min="0" max="10" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
             <div class="calc-input-wrap"><span class="calc-prefix">失业</span><input type="number" id="taxUnemployment" value="0.5" step=".1" min="0" max="5" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
-            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="12" step=".5" min="0" max="20" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="5" step=".5" min="0" max="20" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
           </div>
           <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">按实际缴纳比例填写，0 表示不扣除</div>
         </div>
         <div class="calc-input-group">
-          <label>专项附加扣除 (元/月)</label>
-          <div class="calc-checkbox-group" id="taxDeductions">
-            <label onclick="App.calculator.toggleDeduction(this,1000)"><input type="checkbox">子女教育 <span style="font-size:11px;color:var(--text-tertiary)">+1000</span></label>
-            <label onclick="App.calculator.toggleDeduction(this,1000)"><input type="checkbox">赡养老人 <span style="font-size:11px;color:var(--text-tertiary)">+1000</span></label>
-            <label onclick="App.calculator.toggleDeduction(this,1000)"><input type="checkbox">住房贷款 <span style="font-size:11px;color:var(--text-tertiary)">+1000</span></label>
-            <label onclick="App.calculator.toggleDeduction(this,1500)"><input type="checkbox">住房租金 <span style="font-size:11px;color:var(--text-tertiary)">+1500</span></label>
-            <label onclick="App.calculator.toggleDeduction(this,400)"><input type="checkbox">继续教育 <span style="font-size:11px;color:var(--text-tertiary)">+400</span></label>
-            <label onclick="App.calculator.toggleDeduction(this,2000)"><input type="checkbox">大病医疗 <span style="font-size:11px;color:var(--text-tertiary)">+2000</span></label>
+          <label>专项附加扣除 (元/月) <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;margin-left:4px">点击卡片启用，金额可改</span></label>
+          <div class="deduction-list" id="taxDeductions">
+            <div class="deduction-item" data-key="child" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">子女教育</div>
+                <div class="deduction-hint">每孩 1000 元/月</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedChild" value="1000" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="elder" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">赡养老人</div>
+                <div class="deduction-hint">独生 3000 / 非独生分摊</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedElder" value="1500" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="loan" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">住房贷款</div>
+                <div class="deduction-hint">首套房贷利息 1000 元/月</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedLoan" value="1000" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="rent" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">住房租金</div>
+                <div class="deduction-hint">按城市 800 / 1100 / 1500</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedRent" value="1500" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="edu" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">继续教育</div>
+                <div class="deduction-hint">学历 400 元/月</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedEdu" value="400" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="medical" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">大病医疗</div>
+                <div class="deduction-hint">年度限额 80000</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" id="dedMedical" value="2000" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.calcTax()">
+              </div>
+            </div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);padding:4px 0">
-            <span>专项附加扣除合计</span><span id="taxDeductionTotal" style="font-weight:700;color:var(--primary)">¥0</span>
+            <span>专项附加扣除合计</span>
+            <span id="taxDeductionTotal" style="font-weight:700;color:var(--primary)">¥0</span>
           </div>
         </div>
         <div class="calc-result-box">
@@ -1034,6 +1122,23 @@ async function initMainApp() {
 
   App.data.load = function() {};
 
+  // ============ 预热日历缓存 ============
+  try {
+    App.holiday.getHoliday('2025-01-01');
+    var prewarmNow = new Date();
+    for (var offset = -1; offset <= 1; offset++) {
+      var py = prewarmNow.getFullYear();
+      var pm = prewarmNow.getMonth() + offset;
+      var daysInPre = new Date(py, pm + 1, 0).getDate();
+      for (var day = 1; day <= daysInPre; day++) {
+        App.lunar.getLunarDay(new Date(py, pm, day));
+      }
+    }
+    App.lunar.flush();
+  } catch (e) {
+    console.warn('日历缓存预热失败', e);
+  }
+
   App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
   App.settings.initSettings();
   App.calendar.render();
@@ -1097,16 +1202,6 @@ App.util = {
   isWeekend: function(d) {
     var day = d.getDay();
     return day === 0 || day === 6;
-  },
-  utf8ToBase64: function(s) {
-    var bytes = new TextEncoder().encode(s);
-    var bin = Array.from(bytes, function(b) { return String.fromCharCode(b); }).join('');
-    return btoa(bin);
-  },
-  base64ToUtf8: function(b) {
-    var bin = atob(b);
-    var bytes = Uint8Array.from(bin, function(m) { return m.charCodeAt(0); });
-    return new TextDecoder().decode(bytes);
   }
 };
 
@@ -1271,6 +1366,40 @@ App.lunar = {
   lunarInfo: [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,0x14b60],
   lunarMonths: ['正','二','三','四','五','六','七','八','九','十','冬','腊'],
   lunarDays: ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'],
+
+  _cache: {},
+  _loaded: false,
+  _dirty: false,
+  _STORAGE_KEY: 'wc_lunar_cache_v1',
+
+  _loadCache: function() {
+    if (this._loaded) return;
+    this._loaded = true;
+    try {
+      var raw = localStorage.getItem(this._STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') this._cache = parsed;
+      }
+    } catch (e) {
+      this._cache = {};
+    }
+  },
+
+  flush: function() {
+    if (!this._dirty) return;
+    try {
+      localStorage.setItem(this._STORAGE_KEY, JSON.stringify(this._cache));
+      this._dirty = false;
+    } catch (e) {}
+  },
+
+  clearCache: function() {
+    this._cache = {};
+    this._dirty = true;
+    try { localStorage.removeItem(this._STORAGE_KEY); } catch (e) {}
+  },
+
   leapMonth: function(y) { return this.lunarInfo[y - 1900] & 0xf; },
   leapDays: function(y) { return this.leapMonth(y) ? ((this.lunarInfo[y - 1900] & 0x10000) ? 30 : 29) : 0; },
   monthDays: function(y, m) { return (this.lunarInfo[y - 1900] & (0x10000 >> m)) ? 30 : 29; },
@@ -1304,14 +1433,28 @@ App.lunar = {
     return { year: lunarYear, month: month, day: offset + 1, isLeap: isLeap };
   },
   getLunarDay: function(d) {
+    this._loadCache();
+    var key = App.util.formatDateKey(d);
+    var cached = this._cache[key];
+    if (cached !== undefined) return cached;
+
     var info = this.getLunarDateInfo(d);
-    if (info.day === 1) return (info.isLeap ? '闰' : '') + this.lunarMonths[info.month - 1] + '月';
-    return this.lunarDays[info.day - 1];
+    var text;
+    if (info.day === 1) {
+      text = (info.isLeap ? '闰' : '') + this.lunarMonths[info.month - 1] + '月';
+    } else {
+      text = this.lunarDays[info.day - 1];
+    }
+    this._cache[key] = text;
+    this._dirty = true;
+    return text;
   }
 };
 
 App.holiday = {
   _holidays: null,
+  _STORAGE_KEY: 'wc_holidays_v1',
+
   getQingmingDate: function(y) {
     var base = {
       2025: '2025-04-04', 2026: '2026-04-05', 2027: '2027-04-05', 2028: '2028-04-04',
@@ -1324,6 +1467,7 @@ App.holiday = {
     };
     return base[y] || y + '-04-04';
   },
+
   getSolarDateFromLunar: function(y, lm, ld, isLeap) {
     isLeap = isLeap || false;
     var start = new Date(y, 0, 1), end = new Date(y, 11, 31), cur = new Date(start);
@@ -1334,7 +1478,18 @@ App.holiday = {
     }
     return null;
   },
+
   generateHolidays: function() {
+    try {
+      var raw = localStorage.getItem(this._STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.v === 1 && parsed.data) {
+          return parsed.data;
+        }
+      }
+    } catch (e) {}
+
     var h = {};
     for (var y = 2025; y <= 2050; y++) {
       h[y + '-01-01'] = '元旦';
@@ -1358,8 +1513,14 @@ App.holiday = {
       var ma = this.getSolarDateFromLunar(y, 8, 15);
       if (ma) h[App.util.formatDateKey(ma)] = '中秋';
     }
+
+    try {
+      localStorage.setItem(this._STORAGE_KEY, JSON.stringify({ v: 1, data: h }));
+    } catch (e) {}
+
     return h;
   },
+
   getHoliday: function(key) {
     if (!this._holidays) this._holidays = this.generateHolidays();
     return this._holidays[key] || null;
@@ -1370,22 +1531,21 @@ App.stats = {
   calcDayIncome: function(rec, date) {
     if (!rec || rec.leave !== 'none') return 0;
     var s = App.data.settings;
+    var dateKey = App.util.formatDateKey(date);
+    var isHoliday = rec.type === 'holiday' || !!App.holiday.getHoliday(dateKey);
+    var isWeekend = App.util.isWeekend(date) || rec.type === 'weekend';
+
     if (s.mode === 'hourly') {
-      var rate = rec.type === 'holiday' ? s.holidayRate : s.normalRate;
+      var rate = isHoliday ? s.holidayRate : s.normalRate;
       return ((rec.normal || 0) + (rec.ot || 0)) * rate;
     } else {
       var normalRate = s.salaryNormal || 0;
       var otRate = s.salaryOt || 0;
       var weekendRate = s.salaryWeekend || 0;
       var holidayRate = s.salaryHoliday || 0;
-      if (rec.type === 'normal' || rec.type === 'daily') {
-        return (rec.normal || 0) * normalRate + (rec.ot || 0) * otRate;
-      } else if (rec.type === 'weekend') {
-        return ((rec.normal || 0) + (rec.ot || 0)) * weekendRate;
-      } else if (rec.type === 'holiday') {
-        return ((rec.normal || 0) + (rec.ot || 0)) * holidayRate;
-      }
-      return 0;
+      if (isHoliday) return ((rec.normal || 0) + (rec.ot || 0)) * holidayRate;
+      if (isWeekend) return ((rec.normal || 0) + (rec.ot || 0)) * weekendRate;
+      return (rec.normal || 0) * normalRate + (rec.ot || 0) * otRate;
     }
   },
 
@@ -1402,8 +1562,13 @@ App.stats = {
         if (rec.leave && rec.leave !== 'none') continue;
         days++;
         var total = (rec.normal || 0) + (rec.ot || 0);
-        if (rec.type === 'weekend' || rec.type === 'holiday') otH += total;
-        else {
+        var isRestDay = App.util.isWeekend(d)
+          || rec.type === 'weekend'
+          || rec.type === 'holiday'
+          || App.holiday.getHoliday(key);
+        if (isRestDay) {
+          otH += total;
+        } else {
           normalH += rec.normal || 0;
           otH += rec.ot || 0;
         }
@@ -1427,17 +1592,7 @@ App.stats = {
     document.getElementById('boxNormal').textContent = normalH.toFixed(1);
     document.getElementById('boxOt').textContent = otH.toFixed(1);
 
-    var chartContainer = document.getElementById('incomeChart');
-    var lastDay = new Date(year, month + 1, 0).getDate();
-    var maxIncome = Math.max.apply(null, dailyIncome.map(function(d) { return d.income; })) || 1;
-    var chartHtml = '';
-    for (var d = 1; d <= lastDay; d++) {
-      var data = dailyIncome.find(function(x) { return x.day === d; });
-      var height = data ? Math.max((data.income / maxIncome * 100), 2) : 0;
-      var barClass = data ? (data.type === 'holiday' ? 'holiday' : (data.type === 'weekend' ? 'weekend' : '')) : '';
-      chartHtml += '<div class="chart-bar ' + barClass + '" style="height:' + height + '%"><div class="chart-tooltip">' + d + '日 ¥' + (data ? App.util.formatMoney(data.income) : '0') + '</div></div>';
-    }
-    chartContainer.innerHTML = chartHtml;
+    this.renderIncomeChart(year, month, dailyIncome);
 
     var total = normalH + otH;
     var normalPct = total > 0 ? (normalH / total * 100) : 0;
@@ -1448,6 +1603,125 @@ App.stats = {
       '<div class="pie-legend-item"><div class="pie-legend-dot" style="background:var(--primary)"></div>正班 ' + normalH.toFixed(1) + 'h (' + normalPct.toFixed(0) + '%)</div>' +
       '<div class="pie-legend-item"><div class="pie-legend-dot" style="background:var(--accent)"></div>加班 ' + otH.toFixed(1) + 'h (' + otPct.toFixed(0) + '%)</div>' +
       '</div>';
+  },
+
+  renderIncomeChart: function(year, month, dailyIncome) {
+    var container = document.getElementById('incomeChart');
+    var lastDay = new Date(year, month + 1, 0).getDate();
+
+    var dailyMap = {};
+    var maxIncome = 0;
+    var totalIncome = 0;
+    var validDays = 0;
+    dailyIncome.forEach(function(d) {
+      dailyMap[d.day] = d;
+      if (d.income > 0) {
+        if (d.income > maxIncome) maxIncome = d.income;
+        totalIncome += d.income;
+        validDays++;
+      }
+    });
+
+    if (maxIncome === 0) {
+      container.innerHTML = '<div class="chart-empty">本月暂无收入记录</div>';
+      return;
+    }
+
+    var avgIncome = validDays > 0 ? totalIncome / validDays : 0;
+    var niceMax = this._niceCeil(maxIncome * 1.05);
+    var ySteps = 4;
+    var html = '<div class="chart-wrap-v2">';
+
+    html += '<div class="chart-y-axis">';
+    for (var i = ySteps; i >= 0; i--) {
+      var v = niceMax * i / ySteps;
+      var pct = (i / ySteps) * 100;
+      html += '<span style="bottom:' + pct + '%">' + (v === 0 ? '0' : '¥' + this._fmtShort(v)) + '</span>';
+    }
+    html += '</div>';
+
+    html += '<div class="chart-plot">';
+
+    for (var i = 0; i <= ySteps; i++) {
+      var pct = (i / ySteps) * 100;
+      html += '<div class="grid-line" style="bottom:' + pct + '%"></div>';
+    }
+
+    if (avgIncome > 0) {
+      var avgPct = Math.min(100, (avgIncome / niceMax) * 100);
+      html += '<div class="chart-avg-line" style="bottom:' + avgPct + '%"><span class="chart-avg-label">均 ¥' + this._fmtShort(avgIncome) + '</span></div>';
+    }
+
+    html += '<div class="chart-bars">';
+    for (var d = 1; d <= lastDay; d++) {
+      var data = dailyMap[d];
+      var showBar = data && data.income > 0;
+      var heightPct = showBar ? Math.max((data.income / niceMax) * 100, 2.5) : 0;
+      var barClass = '';
+      if (showBar) {
+        if (data.type === 'holiday') barClass = 'holiday';
+        else if (data.type === 'weekend') barClass = 'weekend';
+      }
+      var valueHtml = showBar ? '<span class="bar-value">' + d + '日 ¥' + App.util.formatMoney(data.income) + '</span>' : '';
+      html += '<div class="chart-bar-new ' + barClass + '" style="height:' + heightPct + '%">' + valueHtml + '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="chart-legend">' +
+      '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--primary)"></div>平日</div>' +
+      '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--danger)"></div>周末</div>' +
+      '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>节假</div>' +
+      '</div>';
+
+    html += '</div>';
+
+    var xTicks = [1];
+    if (lastDay >= 8) xTicks.push(Math.round(lastDay / 4));
+    if (lastDay >= 15) xTicks.push(Math.round(lastDay / 2));
+    if (lastDay >= 22) xTicks.push(Math.round(3 * lastDay / 4));
+    if (lastDay >= 4) xTicks.push(lastDay);
+    xTicks = xTicks.filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+    html += '<div class="chart-x-axis">';
+    xTicks.forEach(function(d, idx) {
+      var pct = ((d - 0.5) / lastDay) * 100;
+      if (idx === 0) {
+        html += '<span style="left:0;transform:none">' + d + '</span>';
+      } else if (idx === xTicks.length - 1) {
+        html += '<span style="right:0;left:auto;transform:none">' + d + '</span>';
+      } else {
+        html += '<span style="left:' + pct + '%">' + d + '</span>';
+      }
+    });
+    html += '</div>';
+
+    html += '</div>';
+    container.innerHTML = html;
+  },
+
+  _niceCeil: function(v) {
+    if (v <= 0) return 1;
+    var exp = Math.pow(10, Math.floor(Math.log10(v)));
+    var f = v / exp;
+    var nice;
+    if (f <= 1) nice = 1;
+    else if (f <= 1.5) nice = 1.5;
+    else if (f <= 2) nice = 2;
+    else if (f <= 2.5) nice = 2.5;
+    else if (f <= 3) nice = 3;
+    else if (f <= 4) nice = 4;
+    else if (f <= 5) nice = 5;
+    else if (f <= 6) nice = 6;
+    else if (f <= 8) nice = 8;
+    else nice = 10;
+    return nice * exp;
+  },
+
+  _fmtShort: function(v) {
+    var n = Math.round(v);
+    if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + 'w';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return n.toString();
   }
 };
 
@@ -1559,6 +1833,7 @@ App.calendar = {
     document.getElementById('calendarInner').style.transform = 'translateX(0)';
     document.getElementById('swipeLeft').classList.remove('show');
     document.getElementById('swipeRight').classList.remove('show');
+    App.lunar.flush();
   },
 
   updateHeaderStats: function() {
@@ -2180,8 +2455,10 @@ App.calculator = {
     var fund = parseFloat(document.getElementById('taxFund').value) || 0;
 
     var deductionTotal = 0;
-    document.querySelectorAll('#taxDeductions label.active').forEach(function(el) {
-      var val = parseFloat(el.dataset.val) || 0;
+    document.querySelectorAll('#taxDeductions .deduction-item.active').forEach(function(el) {
+      var input = el.querySelector('input');
+      var val = input ? (parseFloat(input.value) || 0) : 0;
+      if (val < 0) val = 0;
       deductionTotal += val;
     });
     document.getElementById('taxDeductionTotal').textContent = '¥' + deductionTotal.toFixed(0);
@@ -2231,10 +2508,9 @@ App.calculator = {
     document.getElementById('dtNet').textContent = '¥' + net.toFixed(0);
   },
 
-  toggleDeduction: function(el, val) {
+  toggleDeductionItem: function(el) {
     el.classList.toggle('active');
-    el.dataset.val = val;
-    App.calculator.calcTax();
+    this.calcTax();
   },
 
   calcSalary: function() {
