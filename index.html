@@ -44,22 +44,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .calendar-wrap{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;margin-top:-8px;padding:18px 14px 14px;box-shadow:var(--shadow);border-bottom:1px solid var(--border)}
 .calendar-inner{position:relative;transition:transform .35s;touch-action:pan-y}
 .calendar-inner.swiping{transition:none}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;color:var(--text-tertiary);margin-bottom:12px;font-weight:600}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:13px;color:var(--text-tertiary);margin-bottom:10px;font-weight:600}
 .weekdays div:first-child,.weekdays div:last-child{color:var(--danger);opacity:.7}
 .days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;font-size:14px;cursor:pointer;position:relative;transition:all .2s;background:transparent;border:2px solid transparent;font-weight:500;min-height:44px;padding:2px}
+.day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;font-size:16px;cursor:pointer;position:relative;transition:all .2s;background:transparent;border:2px solid transparent;font-weight:500;min-height:52px;padding:3px}
 .day-cell:hover{background:var(--primary-light)}
 .day-cell:active{transform:scale(.9)}
 .day-cell.other-month{color:var(--text-tertiary);opacity:.4}
 .day-cell.has-record{color:var(--primary);font-weight:700}
-.day-cell.has-record .hours-tag{font-size:9px;color:var(--primary);margin-top:1px;font-weight:700;opacity:.8}
+.day-cell.has-record .hours-tag{font-size:11px;color:var(--primary);margin-top:2px;font-weight:700;opacity:.85}
 .day-cell.today{background:var(--primary-gradient);color:#fff!important;box-shadow:0 4px 16px rgba(74,125,106,.35);transform:scale(1.04);border-color:transparent}
 .day-cell.selected{border-color:var(--primary);background:var(--primary-light);transform:scale(1.06);box-shadow:var(--shadow-sm)}
 .day-cell.weekend{color:var(--danger);opacity:.85}
-.day-cell .lunar{font-size:8px;color:var(--text-tertiary);margin-top:1px}
-.day-cell .holiday-name{font-size:8px;color:var(--danger);font-weight:700}
-.day-cell .dot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#7CB87C}
-.day-cell .star{position:absolute;top:1px;right:1px;font-size:9px;color:var(--accent);animation:softPulse 2.4s infinite}
+.day-cell .lunar{font-size:10px;color:var(--text-tertiary);margin-top:2px}
+.day-cell .holiday-name{font-size:10px;color:var(--danger);font-weight:700}
+.day-cell .dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#7CB87C}
+.day-cell .star{position:absolute;top:2px;right:2px;font-size:11px;color:var(--accent);animation:softPulse 2.4s infinite}
 @keyframes softPulse{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
 .swipe-indicator{position:absolute;top:50%;transform:translateY(-50%);font-size:28px;color:var(--text-tertiary);opacity:0;transition:opacity .3s;pointer-events:none}
 .swipe-indicator.show{opacity:.6}
@@ -182,17 +182,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .chart-section{background:var(--surface);margin:14px;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
 .chart-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text);display:flex;align-items:center;gap:8px}
 .chart-title::before{content:"";width:4px;height:16px;background:var(--primary);border-radius:2px}
-.chart-container{height:160px;position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:0 2px;gap:2px}
-.chart-bar{flex:1;background:linear-gradient(to top,var(--primary),var(--primary-light));border-radius:4px 4px 0 0;transition:height .6s;min-width:3px;position:relative;cursor:pointer;min-height:4px}
-.chart-bar:hover{opacity:.8;transform:scaleY(1.02);transform-origin:bottom}
-.chart-bar.weekend{background:linear-gradient(to top,var(--danger),#F5D0C5)}
-.chart-bar.holiday{background:linear-gradient(to top,var(--accent),var(--accent-light))}
-.chart-tooltip{position:absolute;background:var(--text);color:#fff;padding:4px 10px;border-radius:8px;font-size:10px;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap;z-index:10;font-weight:600;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px}
-.chart-bar:hover .chart-tooltip{opacity:1}
 .pie-chart{width:140px;height:140px;margin:0 auto;position:relative;border-radius:50%;background:conic-gradient(var(--primary) 0% 0%,var(--bg) 0% 100%);transition:background .6s}
 .pie-legend{display:flex;justify-content:center;gap:20px;margin-top:16px;flex-wrap:wrap}
 .pie-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);font-weight:500}
 .pie-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.hours-dist-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.hours-donut{position:relative;width:170px;height:170px;border-radius:50%;transition:background .6s;flex-shrink:0}
+.hours-donut::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:104px;height:104px;border-radius:50%;background:var(--surface)}
+.hours-donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;pointer-events:none;line-height:1}
+.hours-donut-total{font-size:26px;font-weight:900;color:var(--text);letter-spacing:-1px}
+.hours-donut-label{font-size:9px;color:var(--text-tertiary);font-weight:600;letter-spacing:1.5px;margin-top:5px}
+.hours-list{width:100%;display:flex;flex-direction:column}
+.hours-list-row{display:grid;grid-template-columns:1fr 48px 56px 78px;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.hours-list-row:last-child{border-bottom:none}
+.hours-list-name{color:var(--text);font-weight:600;display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hours-list-name::before{content:"";display:inline-block;width:4px;height:14px;border-radius:2px;background:var(--c,var(--primary));flex-shrink:0}
+.hours-list-days{color:var(--text-secondary);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.hours-list-hours{color:var(--text);font-weight:700;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.hours-list-money{color:var(--accent);font-weight:700;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.hours-list-row.is-total{padding-top:14px;border-top:2px solid var(--border);margin-top:4px;border-bottom:none}
+.hours-list-row.is-total .hours-list-name{font-weight:800;color:var(--text)}
+.hours-list-row.is-total .hours-list-days{font-weight:700;color:var(--text)}
+.hours-list-row.is-total .hours-list-hours{font-size:15px;font-weight:900}
+.hours-list-row.is-total .hours-list-money{font-size:15px;font-weight:900;color:var(--accent)}
 .project-bar{background:var(--surface);margin:14px;padding:16px 18px;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center;cursor:pointer;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
 .project-left{display:flex;align-items:center;gap:14px}
 .project-icon{width:40px;height:40px;background:var(--primary-light);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:20px}
@@ -342,6 +354,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .chart-legend{position:absolute;right:0;top:-4px;display:flex;gap:10px;font-size:10px;color:var(--text-tertiary);font-weight:600}
 .chart-legend-item{display:flex;align-items:center;gap:4px}
 .chart-legend-dot{width:8px;height:8px;border-radius:2px}
+#incomeStatItem{transition:opacity .2s}
+#incomeStatItem:hover{opacity:.75}
+#incomeStatItem:active{opacity:.55}
+#stMoney{transition:all .2s}
 .auth-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4a7c59 0%,#3d6b4a 100%);padding:20px;z-index:1000}
 .auth-box{background:#fff;border-radius:16px;padding:40px 30px;width:100%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
 .auth-title{text-align:center;margin-bottom:8px;color:#4a7c59;font-size:24px;font-weight:600}
@@ -410,7 +426,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value" id="stDays">0天</div><div class="stat-label">📅 出勤</div></div>
       <div class="stat-item"><div class="stat-value" id="stHours">0H</div><div class="stat-label">🕐 工时</div></div>
-      <div class="stat-item"><div class="stat-value" id="stMoney">¥0</div><div class="stat-label">💰 收入</div></div>
+      <div class="stat-item" id="incomeStatItem" onclick="App.ui.toggleIncomeVisibility()" style="cursor:pointer" title="点击隐藏/显示收入">
+        <div class="stat-value" id="stMoney">¥0</div>
+        <div class="stat-label" id="stMoneyLabel">💰 收入</div>
+      </div>
     </div>
     <div class="progress-wrap">
       <div class="progress-bg"><div class="progress-fill" id="monthProgress"></div></div>
@@ -487,13 +506,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">按实际缴纳比例填写，0 表示不扣除</div>
         </div>
-        <div class="calc-result-box">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-            <div><div class="result-label">应纳税所得额</div><div class="result-value" id="taxTaxable">¥0</div></div>
-            <div><div class="result-label">应缴个税</div><div class="result-value tax" id="taxAmount">¥0</div></div>
-            <div><div class="result-label">税后收入</div><div class="result-value net" id="taxNet">¥0</div></div>
-          </div>
-        </div>
         <div style="background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
           <div style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:8px">📋 计算明细</div>
           <div id="taxDetail">
@@ -509,9 +521,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         </div>
         <div class="calc-result-box" style="background:linear-gradient(135deg,rgba(124,184,124,.22),rgba(74,125,106,.16));border-color:rgba(74,125,106,.35);margin-top:16px;margin-bottom:0">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-            <div>
+            <div style="flex:1;min-width:0">
               <div class="result-label" style="font-size:13px;font-weight:700;color:var(--text)">💰 税后收入</div>
-              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px">税前 <span id="netGrossInline">¥0</span> − 五险一金 <span id="netInsInline">¥0</span> − 个税 <span id="netTaxInline">¥0</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:8px;line-height:1.6">
+                税前 <span id="netGrossInline" style="font-weight:700;color:var(--text)">¥0</span>
+                <span style="color:var(--text-tertiary)">−</span>
+                五险一金 <span id="netInsInline" style="font-weight:700;color:var(--text)">¥0</span>
+                <span style="color:var(--text-tertiary)">−</span>
+                个税 <span id="netTaxInline" style="font-weight:700;color:var(--text)">¥0</span>
+              </div>
             </div>
             <div class="result-value net" id="dtNet" style="font-size:36px;margin-top:0;letter-spacing:-1px;text-shadow:0 1px 2px rgba(74,125,106,.12)">¥0</div>
           </div>
@@ -791,7 +809,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div class="menu-item">
             <div class="menu-left"><span>📱</span><span>版本</span></div>
-            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.2.0</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.3.0</div>
           </div>
         </div>
         <div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:11px;font-weight:500;line-height:1.8">
@@ -1169,18 +1187,43 @@ async function saveData() {
 }
 
 async function initMainApp() {
+  // ============ 阶段 1：立即可见（不依赖网络）============
+  App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
+  App.settings.initSettings();
+  App.ui.initIncomeVisibility();
+  App.calendar.render();
+  App.clock.renderDetail();
+  App.ui.updateCloudMenu();
+  App.setupSwipe();
+
+  // 当月农历预热
+  try {
+    var prewarmNow = new Date();
+    var curY = prewarmNow.getFullYear();
+    var curM = prewarmNow.getMonth();
+    var curDays = new Date(curY, curM + 1, 0).getDate();
+    for (var day = 1; day <= curDays; day++) {
+      App.lunar.getLunarDay(new Date(curY, curM, day));
+    }
+    App.lunar.flush();
+  } catch (e) {}
+
+  // ============ 阶段 2：后台等数据 ============
+  var loaded = true;
   try {
     await loadData();
   } catch (err) {
+    loaded = false;
     if (err.status === 401 || err.status === 403) {
       forceLogout('登录已失效，请重新登录');
       return;
     } else {
       alert('加载数据失败: ' + err.message);
-      return;
     }
   }
+  if (!loaded) return;
 
+  // ============ 阶段 3：数据到了，灌入并重渲染 ============
   App.data.records = userData.records;
   App.data.settings = userData.settings;
   App.data.goal = userData.goal;
@@ -1204,31 +1247,11 @@ async function initMainApp() {
       }
     }, 300);
   };
-
   App.data.load = function() {};
 
-  try {
-    App.holiday.getHoliday('2025-01-01');
-    var prewarmNow = new Date();
-    for (var offset = -1; offset <= 1; offset++) {
-      var py = prewarmNow.getFullYear();
-      var pm = prewarmNow.getMonth() + offset;
-      var daysInPre = new Date(py, pm + 1, 0).getDate();
-      for (var day = 1; day <= daysInPre; day++) {
-        App.lunar.getLunarDay(new Date(py, pm, day));
-      }
-    }
-    App.lunar.flush();
-  } catch (e) {
-    console.warn('日历缓存预热失败', e);
-  }
-
-  App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
   App.settings.initSettings();
   App.calendar.render();
   App.clock.renderDetail();
-  App.calendar.updateHeaderStats();
-  App.ui.updateCloudMenu();
 
   var year = App.calendar.currentDate.getFullYear();
   var month = App.calendar.currentDate.getMonth();
@@ -1247,13 +1270,28 @@ async function initMainApp() {
   App.calculator.calcTax();
   App.calculator.calcSalary();
 
-  App.setupSwipe();
-
   document.getElementById('profileName').textContent = currentUser || '工时记录助手';
   document.getElementById('profileSub').textContent = '已连接 Worker · 自动同步';
   App.ui.updateSyncUI('synced', '已连接');
 
-  console.log('⏱ 工时打卡助手（Worker 版）v4.2.0 已启动');
+  // ============ 阶段 4：延后预热 ============
+  setTimeout(function() {
+    try {
+      App.holiday.getHoliday('2025-01-01');
+      var now = new Date();
+      for (var offset = -1; offset <= 1; offset += 2) {
+        var py = now.getFullYear();
+        var pm = now.getMonth() + offset;
+        var daysInPre = new Date(py, pm + 1, 0).getDate();
+        for (var day = 1; day <= daysInPre; day++) {
+          App.lunar.getLunarDay(new Date(py, pm, day));
+        }
+      }
+      App.lunar.flush();
+    } catch (e) {}
+  }, 400);
+
+  console.log('⏱ 工时打卡助手（Worker 版）v4.3.0 已启动');
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1415,7 +1453,7 @@ App.data = {
     this.records = {};
     this.save();
     App.ui.refreshAll();
-    App.calendar.updateHeaderStats();
+    App.calendar.updateMonthStats();
     App.settings.updateGoalUI();
     App.clock.updateQuickPunchBtn();
     App.ui.showToast('🗑️ 数据已清空', 'success');
@@ -1428,7 +1466,7 @@ App.data = {
       goal: this.goal,
       deductions: this.deductions,
       insurance: this.insurance,
-      version: '4.2.0',
+      version: '4.3.0',
       exportedAt: new Date().toISOString(),
       app: '工时打卡助手'
     };
@@ -1436,6 +1474,38 @@ App.data = {
 };
 
 App.ui = {
+  _incomeHidden: false,
+  _INCOME_HIDE_KEY: 'wc_hide_income',
+
+  isIncomeHidden: function() {
+    return this._incomeHidden;
+  },
+
+  initIncomeVisibility: function() {
+    try {
+      this._incomeHidden = localStorage.getItem(this._INCOME_HIDE_KEY) === '1';
+    } catch (e) {
+      this._incomeHidden = false;
+    }
+    var label = document.getElementById('stMoneyLabel');
+    if (label) label.textContent = this._incomeHidden ? '🙈 已隐藏' : '💰 收入';
+  },
+
+  toggleIncomeVisibility: function() {
+    this._incomeHidden = !this._incomeHidden;
+    try {
+      if (this._incomeHidden) localStorage.setItem(this._INCOME_HIDE_KEY, '1');
+      else localStorage.removeItem(this._INCOME_HIDE_KEY);
+    } catch (e) {}
+    App.calendar.updateMonthStats();
+    if (document.getElementById('pageStats').classList.contains('active')) {
+      App.stats.render();
+    }
+    var label = document.getElementById('stMoneyLabel');
+    if (label) label.textContent = this._incomeHidden ? '🙈 已隐藏' : '💰 收入';
+    App.ui.showToast(this._incomeHidden ? '收入已隐藏' : '收入已显示', 'info');
+  },
+
   showToast: function(msg, type) {
     type = type || 'info';
     var wrap = document.getElementById('toastWrap');
@@ -1496,8 +1566,6 @@ App.ui = {
   refreshAll: function() {
     App.calendar.render();
     App.clock.renderDetail();
-    App.calendar.updateHeaderStats();
-    this.updateCloudMenu();
     App.settings.updateGoalUI();
     App.clock.updateQuickPunchBtn();
   }
@@ -1511,7 +1579,20 @@ App.lunar = {
   _cache: {},
   _loaded: false,
   _dirty: false,
+  _flushTimer: null,
+  _yearOffset: null,
   _STORAGE_KEY: 'wc_lunar_cache_v1',
+
+  _initYearTable: function() {
+    if (this._yearOffset) return;
+    var offset = [];
+    var sum = 0;
+    for (var y = 1900; y <= 2100; y++) {
+      offset[y] = sum;
+      sum += this.lYearDays(y);
+    }
+    this._yearOffset = offset;
+  },
 
   _loadCache: function() {
     if (this._loaded) return;
@@ -1529,10 +1610,14 @@ App.lunar = {
 
   flush: function() {
     if (!this._dirty) return;
-    try {
-      localStorage.setItem(this._STORAGE_KEY, JSON.stringify(this._cache));
-      this._dirty = false;
-    } catch (e) {}
+    clearTimeout(this._flushTimer);
+    var self = this;
+    this._flushTimer = setTimeout(function() {
+      try {
+        localStorage.setItem(self._STORAGE_KEY, JSON.stringify(self._cache));
+        self._dirty = false;
+      } catch (e) {}
+    }, 600);
   },
 
   clearCache: function() {
@@ -1551,13 +1636,27 @@ App.lunar = {
   },
   getLunarDateInfo: function(date) {
     var base = new Date(1900, 0, 31);
-    var offset = Math.floor((date - base) / 86400000);
-    var year = 1900;
-    for (; year < 2100 && offset > 0; year++) {
-      var days = this.lYearDays(year);
-      offset -= days;
+    var totalOffset = Math.floor((date - base) / 86400000);
+    var off = this._yearOffset;
+    if (!off) {
+      this._initYearTable();
+      off = this._yearOffset;
     }
-    if (offset < 0) { offset += this.lYearDays(year - 1); year--; }
+
+    var lo = 1900, hi = 2100;
+    while (lo < hi) {
+      var mid = (lo + hi + 1) >>> 1;
+      if (off[mid] <= totalOffset) lo = mid;
+      else hi = mid - 1;
+    }
+    var year = lo;
+    var offset = totalOffset - off[year];
+
+    if (offset < 0) {
+      year--;
+      offset = totalOffset - off[year];
+    }
+
     var lunarYear = year, leap = this.leapMonth(lunarYear), isLeap = false, month = 1, daysInMonth = 0;
     for (; month < 13 && offset > 0; month++) {
       if (leap > 0 && month === (leap + 1) && !isLeap) {
@@ -1592,8 +1691,18 @@ App.lunar = {
   }
 };
 
+(function initLunarYearTable() {
+  try {
+    App.lunar._initYearTable();
+  } catch (e) {
+    console.warn('农历年份表预建失败', e);
+  }
+})();
+
 App.holiday = {
   _holidays: null,
+  _loadedFromStorage: false,
+  _pending: false,
   _STORAGE_KEY: 'wc_holidays_v1',
 
   getQingmingDate: function(y) {
@@ -1626,7 +1735,8 @@ App.holiday = {
       if (raw) {
         var parsed = JSON.parse(raw);
         if (parsed && parsed.v === 1 && parsed.data) {
-          return parsed.data;
+          this._holidays = parsed.data;
+          return this._holidays;
         }
       }
     } catch (e) {}
@@ -1659,12 +1769,39 @@ App.holiday = {
       localStorage.setItem(this._STORAGE_KEY, JSON.stringify({ v: 1, data: h }));
     } catch (e) {}
 
+    this._holidays = h;
     return h;
   },
 
   getHoliday: function(key) {
-    if (!this._holidays) this._holidays = this.generateHolidays();
-    return this._holidays[key] || null;
+    if (!this._holidays) {
+      if (!this._loadedFromStorage) {
+        this._loadedFromStorage = true;
+        try {
+          var raw = localStorage.getItem(this._STORAGE_KEY);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.v === 1 && parsed.data) {
+              this._holidays = parsed.data;
+            }
+          }
+        } catch (e) {}
+      }
+      if (!this._holidays && !this._pending) {
+        this._pending = true;
+        var self = this;
+        setTimeout(function() {
+          self.generateHolidays();
+          self._pending = false;
+          if (window.App && App.calendar && App.calendar._needHolidayRefresh) {
+            App.calendar._needHolidayRefresh = false;
+            App.calendar.render();
+          }
+        }, 120);
+        this._holidays = {};
+      }
+    }
+    return this._holidays ? (this._holidays[key] || null) : null;
   }
 };
 
@@ -1724,9 +1861,10 @@ App.stats = {
     var avgDailyIncome = days > 0 ? income / days : 0;
     var maxDailyIncome = dailyIncome.length > 0 ? Math.max.apply(null, dailyIncome.map(function(d) { return d.income; })) : 0;
 
-    document.getElementById('monthIncome').textContent = '¥' + App.util.formatMoney(income);
-    document.getElementById('avgDailyIncome').textContent = '¥' + App.util.formatMoney(avgDailyIncome);
-    document.getElementById('maxDailyIncome').textContent = '¥' + App.util.formatMoney(maxDailyIncome);
+    var _hide = App.ui.isIncomeHidden();
+    document.getElementById('monthIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(income);
+    document.getElementById('avgDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(avgDailyIncome);
+    document.getElementById('maxDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(maxDailyIncome);
     document.getElementById('avgDailyHours').textContent = avgDailyHours.toFixed(1) + 'h';
     document.getElementById('boxDays').textContent = days;
     document.getElementById('boxHours').textContent = hours.toFixed(1);
@@ -1735,15 +1873,90 @@ App.stats = {
 
     this.renderIncomeChart(year, month, dailyIncome);
 
-    var total = normalH + otH;
-    var normalPct = total > 0 ? (normalH / total * 100) : 0;
-    var otPct = total > 0 ? (otH / total * 100) : 0;
+    // ===== 4 类细分统计 =====
+    var cats = {
+      normal:  { hours: 0, days: 0, income: 0 },
+      ot:      { hours: 0, days: 0, income: 0 },
+      weekend: { hours: 0, days: 0, income: 0 },
+      holiday: { hours: 0, days: 0, income: 0 }
+    };
+    var cfg = App.data.settings;
+    var nRate = cfg.mode === 'hourly' ? cfg.normalRate : cfg.salaryNormal;
+    var oRate = cfg.mode === 'hourly' ? cfg.normalRate : cfg.salaryOt;
+    var wRate = cfg.mode === 'hourly' ? cfg.normalRate : cfg.salaryWeekend;
+    var hRate = cfg.mode === 'hourly' ? cfg.holidayRate : cfg.salaryHoliday;
+
+    for (var key2 in App.data.records) {
+      var d2 = App.util.parseDateKey(key2);
+      if (d2.getFullYear() !== year || d2.getMonth() !== month) continue;
+      var rec2 = App.data.records[key2];
+      if (rec2.leave && rec2.leave !== 'none') continue;
+      var isHol = rec2.type === 'holiday' || !!App.holiday.getHoliday(key2);
+      var isWk = App.util.isWeekend(d2) || rec2.type === 'weekend';
+      var n2 = rec2.normal || 0;
+      var o2 = rec2.ot || 0;
+
+      if (isHol) {
+        cats.holiday.hours += n2 + o2;
+        cats.holiday.days += 1;
+        cats.holiday.income += (n2 + o2) * hRate;
+      } else if (isWk) {
+        cats.weekend.hours += n2 + o2;
+        cats.weekend.days += 1;
+        cats.weekend.income += (n2 + o2) * wRate;
+      } else {
+        if (n2 > 0) { cats.normal.hours += n2; cats.normal.days += 1; cats.normal.income += n2 * nRate; }
+        if (o2 > 0) { cats.ot.hours += o2; cats.ot.days += 1; cats.ot.income += o2 * oRate; }
+      }
+    }
+
+    var totalH2 = cats.normal.hours + cats.ot.hours + cats.weekend.hours + cats.holiday.hours;
     var pieEl = document.getElementById('hoursPie');
-    pieEl.innerHTML = '<div class="pie-chart" style="background:conic-gradient(var(--primary) 0% ' + normalPct + '%, var(--accent) ' + normalPct + '% 100%)"></div>' +
-      '<div class="pie-legend">' +
-      '<div class="pie-legend-item"><div class="pie-legend-dot" style="background:var(--primary)"></div>正班 ' + normalH.toFixed(1) + 'h (' + normalPct.toFixed(0) + '%)</div>' +
-      '<div class="pie-legend-item"><div class="pie-legend-dot" style="background:var(--accent)"></div>加班 ' + otH.toFixed(1) + 'h (' + otPct.toFixed(0) + '%)</div>' +
+    if (totalH2 === 0) {
+      pieEl.innerHTML = '<div style="text-align:center;padding:36px 0;color:var(--text-tertiary);font-size:13px;font-weight:500">本月暂无工时记录</div>';
+      return;
+    }
+
+    var p1 = (cats.normal.hours / totalH2) * 100;
+    var p2 = p1 + (cats.ot.hours / totalH2) * 100;
+    var p3 = p2 + (cats.weekend.hours / totalH2) * 100;
+    var gradient = 'conic-gradient(' +
+      'var(--primary) 0% ' + p1 + '%, ' +
+      'var(--accent) ' + p1 + '% ' + p2 + '%, ' +
+      'var(--danger) ' + p2 + '% ' + p3 + '%, ' +
+      '#8B7CB8 ' + p3 + '% 100%)';
+
+    var html = '<div class="hours-dist-wrap">';
+    html += '<div class="hours-donut" style="background:' + gradient + '">' +
+      '<div class="hours-donut-center">' +
+        '<div class="hours-donut-total">' + totalH2.toFixed(totalH2 >= 100 ? 0 : 1) + '</div>' +
+        '<div class="hours-donut-label">HOURS</div>' +
+      '</div>' +
+    '</div>';
+
+    html += '<div class="hours-list">';
+    var rows = [
+      { name: '正班', color: 'var(--primary)',  data: cats.normal },
+      { name: '加班', color: 'var(--accent)',   data: cats.ot },
+      { name: '周末', color: 'var(--danger)',   data: cats.weekend },
+      { name: '节假', color: '#8B7CB8',         data: cats.holiday }
+    ];
+    rows.forEach(function(r) {
+      html += '<div class="hours-list-row">' +
+        '<div class="hours-list-name" style="--c:' + r.color + '">' + r.name + '</div>' +
+        '<div class="hours-list-days">' + r.data.days + ' 天</div>' +
+        '<div class="hours-list-hours">' + r.data.hours.toFixed(1) + ' H</div>' +
+        '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatMoney(r.data.income)) + '</div>' +
       '</div>';
+    });
+    html += '<div class="hours-list-row is-total">' +
+      '<div class="hours-list-name" style="--c:transparent">总计</div>' +
+      '<div class="hours-list-days">' + days + ' 天</div>' +
+      '<div class="hours-list-hours">' + totalH2.toFixed(1) + ' H</div>' +
+      '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatMoney(income)) + '</div>' +
+    '</div>';
+    html += '</div></div>';
+    pieEl.innerHTML = html;
   },
 
   renderIncomeChart: function(year, month, dailyIncome) {
@@ -1869,6 +2082,8 @@ App.stats = {
 App.calendar = {
   currentDate: new Date(),
   selectedDate: null,
+  _needHolidayRefresh: false,
+  _delegated: false,
 
   changeMonth: function(delta) {
     var d = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + delta, 1);
@@ -1896,113 +2111,126 @@ App.calendar = {
     var startOffset = (firstDay.getDay() + 6) % 7;
     var daysInMonth = lastDay.getDate();
     var prevMonthDays = new Date(year, month, 0).getDate();
-    var grid = document.getElementById('calGrid');
-    var fragment = document.createDocumentFragment();
+
+    var todayKey = App.util.formatDateKey(new Date());
+    var selectedDate = this.selectedDate;
+    var records = App.data.records;
+    var holidaysReady = App.holiday._holidays && Object.keys(App.holiday._holidays).length > 0;
+    if (!holidaysReady) this._needHolidayRefresh = true;
+
+    var html = '';
 
     for (var i = startOffset - 1; i >= 0; i--) {
       var d = prevMonthDays - i;
-      var cell = document.createElement('div');
-      cell.className = 'day-cell other-month';
-      cell.innerHTML = '<span class="day-number">' + d + '</span>';
-      cell.onclick = function() { App.calendar.changeMonth(-1); };
-      fragment.appendChild(cell);
+      html += '<div class="day-cell other-month" data-nav="-1"><span class="day-number">' + d + '</span></div>';
     }
 
-    var today = new Date();
     for (var d = 1; d <= daysInMonth; d++) {
       var date = new Date(year, month, d);
       var key = App.util.formatDateKey(date);
-      var rec = App.data.records[key];
-      var isToday = App.util.formatDateKey(today) === key;
-      var isWeekendDay = App.util.isWeekend(date);
+      var rec = records[key];
       var classes = ['day-cell'];
-      if (isToday) classes.push('today');
-      if (isWeekendDay) classes.push('weekend');
+      if (todayKey === key) classes.push('today');
+      if (App.util.isWeekend(date)) classes.push('weekend');
       if (rec) classes.push('has-record');
-      if (this.selectedDate === key) classes.push('selected');
+      if (selectedDate === key) classes.push('selected');
 
-      var cell = document.createElement('div');
-      cell.className = classes.join(' ');
-
-      var numberHtml = '<span class="day-number">' + d + '</span>';
+      var inner = '<span class="day-number">' + d + '</span>';
       var dotOrStar = '';
+
       if (rec) {
         var hasNote = rec.note && rec.note.trim().length > 0;
         if (hasNote) {
           dotOrStar = '<span class="star">★</span>';
-          numberHtml = '<span class="day-number has-note">' + d + '</span>';
         } else {
           dotOrStar = '<span class="dot"></span>';
         }
-      }
-
-      var inner = numberHtml;
-      if (rec) {
-        if (rec.leave !== 'none') inner += '<span class="hours-tag" style="color:var(--danger);font-size:10px;">休</span>';
-        else {
+        if (rec.leave !== 'none') {
+          inner += '<span class="hours-tag" style="color:var(--danger);font-size:10px;">休</span>';
+        } else {
           var total = (rec.normal || 0) + (rec.ot || 0);
           inner += '<span class="hours-tag">' + total.toFixed(1) + 'h</span>';
         }
       } else {
-        var holiday = App.holiday.getHoliday(key);
-        if (holiday) inner += '<span class="holiday-name">' + holiday + '</span>';
-        else inner += '<span class="lunar">' + App.lunar.getLunarDay(date) + '</span>';
+        var holiday = holidaysReady ? App.holiday.getHoliday(key) : null;
+        if (holiday) {
+          inner += '<span class="holiday-name">' + holiday + '</span>';
+        } else {
+          inner += '<span class="lunar">' + App.lunar.getLunarDay(date) + '</span>';
+        }
       }
       inner += dotOrStar;
-      cell.innerHTML = inner;
-      cell.onclick = (function(k) {
-        return function() { App.calendar.selectDate(k); };
-      })(key);
-      fragment.appendChild(cell);
+
+      html += '<div class="' + classes.join(' ') + '" data-key="' + key + '">' + inner + '</div>';
     }
 
     var totalCells = startOffset + daysInMonth;
     var nextDays = (7 - (totalCells % 7)) % 7;
     for (var d = 1; d <= nextDays; d++) {
-      var cell = document.createElement('div');
-      cell.className = 'day-cell other-month';
-      cell.innerHTML = '<span class="day-number">' + d + '</span>';
-      cell.onclick = function() { App.calendar.changeMonth(1); };
-      fragment.appendChild(cell);
+      html += '<div class="day-cell other-month" data-nav="1"><span class="day-number">' + d + '</span></div>';
     }
 
-    grid.innerHTML = '';
-    grid.appendChild(fragment);
-    this.updateHeaderStats();
-    App.settings.updateGoalUI();
+    var grid = document.getElementById('calGrid');
+    grid.innerHTML = html;
+
+    if (!this._delegated) {
+      var self = this;
+      grid.addEventListener('click', function(e) {
+        var cell = e.target.closest('.day-cell');
+        if (!cell) return;
+        var nav = cell.getAttribute('data-nav');
+        if (nav === '1') { self.changeMonth(1); return; }
+        if (nav === '-1') { self.changeMonth(-1); return; }
+        var k = cell.getAttribute('data-key');
+        if (k) self.selectDate(k);
+      });
+      this._delegated = true;
+    }
+
+    this.updateMonthStats();
     App.clock.updateQuickPunchBtn();
+
     document.getElementById('calendarInner').style.transform = 'translateX(0)';
     document.getElementById('swipeLeft').classList.remove('show');
     document.getElementById('swipeRight').classList.remove('show');
     App.lunar.flush();
   },
 
-  updateHeaderStats: function() {
+  updateMonthStats: function() {
     var year = this.currentDate.getFullYear();
     var month = this.currentDate.getMonth();
     var days = 0, hours = 0, money = 0;
 
     for (var key in App.data.records) {
       var d = App.util.parseDateKey(key);
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        var rec = App.data.records[key];
-        if (rec.leave && rec.leave !== 'none') continue;
-        days++;
-        var total = (rec.normal || 0) + (rec.ot || 0);
-        hours += total;
-        money += App.stats.calcDayIncome(rec, d);
-      }
+      if (d.getFullYear() !== year || d.getMonth() !== month) continue;
+      var rec = App.data.records[key];
+      if (rec.leave && rec.leave !== 'none') continue;
+      days++;
+      var total = (rec.normal || 0) + (rec.ot || 0);
+      hours += total;
+      money += App.stats.calcDayIncome(rec, d);
     }
 
     document.getElementById('stDays').textContent = days + '天';
     document.getElementById('stHours').textContent = hours.toFixed(1) + 'H';
-    document.getElementById('stMoney').textContent = '¥' + App.util.formatMoney(money);
+    document.getElementById('stMoney').textContent = App.ui.isIncomeHidden() ? '****' : '¥' + App.util.formatMoney(money);
 
     var now = new Date();
     var lastDay = new Date(year, month + 1, 0).getDate();
     var progress = Math.min(100, (now.getDate() / lastDay * 100));
     document.getElementById('monthProgress').style.width = progress + '%';
     document.getElementById('progressText').textContent = progress.toFixed(0) + '%';
+
+    var goal = App.data.goal || 160;
+    var pct = Math.min(100, (hours / goal * 100));
+    document.getElementById('goalDisplay').textContent = hours.toFixed(1) + ' / ' + goal + ' h';
+    document.getElementById('goalBarFill').style.width = pct + '%';
+    document.getElementById('goalInput').value = goal;
+  },
+
+  updateHeaderStats: function() {
+    this.updateMonthStats();
   }
 };
 
@@ -2061,7 +2289,7 @@ App.clock = {
     App.data.save();
     App.calendar.render();
     this.renderDetail();
-    App.calendar.updateHeaderStats();
+    App.calendar.updateMonthStats();
     this.updateQuickPunchBtn();
 
     var typeLabel = autoType === 'normal' ? '正班' : autoType === 'weekend' ? '周末' : '节假日';
@@ -2080,6 +2308,7 @@ App.clock = {
     var dateStr = (date.getMonth() + 1) + '月' + date.getDate() + '日';
     var weekStr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
     var income = rec ? App.stats.calcDayIncome(rec, date) : 0;
+    var _hide = App.ui.isIncomeHidden();
     var html = '';
 
     if (rec) {
@@ -2089,11 +2318,12 @@ App.clock = {
       var shiftIcons = { day: '☀️', early: '🌤', mid: '🌞', night: '🌙' };
       var isLeave = rec.leave !== 'none';
       var typeLabel = typeNames[rec.type] || '正班';
+      var incomeText = isLeave ? '¥0' : (_hide ? '****' : '¥' + App.util.formatMoney(income));
 
       html += '<div class="detail-card">' +
         '<div class="detail-card-header">' +
           '<div class="detail-card-date">' + dateStr + ' <span class="weekday-label">' + weekStr + '</span></div>' +
-          '<div class="detail-card-income">' + (isLeave ? '¥0' : '¥' + App.util.formatMoney(income)) + '</div>' +
+          '<div class="detail-card-income">' + incomeText + '</div>' +
         '</div>' +
         '<div class="detail-card-body">' +
           '<div class="detail-card-left">' +
@@ -2106,7 +2336,7 @@ App.clock = {
                 '<span class="detail-card-type-badge">' + typeLabel + '</span>' +
                 (isLeave ? '<span class="detail-card-leave-badge">' + leaveNames[rec.leave] + '</span>' : '') +
               '</div>' +
-              '<div class="detail-card-money">' + (isLeave ? '¥0' : '¥' + App.util.formatMoney(income)) + '</div>' +
+              '<div class="detail-card-money">' + incomeText + '</div>' +
             '</div>' +
             '<div class="detail-card-note-row">' +
               '<div class="detail-card-note-icon">🕐</div>' +
@@ -2366,7 +2596,7 @@ App.clock = {
     App.clock.close();
     App.calendar.render();
     App.clock.renderDetail();
-    App.calendar.updateHeaderStats();
+    App.calendar.updateMonthStats();
   }
 };
 
@@ -2415,7 +2645,7 @@ App.settings = {
     App.data.save();
     App.ui.showToast('✅ 设置已保存', 'success');
     App.calendar.render();
-    App.calendar.updateHeaderStats();
+    App.calendar.updateMonthStats();
     App.ui.goPage('pageRecord');
   },
 
@@ -2653,9 +2883,6 @@ App.calculator = {
     tax = Math.max(0, tax);
     var net = income - insurance - tax;
 
-    document.getElementById('taxTaxable').textContent = '¥' + taxableBase.toFixed(0);
-    document.getElementById('taxAmount').textContent = '¥' + tax.toFixed(0);
-    document.getElementById('taxNet').textContent = '¥' + net.toFixed(0);
     document.getElementById('dtGross').textContent = '¥' + income.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     document.getElementById('dtInsurance').textContent = '¥' + insurance.toFixed(0);
     document.getElementById('dtDeduction').textContent = '¥' + deductionTotal.toFixed(0);
