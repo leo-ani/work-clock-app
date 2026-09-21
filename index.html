@@ -292,7 +292,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .calc-result-box .result-label{font-size:12px;color:var(--text-secondary);font-weight:500}
 .calc-result-box .result-value{font-size:28px;font-weight:800;color:var(--primary);margin-top:4px;letter-spacing:-.5px}
 .calc-result-box .result-value.tax{color:var(--danger)}
-.calc-result-box .result-value.net{color:var(--success)}
+.calc-result-box .result-value.net{color:#3F8B5B;font-weight:900}
 .calc-detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
 .calc-detail-row:last-child{border-bottom:none}
 .calc-detail-row .label{color:var(--text-secondary);font-weight:500}
@@ -480,10 +480,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         <div class="calc-input-group">
           <label>五险一金比例 (%)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="calc-input-wrap"><span class="calc-prefix">养老</span><input type="number" id="taxPension" value="8" step=".5" min="0" max="20" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
-            <div class="calc-input-wrap"><span class="calc-prefix">医疗</span><input type="number" id="taxMedical" value="2" step=".5" min="0" max="10" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
-            <div class="calc-input-wrap"><span class="calc-prefix">失业</span><input type="number" id="taxUnemployment" value="0.5" step=".1" min="0" max="5" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
-            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="5" step=".5" min="0" max="20" oninput="App.calculator.calcTax()" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">养老</span><input type="number" id="taxPension" value="8" step=".5" min="0" max="20" oninput="App.calculator.updateInsurance('pension', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">医疗</span><input type="number" id="taxMedical" value="2" step=".5" min="0" max="10" oninput="App.calculator.updateInsurance('medical', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">失业</span><input type="number" id="taxUnemployment" value="0.5" step=".1" min="0" max="5" oninput="App.calculator.updateInsurance('unemployment', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="5" step=".5" min="0" max="20" oninput="App.calculator.updateInsurance('fund', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
           </div>
           <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">按实际缴纳比例填写，0 表示不扣除</div>
         </div>
@@ -505,9 +505,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
             <div class="calc-detail-row"><span class="label">适用税率</span><span class="value" id="dtRate">0%</span></div>
             <div class="calc-detail-row"><span class="label">速算扣除数</span><span class="value" id="dtQuickDeduction">¥0</span></div>
             <div class="calc-detail-row"><span class="label">应缴个税</span><span class="value" id="dtTax">¥0</span></div>
-            <div class="calc-detail-row" style="border-bottom:none;padding-top:12px;border-top:2px solid var(--border)">
-              <span class="label" style="font-weight:700;color:var(--text)">税后收入</span><span class="value" style="font-size:18px;color:var(--success)" id="dtNet">¥0</span>
+          </div>
+        </div>
+        <div class="calc-result-box" style="background:linear-gradient(135deg,rgba(124,184,124,.22),rgba(74,125,106,.16));border-color:rgba(74,125,106,.35);margin-top:16px;margin-bottom:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <div>
+              <div class="result-label" style="font-size:13px;font-weight:700;color:var(--text)">💰 税后收入</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px">税前 <span id="netGrossInline">¥0</span> − 五险一金 <span id="netInsInline">¥0</span> − 个税 <span id="netTaxInline">¥0</span></div>
             </div>
+            <div class="result-value net" id="dtNet" style="font-size:36px;margin-top:0;letter-spacing:-1px;text-shadow:0 1px 2px rgba(74,125,106,.12)">¥0</div>
           </div>
         </div>
         <div class="calc-input-group" style="margin-top:16px">
@@ -553,14 +559,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
                 <input type="number" data-key="rent" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('rent', this.value)">
               </div>
             </div>
-            <div class="deduction-item" data-key="fixed" onclick="App.calculator.toggleDeductionItem(this)">
+            <div class="deduction-item" data-key="edu" onclick="App.calculator.toggleDeductionItem(this)">
               <div class="deduction-info">
-                <div class="deduction-name">固定开支</div>
-                <div class="deduction-hint">每月固定支出</div>
+                <div class="deduction-name">继续教育</div>
+                <div class="deduction-hint">学历 400 元/月</div>
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="fixed" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('fixed', this.value)">
+                <input type="number" data-key="edu" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('edu', this.value)">
+              </div>
+            </div>
+            <div class="deduction-item" data-key="infant" onclick="App.calculator.toggleDeductionItem(this)">
+              <div class="deduction-info">
+                <div class="deduction-name">3岁以下婴幼儿照护</div>
+                <div class="deduction-hint">每孩 2000 元/月</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" data-key="infant" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('infant', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="medical" onclick="App.calculator.toggleDeductionItem(this)">
@@ -573,6 +589,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
                 <input type="number" data-key="medical" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('medical', this.value)">
               </div>
             </div>
+            <div class="deduction-item" data-key="other" onclick="App.calculator.toggleDeductionItem(this)" style="border-style:dashed">
+              <div class="deduction-info">
+                <div class="deduction-name">其他固定开支</div>
+                <div class="deduction-hint">不参与个税计算，仅从剩余收入扣减</div>
+              </div>
+              <div class="deduction-amount">
+                <span class="deduction-prefix">¥</span>
+                <input type="number" data-key="other" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('other', this.value)">
+              </div>
+            </div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);padding:4px 0">
             <span>专项附加扣除合计</span>
@@ -582,8 +608,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         <div class="calc-result-box" style="background:linear-gradient(135deg,rgba(124,184,124,.18),rgba(74,125,106,.12));border-color:rgba(74,125,106,.25);margin-bottom:0">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
             <div>
-              <div class="result-label">剩余收入（税后 − 专项扣除）</div>
-              <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">税后收入 <span id="residNetInline">¥0</span> − 专项扣除 <span id="residDeductInline">¥0</span></div>
+              <div class="result-label">剩余收入（税后 − 专项扣除 − 其他开支）</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">税后 <span id="residNetInline">¥0</span> − 专项扣除 <span id="residDeductInline">¥0</span> − 其他开支 <span id="residOtherInline">¥0</span></div>
             </div>
             <div class="result-value net" id="residualIncome" style="font-size:26px;margin-top:0">¥0</div>
           </div>
@@ -765,7 +791,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div class="menu-item">
             <div class="menu-left"><span>📱</span><span>版本</span></div>
-            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.1.0</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.2.0</div>
           </div>
         </div>
         <div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:11px;font-weight:500;line-height:1.8">
@@ -942,8 +968,16 @@ function defaultUserData() {
       elder:   { on: false, val: 0 },
       loan:    { on: false, val: 0 },
       rent:    { on: false, val: 0 },
-      fixed:   { on: false, val: 0 },
-      medical: { on: false, val: 0 }
+      edu:     { on: false, val: 0 },
+      infant:  { on: false, val: 0 },
+      medical: { on: false, val: 0 },
+      other:   { on: false, val: 0 }
+    },
+    insurance: {
+      pension: 8,
+      medical: 2,
+      unemployment: 0.5,
+      fund: 5
     }
   };
 }
@@ -1087,10 +1121,17 @@ function logout() {
 
 async function loadData() {
   const data = await apiCall('getData', { username: currentUser });
+
   var defDed = defaultUserData().deductions;
   var loadedDed = data.deductions || {};
+
+  if (loadedDed.fixed && !loadedDed.edu) {
+    loadedDed.edu = loadedDed.fixed;
+  }
+
+  var dedKeys = ['child', 'elder', 'loan', 'rent', 'edu', 'infant', 'medical', 'other'];
   var mergedDed = {};
-  ['child', 'elder', 'loan', 'rent', 'fixed', 'medical'].forEach(function(k) {
+  dedKeys.forEach(function(k) {
     var s = loadedDed[k] || {};
     mergedDed[k] = {
       on: typeof s.on === 'boolean' ? s.on : defDed[k].on,
@@ -1098,13 +1139,23 @@ async function loadData() {
     };
   });
 
+  var defIns = defaultUserData().insurance;
+  var loadedIns = data.insurance || {};
+  var mergedIns = {
+    pension:      Number.isFinite(Number(loadedIns.pension))      ? Number(loadedIns.pension)      : defIns.pension,
+    medical:      Number.isFinite(Number(loadedIns.medical))      ? Number(loadedIns.medical)      : defIns.medical,
+    unemployment: Number.isFinite(Number(loadedIns.unemployment)) ? Number(loadedIns.unemployment) : defIns.unemployment,
+    fund:         Number.isFinite(Number(loadedIns.fund))         ? Number(loadedIns.fund)         : defIns.fund
+  };
+
   userData = {
     ...defaultUserData(),
     ...data,
     records: data.records || {},
     settings: { ...defaultUserData().settings, ...(data.settings || {}) },
     goal: Number.isFinite(Number(data.goal)) ? Number(data.goal) : 160,
-    deductions: mergedDed
+    deductions: mergedDed,
+    insurance: mergedIns
   };
 }
 
@@ -1113,6 +1164,7 @@ async function saveData() {
   userData.settings = App.data.settings;
   userData.goal = App.data.goal;
   userData.deductions = App.data.deductions;
+  userData.insurance = App.data.insurance;
   return apiCall('setData', { username: currentUser, data: userData });
 }
 
@@ -1133,6 +1185,7 @@ async function initMainApp() {
   App.data.settings = userData.settings;
   App.data.goal = userData.goal;
   App.data.deductions = userData.deductions || defaultUserData().deductions;
+  App.data.insurance = userData.insurance || defaultUserData().insurance;
 
   App.data.save = function() {
     clearTimeout(App.data._saveTimer);
@@ -1154,7 +1207,6 @@ async function initMainApp() {
 
   App.data.load = function() {};
 
-  // 预热日历缓存
   try {
     App.holiday.getHoliday('2025-01-01');
     var prewarmNow = new Date();
@@ -1191,6 +1243,7 @@ async function initMainApp() {
   }
   document.getElementById('taxIncome').value = Math.round(monthIncome * 100) / 100 || 0;
   App.calculator.syncDeductionUI();
+  App.calculator.syncInsuranceUI();
   App.calculator.calcTax();
   App.calculator.calcSalary();
 
@@ -1200,7 +1253,7 @@ async function initMainApp() {
   document.getElementById('profileSub').textContent = '已连接 Worker · 自动同步';
   App.ui.updateSyncUI('synced', '已连接');
 
-  console.log('⏱ 工时打卡助手（Worker 版）v4.1.0 已启动');
+  console.log('⏱ 工时打卡助手（Worker 版）v4.2.0 已启动');
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1257,8 +1310,16 @@ App.data = {
     elder:   { on: false, val: 0 },
     loan:    { on: false, val: 0 },
     rent:    { on: false, val: 0 },
-    fixed:   { on: false, val: 0 },
-    medical: { on: false, val: 0 }
+    edu:     { on: false, val: 0 },
+    infant:  { on: false, val: 0 },
+    medical: { on: false, val: 0 },
+    other:   { on: false, val: 0 }
+  },
+  insurance: {
+    pension: 8,
+    medical: 2,
+    unemployment: 0.5,
+    fund: 5
   },
   _saveTimer: null,
 
@@ -1292,20 +1353,40 @@ App.data = {
       App.ui.showToast('❌ 导入格式无效', 'error');
       return false;
     }
-    var defDed = { child: { on: false, val: 0 }, elder: { on: false, val: 0 }, loan: { on: false, val: 0 }, rent: { on: false, val: 0 }, fixed: { on: false, val: 0 }, medical: { on: false, val: 0 } };
+    var dedKeys = ['child', 'elder', 'loan', 'rent', 'edu', 'infant', 'medical', 'other'];
+    var defDed = {};
+    dedKeys.forEach(function(k) { defDed[k] = { on: false, val: 0 }; });
+    var defIns = { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
+
+    var mergeInsurance = function(loaded) {
+      var out = Object.assign({}, defIns);
+      if (loaded) {
+        ['pension', 'medical', 'unemployment', 'fund'].forEach(function(k) {
+          if (Number.isFinite(Number(loaded[k]))) out[k] = Number(loaded[k]);
+        });
+      }
+      return out;
+    };
+
+    var mergeDeductions = function(loaded, existing) {
+      var out = {};
+      dedKeys.forEach(function(k) {
+        var s = (loaded && loaded[k]) || {};
+        var ex = (existing && existing[k]) || {};
+        out[k] = {
+          on: typeof s.on === 'boolean' ? s.on : (typeof ex.on === 'boolean' ? ex.on : false),
+          val: Number.isFinite(Number(s.val)) ? Number(s.val) : (Number.isFinite(Number(ex.val)) ? Number(ex.val) : 0)
+        };
+      });
+      return out;
+    };
 
     if (strategy === 'overwrite') {
       this.records = data.records || {};
       if (data.settings) this.settings = Object.assign({}, data.settings);
       if (data.goal) this.goal = data.goal;
-      if (data.deductions) {
-        var loaded = data.deductions;
-        ['child', 'elder', 'loan', 'rent', 'fixed', 'medical'].forEach(function(k) {
-          var s = loaded[k] || {};
-          defDed[k] = { on: !!s.on, val: Number.isFinite(Number(s.val)) ? Number(s.val) : 0 };
-        });
-        this.deductions = defDed;
-      }
+      if (data.deductions) this.deductions = mergeDeductions(data.deductions, null);
+      if (data.insurance) this.insurance = mergeInsurance(data.insurance);
     } else {
       var cloudRecords = data.records || {};
       for (var date in cloudRecords) {
@@ -1318,17 +1399,8 @@ App.data = {
       }
       if (data.settings) this.settings = Object.assign({}, data.settings, this.settings);
       if (data.goal) this.goal = data.goal;
-      if (data.deductions) {
-        var loaded2 = data.deductions;
-        var merged = Object.assign({}, this.deductions || defDed);
-        ['child', 'elder', 'loan', 'rent', 'fixed', 'medical'].forEach(function(k) {
-          var s = loaded2[k] || {};
-          if (!merged[k] || (!merged[k].on && !merged[k].val)) {
-            merged[k] = { on: !!s.on, val: Number.isFinite(Number(s.val)) ? Number(s.val) : 0 };
-          }
-        });
-        this.deductions = merged;
-      }
+      if (data.deductions) this.deductions = mergeDeductions(data.deductions, this.deductions);
+      if (data.insurance) this.insurance = mergeInsurance(data.insurance);
     }
     this.save();
     return true;
@@ -1355,7 +1427,8 @@ App.data = {
       settings: this.settings,
       goal: this.goal,
       deductions: this.deductions,
-      version: '4.1.0',
+      insurance: this.insurance,
+      version: '4.2.0',
       exportedAt: new Date().toISOString(),
       app: '工时打卡助手'
     };
@@ -1392,6 +1465,7 @@ App.ui = {
     if (id === 'pageSettings') App.settings.updateGoalUI();
     if (id === 'pageCalculator') {
       App.calculator.syncDeductionUI();
+      App.calculator.syncInsuranceUI();
       App.calculator.calcTax();
       App.calculator.calcSalary();
     }
@@ -2499,6 +2573,7 @@ App.importExport = {
       App.ui.refreshAll();
       App.settings.initSettings();
       App.calculator.syncDeductionUI();
+      App.calculator.syncInsuranceUI();
       App.calculator.calcTax();
     } else {
       App.ui.showToast('❌ 导入失败', 'error');
@@ -2514,6 +2589,7 @@ App.calculator = {
     document.getElementById('calc' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
     if (tab === 'tax') {
       this.syncDeductionUI();
+      this.syncInsuranceUI();
       this.calcTax();
     }
     if (tab === 'salary') this.calcSalary();
@@ -2521,14 +2597,16 @@ App.calculator = {
 
   calcTax: function() {
     var income = parseFloat(document.getElementById('taxIncome').value) || 0;
-    var pension = parseFloat(document.getElementById('taxPension').value) || 0;
-    var medical = parseFloat(document.getElementById('taxMedical').value) || 0;
-    var unemployment = parseFloat(document.getElementById('taxUnemployment').value) || 0;
-    var fund = parseFloat(document.getElementById('taxFund').value) || 0;
+    var ins = App.data.insurance || { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
+    var pension = parseFloat(ins.pension) || 0;
+    var medical = parseFloat(ins.medical) || 0;
+    var unemployment = parseFloat(ins.unemployment) || 0;
+    var fund = parseFloat(ins.fund) || 0;
 
     var deductionTotal = 0;
+    var otherTotal = 0;
     var deds = App.data.deductions || {};
-    ['child', 'elder', 'loan', 'rent', 'fixed', 'medical'].forEach(function(k) {
+    ['child', 'elder', 'loan', 'rent', 'edu', 'infant', 'medical'].forEach(function(k) {
       var d = deds[k];
       if (d && d.on) {
         var v = parseFloat(d.val) || 0;
@@ -2536,6 +2614,11 @@ App.calculator = {
         deductionTotal += v;
       }
     });
+    if (deds.other && deds.other.on) {
+      var ov = parseFloat(deds.other.val) || 0;
+      if (ov < 0) ov = 0;
+      otherTotal = ov;
+    }
     document.getElementById('taxDeductionTotal').textContent = '¥' + deductionTotal.toFixed(0);
 
     var insuranceRate = (pension + medical + unemployment + fund) / 100;
@@ -2581,11 +2664,15 @@ App.calculator = {
     document.getElementById('dtQuickDeduction').textContent = '¥' + quick.toFixed(0);
     document.getElementById('dtTax').textContent = '¥' + tax.toFixed(0);
     document.getElementById('dtNet').textContent = '¥' + net.toFixed(0);
+    document.getElementById('netGrossInline').textContent = '¥' + income.toFixed(0);
+    document.getElementById('netInsInline').textContent = '¥' + insurance.toFixed(0);
+    document.getElementById('netTaxInline').textContent = '¥' + tax.toFixed(0);
 
-    var residual = net - deductionTotal;
+    var residual = net - deductionTotal - otherTotal;
     document.getElementById('residualIncome').textContent = '¥' + residual.toFixed(0);
     document.getElementById('residNetInline').textContent = '¥' + net.toFixed(0);
     document.getElementById('residDeductInline').textContent = '¥' + deductionTotal.toFixed(0);
+    document.getElementById('residOtherInline').textContent = '¥' + otherTotal.toFixed(0);
   },
 
   toggleDeductionItem: function(el) {
@@ -2613,7 +2700,7 @@ App.calculator = {
 
   syncDeductionUI: function() {
     var deds = App.data.deductions || {};
-    ['child', 'elder', 'loan', 'rent', 'fixed', 'medical'].forEach(function(k) {
+    ['child', 'elder', 'loan', 'rent', 'edu', 'infant', 'medical', 'other'].forEach(function(k) {
       var d = deds[k] || { on: false, val: 0 };
       var item = document.querySelector('#taxDeductions .deduction-item[data-key="' + k + '"]');
       if (!item) return;
@@ -2621,6 +2708,31 @@ App.calculator = {
       item.classList.toggle('active', !!d.on);
       if (input && document.activeElement !== input) {
         input.value = d.val || 0;
+      }
+    });
+  },
+
+  updateInsurance: function(key, value) {
+    if (!App.data.insurance) App.data.insurance = { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
+    var v = parseFloat(value);
+    if (!Number.isFinite(v) || v < 0) v = 0;
+    App.data.insurance[key] = v;
+    App.data.save();
+    this.calcTax();
+  },
+
+  syncInsuranceUI: function() {
+    var ins = App.data.insurance || { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
+    var map = {
+      pension: 'taxPension',
+      medical: 'taxMedical',
+      unemployment: 'taxUnemployment',
+      fund: 'taxFund'
+    };
+    Object.keys(map).forEach(function(k) {
+      var el = document.getElementById(map[k]);
+      if (el && document.activeElement !== el) {
+        el.value = ins[k];
       }
     });
   },
