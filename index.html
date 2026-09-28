@@ -130,6 +130,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .quick-tag{padding:6px 14px;background:var(--bg);border-radius:20px;font-size:12px;color:var(--text-secondary);cursor:pointer;transition:all .2s var(--transition);border:1.5px solid transparent;font-weight:600}
 .quick-tag:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary-light);transform:translateY(-1px)}
 .quick-tag.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.quick-tag.danger{color:var(--danger);background:#FDF2EF;border-color:#F5E0DB;font-weight:700}
+.quick-tag.danger:hover{background:#F5E0DB;border-color:var(--danger);color:var(--danger);transform:translateY(-1px)}
 .hours-box{background:var(--bg);border-radius:14px;padding:0 16px;margin-bottom:18px}
 .hours-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1.5px solid var(--border);gap:8px}
 .hours-row:last-child{border-bottom:none}
@@ -494,9 +496,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
   <div class="page" id="pageCalculator">
     <div class="page-scroll">
       <div class="calc-tabs">
-        <div class="calc-tab active" data-tab="tax" onclick="App.calculator.switchTab('tax')">🧾 个税</div>
-        <div class="calc-tab" data-tab="salary" onclick="App.calculator.switchTab('salary')">💰 工资</div>
-        <div class="calc-tab" data-tab="simple" onclick="App.calculator.switchTab('simple')">🔢 计算器</div>
+        <div class="calc-tab active" data-tab="tax" onclick="App.calculator.switchTab('tax')">个税</div>
+        <div class="calc-tab" data-tab="salary" onclick="App.calculator.switchTab('salary')">工资</div>
+        <div class="calc-tab" data-tab="simple" onclick="App.calculator.switchTab('simple')">计算器</div>
       </div>
       <div class="calc-panel active" id="calcTax">
         <div class="calc-input-group">
@@ -862,7 +864,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         <div class="quick-tag" onclick="App.clock.setQuickHours('normal',8)">全勤 8h</div>
         <div class="quick-tag" onclick="App.clock.setQuickHours('ot',1)">加班 +1h</div>
         <div class="quick-tag" onclick="App.clock.setQuickHours('ot',1.5)">加班 +1.5h</div>
-        <div class="quick-tag" onclick="App.clock.setQuickHours('all',0)">清零</div>
+        <div class="quick-tag danger" onclick="App.clock.setQuickHours('all',0)">🗑 清零</div>
       </div>
       <div class="hours-box">
         <div class="hours-row">
@@ -1891,10 +1893,7 @@ App.holiday = {
           this._workdays = parsed.workdays;
           return { holidays: this._holidays, workdays: this._workdays };
         }
-        if (parsed && parsed.v === 1 && parsed.data) {
-          this._holidays = parsed.data;
-          this._workdays = {};
-        }
+        // v1 数据不完整（缺 workdays），丢弃并重新生成 v2
       }
     } catch (e) {}
     return null;
@@ -2460,6 +2459,24 @@ App.clock = {
   selectedType: 'normal',
   selectedLeave: 'none',
 
+  _clampTotal: function() {
+    var valN = document.getElementById('valNormal');
+    var valO = document.getElementById('valOt');
+    if (!valN || !valO) return;
+    var n = parseFloat(valN.textContent) || 0;
+    var o = parseFloat(valO.textContent) || 0;
+    if (n < 0) n = 0;
+    if (o < 0) o = 0;
+    if (n > 24) n = 24;
+    if (o > 24) o = 24;
+    if (n + o > 24) {
+      if (n >= 24) { n = 24; o = 0; }
+      else { o = +(24 - n).toFixed(1); }
+    }
+    valN.textContent = n + ' H';
+    valO.textContent = o + ' H';
+  },
+
   getDefaultTypeForDate: function(dateKey) {
     var d = App.util.parseDateKey(dateKey);
     if (isNaN(d.getTime())) return 'normal';
@@ -2643,6 +2660,7 @@ App.clock = {
 
       document.getElementById('valNormal').textContent = (rec.normal || 0) + ' H';
       document.getElementById('valOt').textContent = (rec.ot || 0) + ' H';
+      this._clampTotal();
       document.getElementById('noteInput').value = rec.note || '';
     } else {
       var autoType = this.getDefaultTypeForDate(dateKey);
@@ -2651,6 +2669,7 @@ App.clock = {
       if (typeBtn) typeBtn.classList.add('active');
       document.getElementById('valNormal').textContent = '8 H';
       document.getElementById('valOt').textContent = '0 H';
+      this._clampTotal();
       document.getElementById('noteInput').value = '';
     }
 
@@ -2677,6 +2696,7 @@ App.clock = {
     var presets = { day: 8, early: 6, mid: 7, night: 7 };
     if (App.clock.selectedLeave === 'none') {
       document.getElementById('valNormal').textContent = presets[App.clock.selectedShift] + ' H';
+      this._clampTotal();
     }
   },
 
@@ -2710,6 +2730,7 @@ App.clock = {
       var presets = { day: 8, early: 6, mid: 7, night: 7 };
       document.getElementById('valNormal').textContent = presets[App.clock.selectedShift] + ' H';
       document.getElementById('valOt').textContent = '0 H';
+      this._clampTotal();
     }
     setTimeout(function() {
       var grid = document.getElementById('leaveGrid');
@@ -2730,6 +2751,7 @@ App.clock = {
     var val = parseFloat(el.textContent) || 0;
     val = Math.max(0, Math.min(24, +(val + delta).toFixed(1)));
     el.textContent = val + ' H';
+    this._clampTotal();
   },
 
   editHours: function(type) {
@@ -2752,6 +2774,7 @@ App.clock = {
     valEl.textContent = val + ' H';
     valEl.style.display = 'block';
     inputEl.style.display = 'none';
+    this._clampTotal();
   },
 
   setQuickHours: function(type, val) {
@@ -2769,6 +2792,7 @@ App.clock = {
       document.getElementById('valNormal').textContent = '0 H';
       document.getElementById('valOt').textContent = '0 H';
     }
+    this._clampTotal();
   },
 
   toggleNote: function() {
@@ -2798,6 +2822,10 @@ App.clock = {
     if (normal > 24) normal = 24;
     if (ot < 0) ot = 0;
     if (ot > 24) ot = 24;
+    if (normal + ot > 24) {
+      if (normal >= 24) { normal = 24; ot = 0; }
+      else { ot = +(24 - normal).toFixed(1); }
+    }
 
     var key = App.calendar.selectedDate;
     if (!key) {
@@ -3062,9 +3090,13 @@ App.calculator = {
   },
 
   calcTax: function() {
-    var income = parseFloat(document.getElementById('taxIncome').value) || 0;
-    if (income < 0) income = 0;
-    if (income > 10000000) income = 10000000;
+    var incomeEl = document.getElementById('taxIncome');
+    var income = parseFloat(incomeEl.value) || 0;
+    var clamped = false;
+    if (income < 0) { income = 0; clamped = true; }
+    if (income > 10000000) { income = 10000000; clamped = true; }
+    if (clamped && incomeEl.value !== String(income)) incomeEl.value = income;
+
     var ins = App.data.insurance || { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
     var pension = parseFloat(ins.pension) || 0;
     var medical = parseFloat(ins.medical) || 0;
@@ -3152,13 +3184,20 @@ App.calculator = {
   updateDeductionAmount: function(key, value) {
     if (!App.data.deductions[key]) App.data.deductions[key] = { on: false, val: 0 };
     var v = parseFloat(value) || 0;
-    if (v < 0) v = 0;
-    if (v > 100000) v = 100000;
+    var clamped = false;
+    if (v < 0) { v = 0; clamped = true; }
+    if (v > 100000) { v = 100000; clamped = true; }
     App.data.deductions[key].val = v;
     if (v > 0) {
       App.data.deductions[key].on = true;
       var item = document.querySelector('#taxDeductions .deduction-item[data-key="' + key + '"]');
-      if (item) item.classList.add('active');
+      if (item) {
+        item.classList.add('active');
+        if (clamped) {
+          var input = item.querySelector('input');
+          if (input && input.value !== String(v)) input.value = v;
+        }
+      }
     }
     App.data.save();
     this.calcTax();
@@ -3183,7 +3222,12 @@ App.calculator = {
     var v = parseFloat(value);
     if (!Number.isFinite(v) || v < 0) v = 0;
     var limits = { pension: 20, medical: 10, unemployment: 5, fund: 12 };
-    if (limits[key] !== undefined && v > limits[key]) v = limits[key];
+    var idMap = { pension: 'taxPension', medical: 'taxMedical', unemployment: 'taxUnemployment', fund: 'taxFund' };
+    if (limits[key] !== undefined && v > limits[key]) {
+      v = limits[key];
+      var el = document.getElementById(idMap[key]);
+      if (el && el.value !== String(v)) el.value = v;
+    }
     App.data.insurance[key] = v;
     App.data.save();
     this.calcTax();
