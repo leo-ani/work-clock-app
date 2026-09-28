@@ -20,10 +20,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .header-month .nav-arrow{cursor:pointer;padding:6px 12px;opacity:.7;transition:all .25s var(--transition);border-radius:10px}
 .header-month .nav-arrow:hover{opacity:1;background:rgba(255,255,255,.12)}
 .header-month .nav-arrow:active{transform:scale(.88)}
-.stats-bar{display:flex;justify-content:space-around;padding:14px 8px;background:rgba(255,255,255,.10);margin-top:12px;border-radius:var(--radius);backdrop-filter:blur(12px)}
-.stat-item{text-align:center;flex:1}
-.stat-value{font-size:20px;font-weight:800}
-.stat-label{font-size:11px;opacity:.8;margin-top:4px}
+.stats-bar{display:flex;justify-content:space-around;padding:14px 8px;background:rgba(255,255,255,.10);margin-top:12px;border-radius:var(--radius);backdrop-filter:blur(12px);overflow:hidden}
+.stat-item{text-align:center;flex:1;min-width:0;overflow:hidden}
+.stat-value{font-size:20px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.stat-label{font-size:11px;opacity:.8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .progress-wrap{padding:0 2px;margin-top:12px}
 .progress-bg{height:4px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
 .progress-fill{height:100%;background:rgba(255,255,255,.85);border-radius:4px;transition:width .6s;width:0}
@@ -58,6 +58,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .day-cell.weekend{color:var(--danger);opacity:.85}
 .day-cell .lunar{font-size:10px;color:var(--text-tertiary);margin-top:2px}
 .day-cell .holiday-name{font-size:10px;color:var(--danger);font-weight:700}
+.day-cell .solar-term{font-size:10px;color:var(--primary);font-weight:700;letter-spacing:.5px}
+.day-cell .workday-badge{font-size:10px;color:var(--primary);font-weight:700;letter-spacing:.5px}
+.day-cell.workday-makeup{color:var(--primary);opacity:.85}
 .day-cell .dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#7CB87C}
 .day-cell .star{position:absolute;top:2px;right:2px;font-size:11px;color:var(--accent);animation:softPulse 2.4s infinite}
 @keyframes softPulse{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
@@ -173,7 +176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 @keyframes toastOut{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-24px) scale(.92);opacity:0}}
 .stat-card{background:var(--surface);margin:14px;padding:22px 24px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border)}
 .stat-card-title{font-size:13px;color:var(--text-secondary);margin-bottom:8px;font-weight:600}
-.stat-card-num{font-size:36px;font-weight:800;color:var(--primary);letter-spacing:-1px}
+.stat-card-num{font-size:36px;font-weight:800;color:var(--primary);letter-spacing:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat-card-sub{font-size:13px;color:var(--text-secondary);margin-top:4px;font-weight:500}
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px}
 .stat-box{background:var(--surface);padding:20px 12px;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
@@ -302,7 +305,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .calc-input-group .calc-suffix{padding:12px 14px 12px 0;font-size:14px;color:var(--text-tertiary);font-weight:500}
 .calc-result-box{background:var(--primary-light);border-radius:var(--radius);padding:16px 18px;margin:16px 0;border:1px solid rgba(74,125,106,.15)}
 .calc-result-box .result-label{font-size:12px;color:var(--text-secondary);font-weight:500}
-.calc-result-box .result-value{font-size:28px;font-weight:800;color:var(--primary);margin-top:4px;letter-spacing:-.5px}
+.calc-result-box .result-value{font-size:28px;font-weight:800;color:var(--primary);margin-top:4px;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .calc-result-box .result-value.tax{color:var(--danger)}
 .calc-result-box .result-value.net{color:#3F8B5B;font-weight:900}
 .calc-detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
@@ -314,6 +317,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .calc-btn-group .calc-btn:hover{background:var(--primary-light);border-color:var(--primary-light)}
 .calc-btn-group .calc-btn.op{color:var(--primary);border-color:var(--primary-light);background:var(--primary-light)}
 .calc-btn-group .calc-btn.eq{background:var(--primary-gradient);color:#fff;border-color:transparent}
+.calc-btn-group .calc-btn.del{color:var(--danger);border-color:#F5E0DB;background:#FDF2EF;font-weight:800}
+.calc-btn-group .calc-btn.del:hover{background:#F5E0DB;border-color:var(--danger)}
+.calc-btn-group .calc-btn.sign{color:var(--primary);font-weight:800;letter-spacing:-.5px;font-size:16px}
+.calc-btn-group .calc-btn.sign:hover{background:var(--primary-light);border-color:var(--primary-light)}
 .calc-display{background:var(--surface);border-radius:var(--radius);padding:14px 18px;margin-bottom:12px;border:1px solid var(--border);text-align:right;font-size:28px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-height:72px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;overflow:hidden;word-break:break-all;gap:4px}
 .calc-display .calc-expr{font-size:14px;font-weight:500;color:var(--text-tertiary);line-height:1.4;max-width:100%;text-align:right;word-break:break-all}
 .calc-display #calcResult{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.2}
@@ -380,7 +387,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <body>
 <div class="auth-page" id="authPage">
   <div class="auth-box">
-    <div class="auth-title">⏱️ 工时打卡</div>
+    <div class="auth-title">⏱️ 工时记录</div>
     <div class="auth-subtitle" id="authSubtitle">登录到您的账户</div>
     <div class="error-msg" id="authError"></div>
     <div class="form-group">
@@ -408,7 +415,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
     <div class="header-top">
       <div class="header-top-left">
         <span class="app-icon">⏱</span>
-        <span class="app-name">工时打卡</span>
+        <span class="app-name">工时记录</span>
         <span style="font-size:11px;opacity:.6;font-weight:500" id="headerYear">2026年</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -433,7 +440,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
     </div>
     <div class="progress-wrap">
       <div class="progress-bg"><div class="progress-fill" id="monthProgress"></div></div>
-      <div class="progress-text"><span>本月进度</span><span id="progressText">0%</span></div>
+      <div class="progress-text"><span>时间进度</span><span id="progressText">0%</span></div>
     </div>
   </header>
 
@@ -494,7 +501,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       <div class="calc-panel active" id="calcTax">
         <div class="calc-input-group">
           <label>税前月收入 (元)</label>
-          <div class="calc-input-wrap"><span class="calc-prefix">¥</span><input type="number" id="taxIncome" value="15000" step="100" min="0" oninput="App.calculator.calcTax()"></div>
+          <div class="calc-input-wrap"><span class="calc-prefix">¥</span><input type="number" id="taxIncome" value="15000" step="100" min="0" max="10000000" oninput="App.calculator.calcTax()"></div>
         </div>
         <div class="calc-input-group">
           <label>五险一金比例 (%)</label>
@@ -502,7 +509,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
             <div class="calc-input-wrap"><span class="calc-prefix">养老</span><input type="number" id="taxPension" value="8" step=".5" min="0" max="20" oninput="App.calculator.updateInsurance('pension', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
             <div class="calc-input-wrap"><span class="calc-prefix">医疗</span><input type="number" id="taxMedical" value="2" step=".5" min="0" max="10" oninput="App.calculator.updateInsurance('medical', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
             <div class="calc-input-wrap"><span class="calc-prefix">失业</span><input type="number" id="taxUnemployment" value="0.5" step=".1" min="0" max="5" oninput="App.calculator.updateInsurance('unemployment', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
-            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="5" step=".5" min="0" max="20" oninput="App.calculator.updateInsurance('fund', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
+            <div class="calc-input-wrap"><span class="calc-prefix">公积金</span><input type="number" id="taxFund" value="5" step=".5" min="0" max="12" oninput="App.calculator.updateInsurance('fund', this.value)" style="text-align:right"><span class="calc-suffix">%</span></div>
           </div>
           <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">按实际缴纳比例填写，0 表示不扣除</div>
         </div>
@@ -544,7 +551,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="child" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('child', this.value)">
+                <input type="number" data-key="child" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('child', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="elder" onclick="App.calculator.toggleDeductionItem(this)">
@@ -554,7 +561,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="elder" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('elder', this.value)">
+                <input type="number" data-key="elder" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('elder', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="loan" onclick="App.calculator.toggleDeductionItem(this)">
@@ -564,7 +571,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="loan" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('loan', this.value)">
+                <input type="number" data-key="loan" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('loan', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="rent" onclick="App.calculator.toggleDeductionItem(this)">
@@ -574,7 +581,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="rent" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('rent', this.value)">
+                <input type="number" data-key="rent" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('rent', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="edu" onclick="App.calculator.toggleDeductionItem(this)">
@@ -584,7 +591,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="edu" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('edu', this.value)">
+                <input type="number" data-key="edu" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('edu', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="infant" onclick="App.calculator.toggleDeductionItem(this)">
@@ -594,7 +601,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="infant" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('infant', this.value)">
+                <input type="number" data-key="infant" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('infant', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="medical" onclick="App.calculator.toggleDeductionItem(this)">
@@ -604,7 +611,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="medical" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('medical', this.value)">
+                <input type="number" data-key="medical" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('medical', this.value)">
               </div>
             </div>
             <div class="deduction-item" data-key="other" onclick="App.calculator.toggleDeductionItem(this)" style="border-style:dashed">
@@ -614,7 +621,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
               </div>
               <div class="deduction-amount">
                 <span class="deduction-prefix">¥</span>
-                <input type="number" data-key="other" value="0" step="100" min="0" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('other', this.value)">
+                <input type="number" data-key="other" value="0" step="100" min="0" max="100000" onclick="event.stopPropagation()" oninput="App.calculator.updateDeductionAmount('other', this.value)">
               </div>
             </div>
           </div>
@@ -637,15 +644,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       <div class="calc-panel" id="calcSalary">
         <div class="calc-input-group">
           <label>时薪 (元/小时)</label>
-          <div class="calc-input-wrap"><span class="calc-prefix">¥</span><input type="number" id="salaryRate" value="43" step=".5" min="0" oninput="App.calculator.calcSalary()"></div>
+          <div class="calc-input-wrap"><span class="calc-prefix">¥</span><input type="number" id="salaryRate" value="43" step=".5" min="0" max="10000" oninput="App.calculator.calcSalary()"></div>
         </div>
         <div class="calc-input-group">
           <label>每日工时 (小时)</label>
-          <div class="calc-input-wrap"><input type="number" id="salaryHours" value="8" step=".5" min="0" oninput="App.calculator.calcSalary()"><span class="calc-suffix">h</span></div>
+          <div class="calc-input-wrap"><input type="number" id="salaryHours" value="8" step=".5" min="0" max="24" oninput="App.calculator.calcSalary()"><span class="calc-suffix">h</span></div>
         </div>
         <div class="calc-input-group">
           <label>每月工作天数</label>
-          <div class="calc-input-wrap"><input type="number" id="salaryDays" value="21.75" step=".5" min="0" oninput="App.calculator.calcSalary()"><span class="calc-suffix">天</span></div>
+          <div class="calc-input-wrap"><input type="number" id="salaryDays" value="21.75" step=".5" min="0" max="31" oninput="App.calculator.calcSalary()"><span class="calc-suffix">天</span></div>
         </div>
         <div class="calc-result-box">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -659,7 +666,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         <div class="calc-display" id="calcDisplay"><div class="calc-expr" id="calcExpr"></div><div id="calcResult">0</div></div>
         <div class="calc-btn-group">
           <div class="calc-btn" onclick="App.calculator.input('C')">C</div>
-          <div class="calc-btn" onclick="App.calculator.input('±')">±</div>
+          <div class="calc-btn del" onclick="App.calculator.input('⌫')">⌫</div>
           <div class="calc-btn" onclick="App.calculator.input('%')">%</div>
           <div class="calc-btn op" onclick="App.calculator.input('÷')">÷</div>
         </div>
@@ -682,11 +689,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="calc-btn op" onclick="App.calculator.input('+')">+</div>
         </div>
         <div class="calc-btn-group">
-          <div class="calc-btn" onclick="App.calculator.input('0')" style="flex:2">0</div>
+          <div class="calc-btn sign" onclick="App.calculator.input('±')" title="正负号切换">+/−</div>
+          <div class="calc-btn" onclick="App.calculator.input('0')">0</div>
           <div class="calc-btn" onclick="App.calculator.input('.')">.</div>
           <div class="calc-btn eq" onclick="App.calculator.input('=')">=</div>
         </div>
-        <div style="font-size:11px;color:var(--text-tertiary);text-align:center;margin-top:8px;line-height:1.6">支持加减乘除、百分比、正负号切换</div>
+        <div style="font-size:11px;color:var(--text-tertiary);text-align:center;margin-top:8px;line-height:1.6">支持加减乘除、百分比、正负号切换、退格删除</div>
       </div>
     </div>
   </div>
@@ -714,11 +722,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="input-card">
             <div class="input-row">
               <div class="input-label">日常时薪 / H</div>
-              <div class="input-value" style="color:var(--primary)">¥ <input type="number" id="inNormal" value="43" onchange="App.settings.updateRatePreview()" step=".5" min="0"></div>
+              <div class="input-value" style="color:var(--primary)">¥ <input type="number" id="inNormal" value="43" onchange="App.settings.updateRatePreview()" step=".5" min="0" max="10000"></div>
             </div>
             <div class="input-row">
               <div class="input-label">节假时薪 / H</div>
-              <div class="input-value" style="color:var(--danger)">¥ <input type="number" id="inHoliday" value="43" style="color:var(--danger)" onchange="App.settings.updateRatePreview()" step=".5" min="0"></div>
+              <div class="input-value" style="color:var(--danger)">¥ <input type="number" id="inHoliday" value="43" style="color:var(--danger)" onchange="App.settings.updateRatePreview()" step=".5" min="0" max="10000"></div>
             </div>
           </div>
           <div class="hint-text">💡 小时工平时加班不进行加倍计算，节假可单独设置时薪</div>
@@ -727,23 +735,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="input-card">
             <div class="input-row">
               <div class="input-label">底薪工资</div>
-              <div class="input-value"><span class="input-placeholder" id="baseSalaryPlaceholder">设置底薪</span><input type="number" id="inBaseSalary" value="" style="display:none" onchange="App.settings.calcSalaryRates()" step="100" min="0"></div>
+              <div class="input-value"><span class="input-placeholder" id="baseSalaryPlaceholder">设置底薪</span><input type="number" id="inBaseSalary" value="" style="display:none" onchange="App.settings.calcSalaryRates()" step="100" min="0" max="1000000"></div>
             </div>
             <div class="input-row">
               <div class="input-label">正班时薪 / H</div>
-              <div class="input-value" style="color:var(--primary)">¥ <input type="number" id="inSalaryNormal" value="0" onchange="App.settings.calcSalaryRates()" step=".5" min="0"></div>
+              <div class="input-value" style="color:var(--primary)">¥ <input type="number" id="inSalaryNormal" value="0" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></div>
             </div>
             <div class="input-row">
               <div class="input-label">加班时薪 / H</div>
-              <div class="input-value"><span class="multiple">1.5 倍</span><span style="color:var(--success)">¥ <input type="number" id="inSalaryOt" value="0" style="color:var(--success)" onchange="App.settings.calcSalaryRates()" step=".5" min="0"></span></div>
+              <div class="input-value"><span class="multiple">1.5 倍</span><span style="color:var(--success)">¥ <input type="number" id="inSalaryOt" value="0" style="color:var(--success)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
             </div>
             <div class="input-row">
               <div class="input-label">周末时薪 / H</div>
-              <div class="input-value"><span class="multiple weekend">2 倍</span><span style="color:var(--accent)">¥ <input type="number" id="inSalaryWeekend" value="0" style="color:var(--accent)" onchange="App.settings.calcSalaryRates()" step=".5" min="0"></span></div>
+              <div class="input-value"><span class="multiple weekend">2 倍</span><span style="color:var(--accent)">¥ <input type="number" id="inSalaryWeekend" value="0" style="color:var(--accent)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
             </div>
             <div class="input-row">
               <div class="input-label">节假时薪 / H</div>
-              <div class="input-value"><span class="multiple holiday">3 倍</span><span style="color:var(--danger)">¥ <input type="number" id="inSalaryHoliday" value="0" style="color:var(--danger)" onchange="App.settings.calcSalaryRates()" step=".5" min="0"></span></div>
+              <div class="input-value"><span class="multiple holiday">3 倍</span><span style="color:var(--danger)">¥ <input type="number" id="inSalaryHoliday" value="0" style="color:var(--danger)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
             </div>
             <div class="input-row">
               <div class="input-label">正班时薪规则</div>
@@ -763,7 +771,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="goal-bar"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
           <div class="goal-input-row">
             <span style="font-size:13px;color:var(--text-secondary);font-weight:500">目标工时</span>
-            <input type="number" id="goalInput" placeholder="160" step="1" min="0" value="">
+            <input type="number" id="goalInput" placeholder="160" step="1" min="0" max="1000" value="">
             <button class="goal-btn" onclick="App.settings.saveGoal()">保存</button>
           </div>
         </div>
@@ -809,7 +817,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div class="menu-item">
             <div class="menu-left"><span>📱</span><span>版本</span></div>
-            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.4.0</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.5.0</div>
           </div>
         </div>
         <div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:11px;font-weight:500;line-height:1.8">
@@ -862,7 +870,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="hours-control">
             <button class="hours-btn" onclick="App.clock.adjH('normal',-.5)">−0.5</button>
             <div class="hours-value" id="valNormal" onclick="App.clock.editHours('normal')">8 H</div>
-            <input type="number" id="inputNormal" style="display:none;width:70px;text-align:center;font-size:18px;font-weight:800;color:var(--primary);border:2px solid var(--primary);border-radius:10px;padding:6px;outline:none;background:var(--surface)" step=".5" min="0" onblur="App.clock.saveHours('normal')" onkeydown="if(event.key==='Enter'){this.blur();}">
+            <input type="number" id="inputNormal" style="display:none;width:70px;text-align:center;font-size:18px;font-weight:800;color:var(--primary);border:2px solid var(--primary);border-radius:10px;padding:6px;outline:none;background:var(--surface)" step=".5" min="0" max="24" onblur="App.clock.saveHours('normal')" onkeydown="if(event.key==='Enter'){this.blur();}">
             <button class="hours-btn" onclick="App.clock.adjH('normal',.5)">+0.5</button>
           </div>
         </div>
@@ -871,7 +879,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           <div class="hours-control">
             <button class="hours-btn" onclick="App.clock.adjH('ot',-.5)">−0.5</button>
             <div class="hours-value ot-value" id="valOt" onclick="App.clock.editHours('ot')">0 H</div>
-            <input type="number" id="inputOt" style="display:none;width:70px;text-align:center;font-size:18px;font-weight:800;color:var(--accent);border:2px solid var(--accent);border-radius:10px;padding:6px;outline:none;background:var(--surface)" step=".5" min="0" onblur="App.clock.saveHours('ot')" onkeydown="if(event.key==='Enter'){this.blur();}">
+            <input type="number" id="inputOt" style="display:none;width:70px;text-align:center;font-size:18px;font-weight:800;color:var(--accent);border:2px solid var(--accent);border-radius:10px;padding:6px;outline:none;background:var(--surface)" step=".5" min="0" max="24" onblur="App.clock.saveHours('ot')" onkeydown="if(event.key==='Enter'){this.blur();}">
             <button class="hours-btn" onclick="App.clock.adjH('ot',.5)">+0.5</button>
           </div>
         </div>
@@ -1188,9 +1196,6 @@ async function saveData() {
   return res;
 }
 
-/* ============================================================
-   A 方案：本地缓存兜底（stale-while-revalidate）
-   ============================================================ */
 function applyUserData(d) {
   App.data.records = d.records || {};
   App.data.settings = Object.assign({}, defaultUserData().settings, d.settings || {});
@@ -1243,11 +1248,9 @@ function refreshCalculatorDefaults() {
 }
 
 async function initMainApp() {
-  // ============ 阶段 1：立即渲染 ============
   App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
   App.holiday.loadFromCache();
 
-  // 有缓存先套用，让首屏直接带数据
   var cached = loadCachedUserData();
   if (cached) {
     applyUserData(cached);
@@ -1278,7 +1281,6 @@ async function initMainApp() {
     App.ui.updateSyncUI('syncing', '加载中...');
   }
 
-  // ============ 阶段 2：网络请求（后台）============
   var loaded = true;
   try {
     await loadData();
@@ -1297,7 +1299,6 @@ async function initMainApp() {
   }
   if (!loaded) return;
 
-  // ============ 阶段 3：网络返回，覆盖缓存 ============
   applyUserData(userData);
   saveCachedUserData(userData);
 
@@ -1329,7 +1330,6 @@ async function initMainApp() {
   document.getElementById('profileSub').textContent = '已连接 Worker · 自动同步';
   App.ui.updateSyncUI('synced', '已连接');
 
-  // ============ 阶段 4：延后预热 ============
   setTimeout(function() {
     try {
       App.holiday.getHoliday('2025-01-01');
@@ -1346,7 +1346,7 @@ async function initMainApp() {
     } catch (e) {}
   }, 400);
 
-  console.log('⏱ 工时打卡助手（Worker 版）v4.4.0 已启动');
+  console.log('⏱ 工时记录助手（Worker 版）v4.5.0 已启动');
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1366,6 +1366,23 @@ App.util = {
   formatMoney: function(a) {
     if (typeof a !== 'number') a = 0;
     return Number.isInteger(a) ? a.toString() : a.toFixed(1);
+  },
+  formatCompact: function(v, digits) {
+    if (typeof v !== 'number' || !isFinite(v)) return '0';
+    var neg = v < 0;
+    v = Math.abs(v);
+    if (digits === undefined) digits = 1;
+    var out;
+    if (v < 10000) {
+      out = Number.isInteger(v) ? v.toString() : v.toFixed(digits);
+    } else if (v < 100000000) {
+      out = (v / 10000).toFixed(digits).replace(/\.0+$/, '') + 'w';
+    } else if (v < 1000000000000) {
+      out = (v / 100000000).toFixed(digits).replace(/\.0+$/, '') + '亿';
+    } else {
+      out = v.toExponential(1);
+    }
+    return neg ? '-' + out : out;
   },
   escapeHtml: function(s) {
     if (!s) return '';
@@ -1477,7 +1494,10 @@ App.data = {
     if (strategy === 'overwrite') {
       this.records = data.records || {};
       if (data.settings) this.settings = Object.assign({}, data.settings);
-      if (data.goal) this.goal = data.goal;
+      if (data.goal) {
+        var g = Number(data.goal);
+        if (Number.isFinite(g) && g >= 0) this.goal = Math.min(g, 1000);
+      }
       if (data.deductions) this.deductions = mergeDeductions(data.deductions, null);
       if (data.insurance) this.insurance = mergeInsurance(data.insurance);
     } else {
@@ -1491,7 +1511,10 @@ App.data = {
         }
       }
       if (data.settings) this.settings = Object.assign({}, data.settings, this.settings);
-      if (data.goal) this.goal = data.goal;
+      if (data.goal) {
+        var g2 = Number(data.goal);
+        if (Number.isFinite(g2) && g2 >= 0) this.goal = Math.min(g2, 1000);
+      }
       if (data.deductions) this.deductions = mergeDeductions(data.deductions, this.deductions);
       if (data.insurance) this.insurance = mergeInsurance(data.insurance);
     }
@@ -1522,9 +1545,9 @@ App.data = {
       goal: this.goal,
       deductions: this.deductions,
       insurance: this.insurance,
-      version: '4.4.0',
+      version: '4.5.0',
       exportedAt: new Date().toISOString(),
-      app: '工时打卡助手'
+      app: '工时记录助手'
     };
   }
 };
@@ -1553,10 +1576,13 @@ App.ui = {
       if (this._incomeHidden) localStorage.setItem(this._INCOME_HIDE_KEY, '1');
       else localStorage.removeItem(this._INCOME_HIDE_KEY);
     } catch (e) {}
+
     App.calendar.updateMonthStats();
+    App.clock.renderDetail();
     if (document.getElementById('pageStats').classList.contains('active')) {
       App.stats.render();
     }
+
     var label = document.getElementById('stMoneyLabel');
     if (label) label.textContent = this._incomeHidden ? '🙈 已隐藏' : '💰 收入';
     App.ui.showToast(this._incomeHidden ? '收入已隐藏' : '收入已显示', 'info');
@@ -1755,11 +1781,78 @@ App.lunar = {
   }
 })();
 
+App.solarTerm = {
+  names: ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'],
+  _cache: {},
+
+  getTermDay: function(y, n) {
+    var sTermInfo = [0,21208,42467,63836,85337,107014,128867,150921,173149,195551,218072,240693,263343,285989,308563,331033,353350,375494,397447,419210,440795,462224,483532,504758];
+    var offDate = new Date((31556925974.7 * (y - 1900) + sTermInfo[n] * 60000) + Date.UTC(1900, 0, 6, 2, 5));
+    return offDate.getUTCDate();
+  },
+
+  getMonthTerms: function(y, m) {
+    var key = y + '-' + m;
+    if (this._cache[key]) return this._cache[key];
+    var map = {};
+    for (var n = (m - 1) * 2; n < m * 2; n++) {
+      var day = this.getTermDay(y, n);
+      if (day >= 1 && day <= 31) map[day] = this.names[n];
+    }
+    this._cache[key] = map;
+    return map;
+  },
+
+  getTerm: function(y, m, d) {
+    var map = this.getMonthTerms(y, m);
+    return map[d] || null;
+  }
+};
+
 App.holiday = {
   _holidays: null,
+  _workdays: null,
   _loadedFromStorage: false,
   _pending: false,
   _STORAGE_KEY: 'wc_holidays_v1',
+
+  arrangements: {
+    2024: {
+      off: {
+        '2024-01-01': '元旦',
+        '2024-02-10': '春节','2024-02-11': '春节','2024-02-12': '春节','2024-02-13': '春节','2024-02-14': '春节','2024-02-15': '春节','2024-02-16': '春节','2024-02-17': '春节',
+        '2024-04-04': '清明','2024-04-05': '清明','2024-04-06': '清明',
+        '2024-05-01': '劳动节','2024-05-02': '劳动节','2024-05-03': '劳动节','2024-05-04': '劳动节','2024-05-05': '劳动节',
+        '2024-06-10': '端午',
+        '2024-09-15': '中秋','2024-09-16': '中秋','2024-09-17': '中秋',
+        '2024-10-01': '国庆','2024-10-02': '国庆','2024-10-03': '国庆','2024-10-04': '国庆','2024-10-05': '国庆','2024-10-06': '国庆','2024-10-07': '国庆'
+      },
+      work: ['2024-02-04','2024-02-18','2024-04-07','2024-04-28','2024-05-11','2024-09-14','2024-09-29','2024-10-12']
+    },
+    2025: {
+      off: {
+        '2025-01-01': '元旦',
+        '2025-01-28': '春节','2025-01-29': '春节','2025-01-30': '春节','2025-01-31': '春节','2025-02-01': '春节','2025-02-02': '春节','2025-02-03': '春节','2025-02-04': '春节',
+        '2025-04-04': '清明','2025-04-05': '清明','2025-04-06': '清明',
+        '2025-05-01': '劳动节','2025-05-02': '劳动节','2025-05-03': '劳动节','2025-05-04': '劳动节','2025-05-05': '劳动节',
+        '2025-05-31': '端午','2025-06-01': '端午','2025-06-02': '端午',
+        '2025-10-01': '国庆','2025-10-02': '国庆','2025-10-03': '国庆','2025-10-04': '国庆','2025-10-05': '国庆','2025-10-06': '国庆','2025-10-07': '国庆','2025-10-08': '国庆'
+      },
+      work: ['2025-01-26','2025-02-08','2025-04-27','2025-09-28','2025-10-11']
+    },
+    2026: {
+      off: {
+        '2026-01-01': '元旦','2026-01-02': '元旦','2026-01-03': '元旦',
+        '2026-02-16': '春节','2026-02-17': '春节','2026-02-18': '春节','2026-02-19': '春节','2026-02-20': '春节','2026-02-21': '春节','2026-02-22': '春节',
+        '2026-04-04': '清明','2026-04-05': '清明','2026-04-06': '清明',
+        '2026-05-01': '劳动节','2026-05-02': '劳动节','2026-05-03': '劳动节','2026-05-04': '劳动节','2026-05-05': '劳动节',
+        '2026-06-19': '端午','2026-06-20': '端午','2026-06-21': '端午',
+        '2026-09-25': '中秋','2026-09-26': '中秋','2026-09-27': '中秋',
+        '2026-10-01': '国庆','2026-10-02': '国庆','2026-10-03': '国庆','2026-10-04': '国庆','2026-10-05': '国庆','2026-10-06': '国庆','2026-10-07': '国庆'
+      },
+      work: ['2026-02-14','2026-02-28','2026-04-26','2026-10-10']
+    }
+  },
 
   getQingmingDate: function(y) {
     var base = {
@@ -1786,16 +1879,21 @@ App.holiday = {
   },
 
   loadFromCache: function() {
-    if (this._holidays) return this._holidays;
+    if (this._holidays && this._workdays) return { holidays: this._holidays, workdays: this._workdays };
     if (this._loadedFromStorage) return null;
     this._loadedFromStorage = true;
     try {
       var raw = localStorage.getItem(this._STORAGE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
+        if (parsed && parsed.v === 2 && parsed.data && parsed.workdays) {
+          this._holidays = parsed.data;
+          this._workdays = parsed.workdays;
+          return { holidays: this._holidays, workdays: this._workdays };
+        }
         if (parsed && parsed.v === 1 && parsed.data) {
           this._holidays = parsed.data;
-          return this._holidays;
+          this._workdays = {};
         }
       }
     } catch (e) {}
@@ -1803,68 +1901,95 @@ App.holiday = {
   },
 
   generateHolidays: function() {
-    if (this._holidays && Object.keys(this._holidays).length > 0) return this._holidays;
+    if (this._holidays && this._workdays) return;
 
     var h = {};
-    for (var y = 2025; y <= 2050; y++) {
-      h[y + '-01-01'] = '元旦';
-      h[y + '-05-01'] = '劳动节';
-      h[y + '-10-01'] = '国庆';
-      h[y + '-10-02'] = '国庆';
-      h[y + '-10-03'] = '国庆';
-      var q = this.getQingmingDate(y);
+    var w = {};
+
+    var arr = this.arrangements || {};
+    for (var y in arr) {
+      if (!arr.hasOwnProperty(y)) continue;
+      var offMap = arr[y].off || {};
+      for (var k in offMap) {
+        if (offMap.hasOwnProperty(k)) h[k] = offMap[k];
+      }
+      var wl = arr[y].work || [];
+      for (var i = 0; i < wl.length; i++) {
+        w[wl[i]] = true;
+      }
+    }
+
+    var coveredYears = {};
+    for (var k2 in h) coveredYears[k2.substring(0, 4)] = true;
+
+    for (var y2 = 2025; y2 <= 2050; y2++) {
+      if (coveredYears[y2]) continue;
+      h[y2 + '-01-01'] = '元旦';
+      h[y2 + '-05-01'] = '劳动节';
+      h[y2 + '-10-01'] = '国庆';
+      h[y2 + '-10-02'] = '国庆';
+      h[y2 + '-10-03'] = '国庆';
+      var q = this.getQingmingDate(y2);
       h[q] = '清明';
-      var sp = this.getSolarDateFromLunar(y, 1, 1);
+      var sp = this.getSolarDateFromLunar(y2, 1, 1);
       if (sp) {
         var d = new Date(sp);
-        for (var i = 0; i < 3; i++) {
+        for (var i2 = 0; i2 < 3; i2++) {
           var key = App.util.formatDateKey(d);
           h[key] = '春节';
           d.setDate(d.getDate() + 1);
         }
       }
-      var dr = this.getSolarDateFromLunar(y, 5, 5);
+      var dr = this.getSolarDateFromLunar(y2, 5, 5);
       if (dr) h[App.util.formatDateKey(dr)] = '端午';
-      var ma = this.getSolarDateFromLunar(y, 8, 15);
+      var ma = this.getSolarDateFromLunar(y2, 8, 15);
       if (ma) h[App.util.formatDateKey(ma)] = '中秋';
     }
 
     try {
-      localStorage.setItem(this._STORAGE_KEY, JSON.stringify({ v: 1, data: h }));
+      localStorage.setItem(this._STORAGE_KEY, JSON.stringify({ v: 2, data: h, workdays: w }));
     } catch (e) {}
 
     this._holidays = h;
-    return h;
+    this._workdays = w;
   },
 
   getHoliday: function(key) {
-    if (this._holidays && Object.keys(this._holidays).length > 0) {
-      return this._holidays[key] || null;
-    }
-
-    if (this.loadFromCache()) {
-      return this._holidays[key] || null;
-    }
-
-    if (!this._pending) {
-      this._pending = true;
-      this._holidays = {};
-      var self = this;
-      var doGenerate = function() {
-        self.generateHolidays();
-        self._pending = false;
-        if (window.App && App.calendar && App.calendar._needHolidayRefresh) {
-          App.calendar._needHolidayRefresh = false;
-          App.calendar.render();
+    if (!this._holidays || !this._workdays) {
+      if (!this.loadFromCache()) {
+        if (!this._pending) {
+          this._pending = true;
+          var self = this;
+          var doGenerate = function() {
+            self.generateHolidays();
+            self._pending = false;
+            if (window.App && App.calendar && App.calendar._needHolidayRefresh) {
+              App.calendar._needHolidayRefresh = false;
+              App.calendar.render();
+            }
+          };
+          if (typeof requestIdleCallback === 'function') {
+            requestIdleCallback(doGenerate, { timeout: 500 });
+          } else {
+            setTimeout(doGenerate, 50);
+          }
         }
-      };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(doGenerate, { timeout: 500 });
-      } else {
-        setTimeout(doGenerate, 50);
+        return null;
       }
     }
-    return null;
+    return this._holidays[key] || null;
+  },
+
+  isWorkday: function(key) {
+    if (!this._workdays) {
+      if (!this.loadFromCache()) {
+        var y = key.substring(0, 4);
+        var arr = this.arrangements[y];
+        if (arr && arr.work) return arr.work.indexOf(key) !== -1;
+        return false;
+      }
+    }
+    return !!this._workdays[key];
   }
 };
 
@@ -1881,8 +2006,9 @@ App.stats = {
     if (!rec || rec.leave !== 'none') return 0;
     var s = App.data.settings;
     var dateKey = App.util.formatDateKey(date);
-    var isHoliday = rec.type === 'holiday' || !!App.holiday.getHoliday(dateKey);
-    var isWeekend = App.util.isWeekend(date) || rec.type === 'weekend';
+    var isMakeup = App.holiday.isWorkday(dateKey);
+    var isHoliday = rec.type === 'holiday' || (!!App.holiday.getHoliday(dateKey) && !isMakeup);
+    var isWeekend = (App.util.isWeekend(date) && !isMakeup) || rec.type === 'weekend';
 
     if (s.mode === 'hourly') {
       var rate = isHoliday ? s.holidayRate : s.normalRate;
@@ -1911,10 +2037,13 @@ App.stats = {
         if (rec.leave && rec.leave !== 'none') continue;
         days++;
         var total = (rec.normal || 0) + (rec.ot || 0);
-        var isRestDay = App.util.isWeekend(d)
+        var isMakeup = App.holiday.isWorkday(key);
+        var isRestDay = !isMakeup && (
+          App.util.isWeekend(d)
           || rec.type === 'weekend'
           || rec.type === 'holiday'
-          || App.holiday.getHoliday(key);
+          || App.holiday.getHoliday(key)
+        );
         if (isRestDay) {
           otH += total;
         } else {
@@ -1933,9 +2062,9 @@ App.stats = {
     var maxDailyIncome = dailyIncome.length > 0 ? Math.max.apply(null, dailyIncome.map(function(d) { return d.income; })) : 0;
 
     var _hide = App.ui.isIncomeHidden();
-    document.getElementById('monthIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(income);
-    document.getElementById('avgDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(avgDailyIncome);
-    document.getElementById('maxDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatMoney(maxDailyIncome);
+    document.getElementById('monthIncome').textContent = _hide ? '****' : '¥' + App.util.formatCompact(income, 1);
+    document.getElementById('avgDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatCompact(avgDailyIncome, 1);
+    document.getElementById('maxDailyIncome').textContent = _hide ? '****' : '¥' + App.util.formatCompact(maxDailyIncome, 1);
     document.getElementById('avgDailyHours').textContent = avgDailyHours.toFixed(1) + 'h';
     document.getElementById('boxDays').textContent = days;
     document.getElementById('boxHours').textContent = hours.toFixed(1);
@@ -1944,7 +2073,6 @@ App.stats = {
 
     this.renderIncomeChart(year, month, dailyIncome);
 
-    // ===== 4 类细分统计 =====
     var cats = {
       normal:  { hours: 0, days: 0, income: 0 },
       ot:      { hours: 0, days: 0, income: 0 },
@@ -1962,8 +2090,9 @@ App.stats = {
       if (d2.getFullYear() !== year || d2.getMonth() !== month) continue;
       var rec2 = App.data.records[key2];
       if (rec2.leave && rec2.leave !== 'none') continue;
-      var isHol = rec2.type === 'holiday' || !!App.holiday.getHoliday(key2);
-      var isWk = App.util.isWeekend(d2) || rec2.type === 'weekend';
+      var isMakeup2 = App.holiday.isWorkday(key2);
+      var isHol = rec2.type === 'holiday' || (!!App.holiday.getHoliday(key2) && !isMakeup2);
+      var isWk = (App.util.isWeekend(d2) && !isMakeup2) || rec2.type === 'weekend';
       var n2 = rec2.normal || 0;
       var o2 = rec2.ot || 0;
 
@@ -2017,14 +2146,14 @@ App.stats = {
         '<div class="hours-list-name" style="--c:' + r.color + '">' + r.name + '</div>' +
         '<div class="hours-list-days">' + r.data.days + ' 天</div>' +
         '<div class="hours-list-hours">' + r.data.hours.toFixed(1) + ' H</div>' +
-        '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatMoney(r.data.income)) + '</div>' +
+        '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatCompact(r.data.income, 1)) + '</div>' +
       '</div>';
     });
     html += '<div class="hours-list-row is-total">' +
       '<div class="hours-list-name" style="--c:transparent">总计</div>' +
       '<div class="hours-list-days">' + days + ' 天</div>' +
       '<div class="hours-list-hours">' + totalH2.toFixed(1) + ' H</div>' +
-      '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatMoney(income)) + '</div>' +
+      '<div class="hours-list-money">' + (_hide ? '****' : '¥' + App.util.formatCompact(income, 1)) + '</div>' +
     '</div>';
     html += '</div></div>';
     pieEl.innerHTML = html;
@@ -2155,8 +2284,13 @@ App.calendar = {
   selectedDate: null,
   _needHolidayRefresh: false,
   _delegated: false,
+  _lastChangeTime: 0,
 
   changeMonth: function(delta) {
+    var now = Date.now();
+    if (now - this._lastChangeTime < 250) return;
+    this._lastChangeTime = now;
+
     var d = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + delta, 1);
     this.currentDate = d;
     this.selectedDate = null;
@@ -2224,8 +2358,15 @@ App.calendar = {
         }
       } else {
         var holiday = holidaysReady ? App.holiday.getHoliday(key) : null;
-        if (holiday) {
+        var isMakeup = holidaysReady ? App.holiday.isWorkday(key) : false;
+        var solarTerm = App.solarTerm.getTerm(year, month + 1, d);
+        if (isMakeup) {
+          classes.push('workday-makeup');
+          inner += '<span class="workday-badge">班</span>';
+        } else if (holiday) {
           inner += '<span class="holiday-name">' + holiday + '</span>';
+        } else if (solarTerm) {
+          inner += '<span class="solar-term">' + solarTerm + '</span>';
         } else {
           inner += '<span class="lunar">' + App.lunar.getLunarDay(date) + '</span>';
         }
@@ -2283,13 +2424,22 @@ App.calendar = {
       money += App.stats.calcDayIncome(rec, d);
     }
 
-    document.getElementById('stDays').textContent = days + '天';
-    document.getElementById('stHours').textContent = hours.toFixed(1) + 'H';
-    document.getElementById('stMoney').textContent = App.ui.isIncomeHidden() ? '****' : '¥' + App.util.formatMoney(money);
+    document.getElementById('stDays').textContent = App.util.formatCompact(days, 0) + '天';
+    document.getElementById('stHours').textContent = App.util.formatCompact(hours, 1) + 'H';
+    document.getElementById('stMoney').textContent = App.ui.isIncomeHidden() ? '****' : '¥' + App.util.formatCompact(money, 1);
 
     var now = new Date();
+    var curY = now.getFullYear();
+    var curM = now.getMonth();
     var lastDay = new Date(year, month + 1, 0).getDate();
-    var progress = Math.min(100, (now.getDate() / lastDay * 100));
+    var progress;
+    if (year === curY && month === curM) {
+      progress = Math.min(100, (now.getDate() / lastDay * 100));
+    } else if (year < curY || (year === curY && month < curM)) {
+      progress = 100;
+    } else {
+      progress = 0;
+    }
     document.getElementById('monthProgress').style.width = progress + '%';
     document.getElementById('progressText').textContent = progress.toFixed(0) + '%';
 
@@ -2389,7 +2539,7 @@ App.clock = {
       var shiftIcons = { day: '☀️', early: '🌤', mid: '🌞', night: '🌙' };
       var isLeave = rec.leave !== 'none';
       var typeLabel = typeNames[rec.type] || '正班';
-      var incomeText = isLeave ? '¥0' : (_hide ? '****' : '¥' + App.util.formatMoney(income));
+      var incomeText = isLeave ? '¥0' : (_hide ? '****' : '¥' + App.util.formatCompact(income, 1));
 
       html += '<div class="detail-card">' +
         '<div class="detail-card-header">' +
@@ -2578,7 +2728,7 @@ App.clock = {
     }
     var el = document.getElementById('val' + (type === 'normal' ? 'Normal' : 'Ot'));
     var val = parseFloat(el.textContent) || 0;
-    val = Math.max(0, +(val + delta).toFixed(1));
+    val = Math.max(0, Math.min(24, +(val + delta).toFixed(1)));
     el.textContent = val + ' H';
   },
 
@@ -2588,6 +2738,7 @@ App.clock = {
     valEl.style.display = 'none';
     inputEl.style.display = 'block';
     inputEl.value = parseFloat(valEl.textContent) || 0;
+    inputEl.max = 24;
     inputEl.focus();
     inputEl.select();
   },
@@ -2597,6 +2748,7 @@ App.clock = {
     var inputEl = document.getElementById('input' + (type === 'normal' ? 'Normal' : 'Ot'));
     var val = parseFloat(inputEl.value);
     if (isNaN(val) || val < 0) val = 0;
+    if (val > 24) val = 24;
     valEl.textContent = val + ' H';
     valEl.style.display = 'block';
     inputEl.style.display = 'none';
@@ -2611,7 +2763,8 @@ App.clock = {
       document.getElementById('valNormal').textContent = val + ' H';
     } else if (type === 'ot') {
       var cur = parseFloat(document.getElementById('valOt').textContent) || 0;
-      document.getElementById('valOt').textContent = (cur + val) + ' H';
+      var next = Math.min(24, cur + val);
+      document.getElementById('valOt').textContent = next + ' H';
     } else if (type === 'all') {
       document.getElementById('valNormal').textContent = '0 H';
       document.getElementById('valOt').textContent = '0 H';
@@ -2640,6 +2793,11 @@ App.clock = {
       normal = 0;
       ot = 0;
     }
+
+    if (normal < 0) normal = 0;
+    if (normal > 24) normal = 24;
+    if (ot < 0) ot = 0;
+    if (ot > 24) ot = 24;
 
     var key = App.calendar.selectedDate;
     if (!key) {
@@ -2706,13 +2864,19 @@ App.settings = {
 
   saveSettings: function() {
     var s = App.data.settings;
-    s.normalRate = parseFloat(document.getElementById('inNormal').value) || 0;
-    s.holidayRate = parseFloat(document.getElementById('inHoliday').value) || 0;
-    s.baseSalary = parseFloat(document.getElementById('inBaseSalary').value) || 0;
-    s.salaryNormal = parseFloat(document.getElementById('inSalaryNormal').value) || 0;
-    s.salaryOt = parseFloat(document.getElementById('inSalaryOt').value) || 0;
-    s.salaryWeekend = parseFloat(document.getElementById('inSalaryWeekend').value) || 0;
-    s.salaryHoliday = parseFloat(document.getElementById('inSalaryHoliday').value) || 0;
+    var _clamp = function(v, min, max) {
+      v = parseFloat(v) || 0;
+      if (v < min) v = min;
+      if (v > max) v = max;
+      return v;
+    };
+    s.normalRate = _clamp(document.getElementById('inNormal').value, 0, 10000);
+    s.holidayRate = _clamp(document.getElementById('inHoliday').value, 0, 10000);
+    s.baseSalary = _clamp(document.getElementById('inBaseSalary').value, 0, 1000000);
+    s.salaryNormal = _clamp(document.getElementById('inSalaryNormal').value, 0, 10000);
+    s.salaryOt = _clamp(document.getElementById('inSalaryOt').value, 0, 10000);
+    s.salaryWeekend = _clamp(document.getElementById('inSalaryWeekend').value, 0, 10000);
+    s.salaryHoliday = _clamp(document.getElementById('inSalaryHoliday').value, 0, 10000);
     App.data.save();
     App.ui.showToast('✅ 设置已保存', 'success');
     App.calendar.render();
@@ -2759,6 +2923,7 @@ App.settings = {
       App.ui.showToast('请输入有效数字', 'error');
       return;
     }
+    if (val > 1000) val = 1000;
     App.data.goal = val;
     App.data.save();
     this.updateGoalUI();
@@ -2898,6 +3063,8 @@ App.calculator = {
 
   calcTax: function() {
     var income = parseFloat(document.getElementById('taxIncome').value) || 0;
+    if (income < 0) income = 0;
+    if (income > 10000000) income = 10000000;
     var ins = App.data.insurance || { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
     var pension = parseFloat(ins.pension) || 0;
     var medical = parseFloat(ins.medical) || 0;
@@ -2986,6 +3153,7 @@ App.calculator = {
     if (!App.data.deductions[key]) App.data.deductions[key] = { on: false, val: 0 };
     var v = parseFloat(value) || 0;
     if (v < 0) v = 0;
+    if (v > 100000) v = 100000;
     App.data.deductions[key].val = v;
     if (v > 0) {
       App.data.deductions[key].on = true;
@@ -3014,6 +3182,8 @@ App.calculator = {
     if (!App.data.insurance) App.data.insurance = { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
     var v = parseFloat(value);
     if (!Number.isFinite(v) || v < 0) v = 0;
+    var limits = { pension: 20, medical: 10, unemployment: 5, fund: 12 };
+    if (limits[key] !== undefined && v > limits[key]) v = limits[key];
     App.data.insurance[key] = v;
     App.data.save();
     this.calcTax();
@@ -3039,10 +3209,13 @@ App.calculator = {
     var rate = parseFloat(document.getElementById('salaryRate').value) || 0;
     var hours = parseFloat(document.getElementById('salaryHours').value) || 0;
     var days = parseFloat(document.getElementById('salaryDays').value) || 0;
+    if (rate < 0) rate = 0;
+    if (hours < 0) hours = 0;
+    if (days < 0) days = 0;
     var daily = rate * hours;
     var monthly = daily * days;
-    document.getElementById('salaryDaily').textContent = '¥' + daily.toFixed(1);
-    document.getElementById('salaryMonthly').textContent = '¥' + monthly.toFixed(1);
+    document.getElementById('salaryDaily').textContent = '¥' + App.util.formatCompact(daily, 1);
+    document.getElementById('salaryMonthly').textContent = '¥' + App.util.formatCompact(monthly, 1);
   },
 
   calcTokens: [],
@@ -3093,6 +3266,34 @@ App.calculator = {
       this.calcTokens = [];
       this.calcCurrent = '0';
       this.calcJustEvaluated = false;
+      this.updateCalcDisplay();
+      return;
+    }
+
+    if (value === '⌫') {
+      if (this.calcJustEvaluated) {
+        this.calcTokens = [];
+        this.calcCurrent = '0';
+        this.calcJustEvaluated = false;
+        this.updateCalcDisplay();
+        return;
+      }
+
+      var cur = this.calcCurrent;
+      if (cur !== '' && cur !== null) {
+        if (cur.length <= 1 || (cur.length === 2 && cur.startsWith('-'))) {
+          this.calcCurrent = '';
+        } else {
+          this.calcCurrent = cur.slice(0, -1);
+        }
+      } else {
+        if (this.calcTokens.length > 0) {
+          var last = this.calcTokens.pop();
+          if (!isNaN(parseFloat(last)) && last !== '') {
+            this.calcCurrent = last;
+          }
+        }
+      }
       this.updateCalcDisplay();
       return;
     }
@@ -3219,8 +3420,10 @@ App.setupSwipe = function() {
   var startX = 0, startY = 0, isDragging = false, isHorizontal = false;
   var threshold = 40;
   var currentDeltaX = 0;
+  var lastTouchTime = 0;
 
   el.addEventListener('touchstart', function(e) {
+    lastTouchTime = Date.now();
     var touch = e.touches[0];
     startX = touch.clientX;
     startY = touch.clientY;
@@ -3266,6 +3469,7 @@ App.setupSwipe = function() {
   }, { passive: false });
 
   el.addEventListener('touchend', function(e) {
+    lastTouchTime = Date.now();
     isDragging = false;
     this.classList.remove('swiping');
     this.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
@@ -3283,7 +3487,9 @@ App.setupSwipe = function() {
   }, { passive: true });
 
   var mouseDown = false, mouseStartX = 0, mouseStartY = 0, mouseIsHorizontal = false, mouseDeltaX = 0;
+
   el.addEventListener('mousedown', function(e) {
+    if (Date.now() - lastTouchTime < 800) return;
     if (e.button !== 0) return;
     mouseDown = true;
     mouseStartX = e.clientX;
@@ -3362,6 +3568,7 @@ document.addEventListener('keydown', function(e) {
   else if (key === 'Enter' || key === '=') { App.calculator.input('='); e.preventDefault(); }
   else if (key === 'Escape' || key === 'c' || key === 'C') { App.calculator.input('C'); e.preventDefault(); }
   else if (key === '%') { App.calculator.input('%'); e.preventDefault(); }
+  else if (key === 'Backspace') { App.calculator.input('⌫'); e.preventDefault(); }
 });
 
 window.addEventListener('online', function() {
