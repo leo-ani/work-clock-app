@@ -1304,23 +1304,49 @@ async function initMainApp() {
   applyUserData(userData);
   saveCachedUserData(userData);
 
+  App.data._saving = false;
+  App.data._pendingRetry = false;
+
   App.data.save = function() {
     clearTimeout(App.data._saveTimer);
-    App.data._saveTimer = setTimeout(async function() {
-      try {
-        await saveData();
-        App.ui.updateSyncUI('synced', '已同步');
-      } catch (e) {
-        console.error('保存失败', e);
-        if (e.status === 401 || e.status === 403) {
-          App.ui.updateSyncUI('error', '登录失效');
-          forceLogout('登录已失效，请重新登录');
-        } else {
-          App.ui.updateSyncUI('error', '保存失败');
-        }
-      }
+    App.data._saveTimer = setTimeout(function() {
+      App.data._queueSave();
     }, 300);
   };
+
+  App.data._queueSave = async function() {
+    // 已有请求在进行 → 标记，等它结束后再发一次
+    if (App.data._saving) {
+      App.data._pendingRetry = true;
+      return;
+    }
+    App.data._saving = true;
+    try {
+      await saveData();
+      App.ui.updateSyncUI('synced', '已同步');
+      App.data._pendingRetry = false;
+    } catch (e) {
+      console.error('保存失败', e);
+      if (e.status === 401 || e.status === 403) {
+        App.ui.updateSyncUI('error', '登录失效');
+        forceLogout('登录已失效，请重新登录');
+      } else if (e.status === 409) {
+        // GitHub 写入冲突：等下一轮重试，会读到新 sha
+        App.ui.updateSyncUI('pending', '冲突重试中...');
+        App.data._pendingRetry = true;
+      } else {
+        // 其他错误显示详细信息，方便定位
+        App.ui.updateSyncUI('error', e.message || '保存失败');
+      }
+    } finally {
+      App.data._saving = false;
+      if (App.data._pendingRetry) {
+        App.data._pendingRetry = false;
+        setTimeout(function() { App.data._queueSave(); }, 800);
+      }
+    }
+  };
+  
   App.data.load = function() {};
 
   App.settings.initSettings();
