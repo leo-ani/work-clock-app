@@ -223,7 +223,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .swipe-hint.right{right:2px}
 
 /* ============================ 记录页 ============================ */
-.quick-punch-wrap{padding:var(--sp-2) var(--gutter);background:var(--surface);border-bottom:1px solid var(--border)}
+.quick-punch-wrap{padding:var(--sp-2) var(--gutter) var(--sp-3);background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:var(--sp-2)}
 .clock-btn{
   width:100%;padding:15px;border-radius:var(--radius-full);
   background:var(--primary-gradient);color:#fff;font-size:16px;font-weight:700;
@@ -232,6 +232,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
 }
 .clock-btn:active{transform:scale(.97)}
 .clock-btn.quick{background:linear-gradient(135deg,#C08A4A,#A9752F);box-shadow:0 4px 16px rgba(169,117,47,.3);font-size:15px;padding:13px}
+/* "添加打卡"：浅色描边按钮，与实心的"一键打卡"形成层级区分；
+ * 加号用亮绿实心圆，避免原来 ➕ emoji 在深底上发黑看不清。 */
+.clock-btn.add{
+  background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);
+  box-shadow:none;font-size:15px;padding:12px;
+}
+.clock-btn.add:hover{background:var(--primary-soft)}
+.clock-btn.add .plus{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;margin-right:6px;border-radius:50%;
+  background:var(--success-graphic);color:#fff;font-size:14px;font-weight:800;line-height:1;
+  vertical-align:-3px;
+}
 .clock-btn[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
 .detail-area{padding:var(--gutter);flex-shrink:0}
 .detail-card{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);box-shadow:var(--shadow-md);border:1px solid var(--border);margin-bottom:var(--sp-3)}
@@ -758,6 +771,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       </div>
       <div class="quick-punch-wrap">
         <button class="clock-btn quick" id="quickPunchBtn" type="button">⚡ 一键打卡（今日）</button>
+        <button class="clock-btn add" id="addRecordBtn" type="button">✨ 添加打卡（自定义工时）</button>
       </div>
       <div class="detail-area" id="detailArea" aria-live="polite"></div>
     </div>
@@ -2641,7 +2655,32 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
     },
 
-    /** 增量渲染：42 格只创建一次，之后仅改 textContent 与 classList */
+    /** 稳定定位子节点：不依赖 children 下标，角标增删也不会错位 */
+    ensureParts(cell) {
+      let numEl = cell.querySelector('.day-num');
+      if (!numEl) {
+        numEl = document.createElement('span');
+        numEl.className = 'day-num';
+        cell.insertBefore(numEl, cell.firstChild);
+      }
+      let subEl = cell.querySelector('.day-sub');
+      if (!subEl) {
+        subEl = document.createElement('span');
+        subEl.className = 'day-sub';
+        cell.insertBefore(subEl, numEl.nextSibling);
+      }
+      return { numEl, subEl };
+    },
+
+    /**
+     * 增量渲染：42 格只创建一次，之后仅改 textContent 与 classList。
+     * 关键约束（修掉"工时无限叠加"）：
+     *   1. day-num / day-sub 一律用类名定位，不再假设它们是第一个/最后一个子节点
+     *      —— 角标 append 到末尾后，lastElementChild 会变成角标，工时就被写进角标、
+     *      再把角标类名改成 day-sub，下一轮又建新角标，越滚越多；
+     *   2. 每格渲染前清掉所有非结构性子节点（历史遗留的重复 day-sub / 角标），
+     *      保证无论 render 被触发多少次，格子内容都收敛到正确状态。
+     */
     render(summary, todayKey) {
       const year = this.year;
       const month = this.month;
@@ -2668,8 +2707,18 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
         const key = formatDateKey(date);
         const rec = muted ? null : records[key];
-        const numEl = cell.firstElementChild;
-        const subEl = cell.lastElementChild;
+
+        // 1) 清理：只保留 day-num / day-sub 两个结构节点，其余（旧角标、历史重复节点）全部移除
+        for (const child of Array.from(cell.children)) {
+          const cls = child.className || '';
+          if (child.querySelector && child.querySelector('.day-num, .day-sub')) continue;
+          if (cls === 'day-num' || cls.indexOf('day-sub') === 0) continue;
+          child.remove();
+        }
+        const { numEl, subEl } = this.ensureParts(cell);
+        // 兜底：万一历史数据留下多个 day-sub，这里也只保留第一个
+        const extras = cell.querySelectorAll('.day-sub');
+        for (let k = extras.length - 1; k > 0; k--) extras[k].remove();
 
         numEl.textContent = String(date.getDate());
 
@@ -2692,7 +2741,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         subEl.textContent = sub;
         subEl.className = subClass;
 
-        const hasNote = rec && rec.note && rec.note.trim().length > 0;
+        const hasNote = Boolean(rec && rec.note && rec.note.trim().length > 0);
         cell.className = 'day-cell'
           + (muted ? ' other-month' : '')
           + (!muted && isWeekend(date) ? ' weekend' : '')
@@ -2707,12 +2756,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
           (date.getMonth() + 1) + '月' + date.getDate() + '日 ' + WEEKDAY_NAMES[date.getDay()]
           + (sub ? ' ' + sub : '') + (hasNote ? ' 有备注' : ''));
 
-        // 角标：有备注显示星标，否则显示记录圆点
-        let badge = cell.querySelector('.dot,.star');
+        // 角标（清理阶段已移除旧角标，这里最多新建一个）
         const wantBadge = rec ? (hasNote ? 'star' : 'dot') : null;
-        if (badge && badge.className !== wantBadge) { badge.remove(); badge = null; }
-        if (!badge && wantBadge) {
-          badge = document.createElement('span');
+        if (wantBadge) {
+          const badge = document.createElement('span');
           badge.className = wantBadge;
           badge.textContent = wantBadge === 'star' ? '★' : '';
           cell.appendChild(badge);
@@ -2860,27 +2907,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         hint.textContent = '输入后自动保存';
         noteArea.append(noteHeader, textarea, hint);
         wrap.appendChild(noteArea);
-
-        const btnWrap = document.createElement('div');
-        const editBtn = document.createElement('button');
-        editBtn.type = 'button';
-        editBtn.className = 'clock-btn';
-        editBtn.textContent = '✏️ 编辑记录';
-        editBtn.addEventListener('click', () => Clock.open(key));
-        btnWrap.appendChild(editBtn);
-        wrap.appendChild(btnWrap);
       } else {
-        const btnWrap = document.createElement('div');
-        const addBtn = document.createElement('button');
-        addBtn.type = 'button';
-        addBtn.className = 'clock-btn';
-        addBtn.textContent = '➕ 添加打卡';
-        addBtn.addEventListener('click', () => Clock.open(key));
-        btnWrap.appendChild(addBtn);
-        wrap.appendChild(btnWrap);
-        wrap.insertBefore(
-          buildEmptyState('🗓', '这一天还没有记录', '点击下方按钮或使用一键打卡快速记录'),
-          btnWrap
+        // 操作按钮已上移到日历下方的操作区（一键打卡 / 添加打卡），此处只留空状态说明
+        wrap.appendChild(
+          buildEmptyState('🗓', '这一天还没有记录', '用上方「一键打卡」记 8 小时，或用「添加打卡」自定义工时')
         );
       }
 
@@ -3289,6 +3319,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('noteToggle').addEventListener('click', () => this.toggleNote());
       byId('clockSaveBtn').addEventListener('click', () => this.save());
       byId('quickPunchBtn').addEventListener('click', () => this.quickPunch());
+      byId('addRecordBtn').addEventListener('click', () => {
+        const { key } = this.targetDate();
+        this.open(key);
+      });
     },
 
     collapseLeave(collapsed) {
@@ -3410,15 +3444,32 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
     },
 
+    /**
+     * 同步操作按钮区：
+     *   - 该日已有记录时隐藏"一键打卡"（它固定写 8h，会覆盖已有数据，属高危误操作），
+     *     只保留"添加打卡"——里面可以自由填工时、班次、备注；
+     *   - 该日无记录时两个都显示。
+     */
     updateQuickPunchLabel() {
-      const btn = byId('quickPunchBtn');
-      if (!btn) return;
-      const key = Calendar.selectedDate;
-      if (key) {
-        const date = parseDateKey(key);
-        btn.textContent = '⚡ 一键打卡（' + (date.getMonth() + 1) + '月' + date.getDate() + '日）';
-      } else {
-        btn.textContent = '⚡ 一键打卡（今日）';
+      const punchBtn = byId('quickPunchBtn');
+      const addBtn = byId('addRecordBtn');
+      const { key, date } = this.targetDate();
+      const hasRecord = Boolean(Store.state.records[key]);
+      const label = (date.getMonth() + 1) + '月' + date.getDate() + '日';
+
+      if (punchBtn) {
+        punchBtn.classList.toggle('hidden', hasRecord);
+        punchBtn.disabled = hasRecord;
+        punchBtn.textContent = '⚡ 一键打卡（' + label + '）';
+      }
+      if (addBtn) {
+        addBtn.replaceChildren();
+        const plus = document.createElement('span');
+        plus.className = 'plus';
+        plus.setAttribute('aria-hidden', 'true');
+        plus.textContent = '＋';
+        addBtn.append(plus, document.createTextNode(hasRecord ? '编辑这天的记录' : '添加打卡（自定义工时）'));
+        addBtn.dataset.key = key;
       }
     },
 
@@ -4066,25 +4117,33 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (file.size > 8 * 1024 * 1024) { UI.toast('文件过大（超过 8MB）', 'error'); return; }
       const reader = new FileReader();
       reader.onerror = () => UI.toast('文件读取失败', 'error');
-      reader.onload = (e) => {
-        let parsed;
-        try {
-          parsed = JSON.parse(e.target.result);
-        } catch (err) {
-          UI.toast('文件不是有效的 JSON', 'error');
-          return;
-        }
-        const result = normalizeImport(parsed);
-        if (!result.ok) {
-          UI.toast(result.errors[0] || '导入文件格式无效', 'error');
-          return;
-        }
-        this.pending = parsed;
-        this.pendingData = result.data;
-        this.pendingDropped = result.dropped || 0;
-        this.renderPreview(parsed, result);
-      };
+      reader.onload = (e) => this.processImportText(e.target.result);
       reader.readAsText(file);
+    },
+
+    /**
+     * 解析并校验导入文本（与 handleFile 共用同一条链路，便于自动化测试）。
+     * 校验不通过时不改变任何状态，只提示错误。
+     * @returns {boolean} 是否通过校验并进入待导入状态
+     */
+    processImportText(text) {
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (err) {
+        UI.toast('文件不是有效的 JSON', 'error');
+        return false;
+      }
+      const result = normalizeImport(parsed);
+      if (!result.ok) {
+        UI.toast(result.errors[0] || '导入文件格式无效', 'error');
+        return false;
+      }
+      this.pending = parsed;
+      this.pendingData = result.data;
+      this.pendingDropped = result.dropped || 0;
+      this.renderPreview(parsed, result);
+      return true;
     },
 
     renderPreview(parsed, result) {
