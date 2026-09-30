@@ -307,10 +307,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .menu-right{color:var(--text-secondary);font-size:12px;display:flex;align-items:center;gap:6px;font-weight:500;white-space:nowrap}
 .menu-right.is-danger{color:var(--danger);font-weight:600}
 .profile-footer{text-align:center;padding:var(--sp-5);color:var(--text-secondary);font-size:11px;line-height:1.9}
-.modal-overlay{position:absolute;inset:0;background:rgba(24,24,22,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:100}
+/* 修复：弹窗 z-index 提升至 1100，确保在登录页显示 */
+.modal-overlay{position:absolute;inset:0;background:rgba(24,24,22,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1100}
 .modal-overlay.show{display:flex}
 .modal-overlay[aria-hidden="true"]{pointer-events:none}
-.modal-content{background:var(--surface);width:100%;max-height:92%;overflow-y:auto;overscroll-behavior:contain;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:var(--sp-5) var(--sp-5) calc(var(--sp-6) + var(--safe-bottom));box-shadow:var(--shadow-lg);transform:translateY(100%);transition:transform var(--dur-slow) var(--ease-out)}
+.modal-content{background:var(--surface);width:100%;max-width:430px;margin:0 auto;max-height:92%;overflow-y:auto;overscroll-behavior:contain;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:var(--sp-5) var(--sp-5) calc(var(--sp-6) + var(--safe-bottom));box-shadow:var(--shadow-lg);transform:translateY(100%);transition:transform var(--dur-slow) var(--ease-out)}
 .modal-overlay.show .modal-content{transform:translateY(0)}
 @media (prefers-reduced-motion:reduce){.modal-content{transition:none}}
 .modal-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
@@ -398,7 +399,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .warn-box{color:var(--danger);background:var(--danger-soft);font-size:12px;font-weight:600;padding:10px 12px;border-radius:var(--radius-sm);margin-top:var(--sp-3);display:none;line-height:1.7}
 .warn-box.show{display:block}
 .error-list{margin:var(--sp-2) 0 0;padding-left:18px;font-size:12px;color:var(--text-secondary);line-height:1.8;max-height:120px;overflow-y:auto}
-.toast-wrap{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);z-index:400;pointer-events:none;padding:0 var(--sp-4)}
+.toast-wrap{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);z-index:1200;pointer-events:none;padding:0 var(--sp-4)}
 .toast{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:auto;max-width:320px;min-width:150px;padding:12px 20px;border-radius:var(--radius-md);font-size:14px;font-weight:700;text-align:center;line-height:1.45;color:var(--text);background:rgba(255,255,255,.82);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);box-shadow:0 8px 28px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.06);pointer-events:auto;animation:toastIn var(--dur-slow) var(--ease-spring)}
 .toast .toast-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;border-radius:50%;font-size:12px;font-weight:800;line-height:1;color:#fff}
 .toast.success .toast-icon{background:var(--success-graphic)}
@@ -480,6 +481,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       <label for="password">密码</label>
       <input type="password" id="password" name="password" placeholder="请输入密码" autocomplete="current-password" required aria-describedby="passwordError">
       <div class="field-error" id="passwordError"></div>
+      <!-- 忘记密码提示 -->
+      <div style="text-align: right; margin-top: 6px;">
+        <span style="font-size: 12px; color: var(--text-secondary); cursor: pointer;" onclick="alert('由于数据采用端到端加密保存在您的私有仓库中，我们无法帮您找回密码。\n\n建议：使用之前导出的 JSON 备份文件，注册新账号后导入数据。')">忘记密码？</span>
+      </div>
     </div>
     <div class="form-group hidden" id="confirmGroup">
       <label for="confirmPassword">确认密码</label>
@@ -738,116 +743,108 @@ input:focus-visible,textarea:focus-visible{outline:none}
     <button class="nav-item" type="button" role="tab" aria-selected="false" id="navSettings" data-page="pageSettings"><span class="nav-icon" aria-hidden="true">🎯</span><span class="nav-label">目标</span></button>
     <button class="nav-item" type="button" role="tab" aria-selected="false" id="navProfile" data-page="pageProfile"><span class="nav-icon" aria-hidden="true">👤</span><span class="nav-label">我的</span></button>
   </nav>
+</div>
 
-  <div class="modal-overlay" id="clockModal" role="dialog" aria-modal="true" aria-labelledby="clockModalTitle" aria-hidden="true">
-    <div class="modal-content" id="clockModalContent">
-      <div class="modal-header"><h2 class="modal-title" id="clockModalTitle">打卡 <span class="date-badge" id="modalDate"></span></h2><button class="modal-close" type="button" data-close="clockModal" aria-label="关闭">✕</button></div>
-      <div class="field-label">选择班次</div>
-      <div class="option-grid" id="shiftRow">
-        <button class="option-btn active" type="button" data-shift="day"><span class="opt-icon" aria-hidden="true">☀️</span>白班</button>
-        <button class="option-btn" type="button" data-shift="early"><span class="opt-icon" aria-hidden="true">🌤</span>早班</button>
-        <button class="option-btn" type="button" data-shift="mid"><span class="opt-icon" aria-hidden="true">🌞</span>中班</button>
-        <button class="option-btn" type="button" data-shift="night"><span class="opt-icon" aria-hidden="true">🌙</span>晚班</button>
-      </div>
-      <div class="field-label">记录类型</div>
-      <div class="option-grid" id="typeRow">
-        <button class="option-btn active compact" type="button" data-type="normal">正班</button>
-        <button class="option-btn compact" type="button" data-type="weekend">周末</button>
-        <button class="option-btn compact" type="button" data-type="holiday">节假</button>
-        <button class="option-btn compact" type="button" data-type="daily">日结</button>
-      </div>
-      <div class="field-label">快捷操作</div>
-      <div class="quick-tags">
-        <button class="quick-tag" type="button" data-quick="preset">全勤 8h</button>
-        <button class="quick-tag" type="button" data-quick="ot1">加班 +1h</button>
-        <button class="quick-tag" type="button" data-quick="ot15">加班 +1.5h</button>
-        <button class="quick-tag danger" type="button" data-quick="clear">🗑 清零</button>
-      </div>
-      <div class="hours-box">
-        <div class="hours-row"><span class="hours-label">正常上班 <span class="hint">(正班)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="normal" data-delta="-0.5" aria-label="正班减少半小时">−0.5</button><button class="hours-value" type="button" id="valNormal" data-edit="normal" aria-label="编辑正班工时">8.0 H</button><input class="hours-input hidden" type="number" id="inputNormal" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="正班工时输入"><button class="hours-btn" type="button" data-adjust="normal" data-delta="0.5" aria-label="正班增加半小时">+0.5</button></div></div>
-        <div class="hours-row"><span class="hours-label">正常加班 <span class="hint">(额外)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="ot" data-delta="-0.5" aria-label="加班减少半小时">−0.5</button><button class="hours-value ot" type="button" id="valOt" data-edit="ot" aria-label="编辑加班工时">0.0 H</button><input class="hours-input ot hidden" type="number" id="inputOt" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="加班工时输入"><button class="hours-btn" type="button" data-adjust="ot" data-delta="0.5" aria-label="加班增加半小时">+0.5</button></div></div>
-      </div>
-      <div class="collapse-section">
-        <button class="collapse-header" type="button" id="leaveToggle" aria-expanded="false" aria-controls="leaveGrid"><span class="collapse-title">🍵 状态</span><span class="collapse-arrow" id="leaveArrow" aria-hidden="true">▼</span></button>
-        <div class="collapse-body collapsed" id="leaveGrid">
-          <div class="option-grid" style="margin-bottom:0">
-            <button class="option-btn active" type="button" data-leave="none"><span class="opt-icon" aria-hidden="true">💼</span>上班</button>
-            <button class="option-btn" type="button" data-leave="sick"><span class="opt-icon" aria-hidden="true">🛌</span>病假</button>
-            <button class="option-btn" type="button" data-leave="personal"><span class="opt-icon" aria-hidden="true">📋</span>事假</button>
-            <button class="option-btn" type="button" data-leave="paid"><span class="opt-icon" aria-hidden="true">🏝️</span>薪假</button>
-          </div>
+<!-- 弹窗组件移至 #app 外部，解决登录/注册时无法显示的问题 -->
+
+<div class="modal-overlay" id="clockModal" role="dialog" aria-modal="true" aria-labelledby="clockModalTitle" aria-hidden="true">
+  <div class="modal-content" id="clockModalContent">
+    <div class="modal-header"><h2 class="modal-title" id="clockModalTitle">打卡 <span class="date-badge" id="modalDate"></span></h2><button class="modal-close" type="button" data-close="clockModal" aria-label="关闭">✕</button></div>
+    <div class="field-label">选择班次</div>
+    <div class="option-grid" id="shiftRow">
+      <button class="option-btn active" type="button" data-shift="day"><span class="opt-icon" aria-hidden="true">☀️</span>白班</button>
+      <button class="option-btn" type="button" data-shift="early"><span class="opt-icon" aria-hidden="true">🌤</span>早班</button>
+      <button class="option-btn" type="button" data-shift="mid"><span class="opt-icon" aria-hidden="true">🌞</span>中班</button>
+      <button class="option-btn" type="button" data-shift="night"><span class="opt-icon" aria-hidden="true">🌙</span>晚班</button>
+    </div>
+    <div class="field-label">记录类型</div>
+    <div class="option-grid" id="typeRow">
+      <button class="option-btn active compact" type="button" data-type="normal">正班</button>
+      <button class="option-btn compact" type="button" data-type="weekend">周末</button>
+      <button class="option-btn compact" type="button" data-type="holiday">节假</button>
+      <button class="option-btn compact" type="button" data-type="daily">日结</button>
+    </div>
+    <div class="field-label">快捷操作</div>
+    <div class="quick-tags">
+      <button class="quick-tag" type="button" data-quick="preset">全勤 8h</button>
+      <button class="quick-tag" type="button" data-quick="ot1">加班 +1h</button>
+      <button class="quick-tag" type="button" data-quick="ot15">加班 +1.5h</button>
+      <button class="quick-tag danger" type="button" data-quick="clear">🗑 清零</button>
+    </div>
+    <div class="hours-box">
+      <div class="hours-row"><span class="hours-label">正常上班 <span class="hint">(正班)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="normal" data-delta="-0.5" aria-label="正班减少半小时">−0.5</button><button class="hours-value" type="button" id="valNormal" data-edit="normal" aria-label="编辑正班工时">8.0 H</button><input class="hours-input hidden" type="number" id="inputNormal" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="正班工时输入"><button class="hours-btn" type="button" data-adjust="normal" data-delta="0.5" aria-label="正班增加半小时">+0.5</button></div></div>
+      <div class="hours-row"><span class="hours-label">正常加班 <span class="hint">(额外)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="ot" data-delta="-0.5" aria-label="加班减少半小时">−0.5</button><button class="hours-value ot" type="button" id="valOt" data-edit="ot" aria-label="编辑加班工时">0.0 H</button><input class="hours-input ot hidden" type="number" id="inputOt" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="加班工时输入"><button class="hours-btn" type="button" data-adjust="ot" data-delta="0.5" aria-label="加班增加半小时">+0.5</button></div></div>
+    </div>
+    <div class="collapse-section">
+      <button class="collapse-header" type="button" id="leaveToggle" aria-expanded="false" aria-controls="leaveGrid"><span class="collapse-title">🍵 状态</span><span class="collapse-arrow" id="leaveArrow" aria-hidden="true">▼</span></button>
+      <div class="collapse-body collapsed" id="leaveGrid">
+        <div class="option-grid" style="margin-bottom:0">
+          <button class="option-btn active" type="button" data-leave="none"><span class="opt-icon" aria-hidden="true">💼</span>上班</button>
+          <button class="option-btn" type="button" data-leave="sick"><span class="opt-icon" aria-hidden="true">🛌</span>病假</button>
+          <button class="option-btn" type="button" data-leave="personal"><span class="opt-icon" aria-hidden="true">📋</span>事假</button>
+          <button class="option-btn" type="button" data-leave="paid"><span class="opt-icon" aria-hidden="true">🏝️</span>薪假</button>
         </div>
       </div>
-      <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteArea"><span aria-hidden="true">📝</span><span>添加备注</span><span class="arrow" id="noteArrow" aria-hidden="true">▼</span></button>
-      <div class="note-area" id="noteArea"><textarea id="noteInput" maxlength="500" placeholder="添加备注，例如：夜班补贴 30 元"></textarea></div>
-      <div class="action-btns"><button class="action-btn btn-cancel" type="button" data-close="clockModal">取消</button><button class="action-btn btn-save" type="button" id="clockSaveBtn">保存记录</button></div>
     </div>
+    <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteArea"><span aria-hidden="true">📝</span><span>添加备注</span><span class="arrow" id="noteArrow" aria-hidden="true">▼</span></button>
+    <div class="note-area" id="noteArea"><textarea id="noteInput" maxlength="500" placeholder="添加备注，例如：夜班补贴 30 元"></textarea></div>
+    <div class="action-btns"><button class="action-btn btn-cancel" type="button" data-close="clockModal">取消</button><button class="action-btn btn-save" type="button" id="clockSaveBtn">保存记录</button></div>
   </div>
-
-  <div class="modal-overlay" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportTitle" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header"><h2 class="modal-title" id="exportTitle">📤 导出数据</h2><button class="modal-close" type="button" data-close="exportModal" aria-label="关闭">✕</button></div>
-      <div class="export-options">
-        <button class="export-option" type="button" id="exportJsonBtn"><span class="export-icon" aria-hidden="true">📋</span><span><span class="export-title">导出 JSON</span><span class="export-desc">完整备份，可随时导入恢复</span></span></button>
-        <button class="export-option" type="button" id="exportCsvBtn"><span class="export-icon" aria-hidden="true">📊</span><span><span class="export-title">导出 CSV</span><span class="export-desc">Excel 可直接打开，便于表格统计</span></span></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importTitle" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header"><h2 class="modal-title" id="importTitle">📥 导入数据</h2><button class="modal-close" type="button" data-close="importModal" aria-label="关闭">✕</button></div>
-      <button class="dropzone" type="button" id="dropzone"><div class="dropzone-icon" aria-hidden="true">📂</div><div class="dropzone-text">点击选择 JSON 文件<br>或将文件拖到此处</div><div class="dropzone-hint">支持本工具导出的 .json 备份</div></button>
-      <input type="file" class="hidden" id="importFile" accept=".json,application/json">
-      <div class="preview-box" id="importPreview">
-        <div class="preview-title">📋 文件预览</div>
-        <div class="preview-row"><span class="preview-label">记录条数</span><span class="preview-value" id="previewRecords">0</span></div>
-        <div class="preview-row"><span class="preview-label">薪资模式</span><span class="preview-value" id="previewMode">-</span></div>
-        <div class="preview-row"><span class="preview-label">导出时间</span><span class="preview-value" id="previewTime">-</span></div>
-        <div class="preview-row"><span class="preview-label">版本</span><span class="preview-value" id="previewVersion">-</span></div>
-        <div id="previewErrors"></div>
-      </div>
-      <div class="field-label" style="margin-top:16px" id="strategyLabel">导入方式</div>
-      <div class="option-grid cols-2" id="strategyRow">
-        <button class="option-btn active" type="button" data-strategy="merge"><span>智能合并</span><span style="font-size:11px;font-weight:500">保留现有，按时间取新</span></button>
-        <button class="option-btn" type="button" data-strategy="overwrite"><span>完全覆盖</span><span style="font-size:11px;font-weight:500">用备份替换全部数据</span></button>
-      </div>
-      <div class="warn-box" id="importWarn">⚠️ 覆盖后当前所有记录将被替换，且会同步到云端。建议先导出备份。</div>
-      <div class="action-btns" id="importActions" style="display:none"><button class="action-btn btn-cancel" type="button" data-close="importModal">取消</button><button class="action-btn btn-save" type="button" id="importConfirmBtn">确认导入</button></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header"><h2 class="modal-title" id="confirmTitle">确认操作</h2><button class="modal-close" type="button" data-close="confirmModal" aria-label="关闭">✕</button></div>
-      <div class="danger-desc" id="confirmBody"></div>
-      <div id="confirmExtra"></div>
-      <div class="action-btns"><button class="action-btn btn-cancel" type="button" id="confirmCancelBtn">取消</button><button class="action-btn btn-danger" type="button" id="confirmOkBtn">确认</button></div>
-    </div>
-  </div>
-
-  <div class="toast-wrap" id="toastWrap" role="status" aria-live="polite"></div>
 </div>
+
+<div class="modal-overlay" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportTitle" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title" id="exportTitle">📤 导出数据</h2><button class="modal-close" type="button" data-close="exportModal" aria-label="关闭">✕</button></div>
+    <div class="export-options">
+      <button class="export-option" type="button" id="exportJsonBtn"><span class="export-icon" aria-hidden="true">📋</span><span><span class="export-title">导出 JSON</span><span class="export-desc">完整备份，可随时导入恢复</span></span></button>
+      <button class="export-option" type="button" id="exportCsvBtn"><span class="export-icon" aria-hidden="true">📊</span><span><span class="export-title">导出 CSV</span><span class="export-desc">Excel 可直接打开，便于表格统计</span></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importTitle" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title" id="importTitle">📥 导入数据</h2><button class="modal-close" type="button" data-close="importModal" aria-label="关闭">✕</button></div>
+    <button class="dropzone" type="button" id="dropzone"><div class="dropzone-icon" aria-hidden="true">📂</div><div class="dropzone-text">点击选择 JSON 文件<br>或将文件拖到此处</div><div class="dropzone-hint">支持本工具导出的 .json 备份</div></button>
+    <input type="file" class="hidden" id="importFile" accept=".json,application/json">
+    <div class="preview-box" id="importPreview">
+      <div class="preview-title">📋 文件预览</div>
+      <div class="preview-row"><span class="preview-label">记录条数</span><span class="preview-value" id="previewRecords">0</span></div>
+      <div class="preview-row"><span class="preview-label">薪资模式</span><span class="preview-value" id="previewMode">-</span></div>
+      <div class="preview-row"><span class="preview-label">导出时间</span><span class="preview-value" id="previewTime">-</span></div>
+      <div class="preview-row"><span class="preview-label">版本</span><span class="preview-value" id="previewVersion">-</span></div>
+      <div id="previewErrors"></div>
+    </div>
+    <div class="field-label" style="margin-top:16px" id="strategyLabel">导入方式</div>
+    <div class="option-grid cols-2" id="strategyRow">
+      <button class="option-btn active" type="button" data-strategy="merge"><span>智能合并</span><span style="font-size:11px;font-weight:500">保留现有，按时间取新</span></button>
+      <button class="option-btn" type="button" data-strategy="overwrite"><span>完全覆盖</span><span style="font-size:11px;font-weight:500">用备份替换全部数据</span></button>
+    </div>
+    <div class="warn-box" id="importWarn">⚠️ 覆盖后当前所有记录将被替换，且会同步到云端。建议先导出备份。</div>
+    <div class="action-btns" id="importActions" style="display:none"><button class="action-btn btn-cancel" type="button" data-close="importModal">取消</button><button class="action-btn btn-save" type="button" id="importConfirmBtn">确认导入</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title" id="confirmTitle">确认操作</h2><button class="modal-close" type="button" data-close="confirmModal" aria-label="关闭">✕</button></div>
+    <div class="danger-desc" id="confirmBody"></div>
+    <div id="confirmExtra"></div>
+    <div class="action-btns"><button class="action-btn btn-cancel" type="button" id="confirmCancelBtn">取消</button><button class="action-btn btn-danger" type="button" id="confirmOkBtn">确认</button></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
 /* =============================================================================
  * 工时记录助手 v5.1.0
  *
- * 相对 v5.0.0 的修复：
- *   P0-B  Store.flush 水位线改为"请求发起时刻"的快照，避免请求中的改动被漏传
- *   P1-C  Store.reconcile 先合并服务端墓碑，避免其他设备删除的记录在本地复活
- *   P3-I  stripLeadingIcon 收紧到真 emoji，不误伤 ① ← ✓ ✗ ℹ
- *   P3-J  清理 render 里的冗余 void
- *   P3-L  clearAll 同步清墓碑
- *   新增  注销账号（HTML 按钮 + Api.deleteUser + App.deleteAccount）
- *
- * v5.0.0 已含的关键修复（保留）：
- *   数据完整性：记录级合并 + 墓碑；保存状态机（单飞/合流/退避/keepalive）；
- *              一键打卡不静默清备注；导入严格日期校验；CSV 防公式注入
- *   安全：PBKDF2-SHA256(600k)；textContent 渲染；请求超时+取消+错误分类；
- *        响应归属校验；会话失效全局复位
- *   体验：固定 6 行月历；键盘与读屏器适配；暗色模式；骨架屏；图表可点
+ * 修复与优化：
+ *   - 修复注册卡死：弹窗移出 #app，z-index 提升至 1100
+ *   - 优化登录体验：密码错误 5 次锁定 60 秒倒计时；增加“忘记密码”提示
+ *   - 数据完整性：保留 P0-B 水位线快照，P1-C 先合并服务端墓碑，P3-I Emoji 剥离，P3-L 清空墓碑
  * ========================================================================== */
 (function () {
   /* ---------------------------- 常量 ---------------------------- */
@@ -861,6 +858,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const CACHE_PREFIX = 'wc_cache_';
   const HOLIDAY_KEY = 'wc_holidays_v2';
   const LUNAR_KEY = 'wc_lunar_v2';
+  const LOCK_KEY = 'wc_lock_state'; // 新增：持久化锁定状态
 
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const SHIFTS = ['day', 'early', 'mid', 'night'];
@@ -3921,10 +3919,42 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const Auth = {
     isLoginMode: true,
     busy: false,
+    failCount: 0,
+    lockUntil: 0,
+    lockTimer: null,
 
     init() {
       const username = safeGet('wc_last_user');
       if (username) byId('username').value = username;
+      // 恢复锁定状态
+      const lockState = safeJson(LOCK_KEY);
+      if (lockState && lockState.lockUntil > Date.now()) {
+        this.failCount = lockState.failCount || 0;
+        this.lockUntil = lockState.lockUntil;
+        this.startLockoutCountdown();
+      }
+    },
+
+    startLockoutCountdown() {
+      clearInterval(this.lockTimer);
+      const update = () => {
+        const remain = Math.ceil((this.lockUntil - Date.now()) / 1000);
+        if (remain <= 0) {
+          clearInterval(this.lockTimer);
+          this.failCount = 0;
+          this.lockUntil = 0;
+          safeRemove(LOCK_KEY);
+          this.setMessage('请重新输入密码登录', 'info');
+          byId('password').disabled = false;
+          byId('authBtn').disabled = false;
+        } else {
+          this.setMessage(`密码错误次数过多，请在 ${remain} 秒后重试`, 'warn');
+          byId('password').disabled = true;
+          byId('authBtn').disabled = true;
+        }
+      };
+      update();
+      this.lockTimer = setInterval(update, 1000);
     },
 
     toggleMode() {
@@ -3979,6 +4009,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     async submit() {
       if (this.busy) return;
+      if (Date.now() < this.lockUntil) {
+        UI.toast('请等待倒计时结束', 'warn');
+        return;
+      }
       const username = byId('username').value.trim();
       const password = byId('password').value;
       const confirm = byId('confirmPassword').value;
@@ -4056,6 +4090,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       safeSet('wc_last_user', username);
       byId('password').value = '';
       this.setMessage('', '');
+      // 登录成功，清除锁定状态
+      this.failCount = 0;
+      this.lockUntil = 0;
+      safeRemove(LOCK_KEY);
       App.currentUsernameAtBoot = username;
       await App.start();
     },
@@ -4091,13 +4129,36 @@ input:focus-visible,textarea:focus-visible{outline:none}
         GITHUB_PERMISSION_DENIED: '服务端仓库权限不足，请联系管理员',
         GITHUB_TOKEN_INVALID: '服务端仓库凭证已失效，请联系管理员',
       };
+      
       const isWarn = code === 'RATE_LIMITED';
-      const text = messages[code] || (err && err.message) || '操作失败，请稍后重试';
-      this.setMessage(text, isWarn ? 'warn' : 'error');
+      let text = messages[code] || (err && err.message) || '操作失败，请稍后重试';
+
+      // 处理密码错误逻辑
       if (code === 'BAD_CREDENTIALS') {
+        this.failCount++;
+        if (this.failCount >= 5) {
+          this.lockUntil = Date.now() + 60000; // 锁定 60 秒
+          safeSet(LOCK_KEY, JSON.stringify({ lockUntil: this.lockUntil, failCount: this.failCount }));
+          this.startLockoutCountdown();
+        } else {
+          text = `用户名或密码错误，还可以尝试 ${5 - this.failCount} 次`;
+          this.setMessage(text, 'error');
+          // 增加忘记密码提示
+          const forgotHint = document.createElement('div');
+          forgotHint.style.cssText = 'font-size:12px;margin-top:8px;color:var(--text-secondary);text-align:center';
+          forgotHint.innerHTML = '忘记密码？由于数据加密存储，无法找回密码，请使用数据备份重置账号。';
+          const msgBox = byId('authMsg');
+          if (!msgBox.querySelector('.forgot-hint')) {
+            forgotHint.className = 'forgot-hint';
+            msgBox.appendChild(forgotHint);
+          }
+        }
         byId('password').value = '';
-        byId('password').focus({ preventScroll: true });
+        if (!byId('password').disabled) byId('password').focus({ preventScroll: true });
+        return;
       }
+
+      this.setMessage(text, isWarn ? 'warn' : 'error');
     },
   };
 
