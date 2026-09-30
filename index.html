@@ -8,122 +8,51 @@
 <meta name="description" content="工时记录助手：打卡、工时统计、个税与工资计算，数据同步到你的私有仓库">
 <title>工时记录助手</title>
 <style>
-/* =============================================================================
- * 设计令牌（Design Tokens）
- * 所有颜色均通过 WCAG AA 对比度校准：
- *   正文级 token 在对应底色上 ≥ 4.5:1；图形级(--*-graphic) 仅用于图表填充
- * ========================================================================== */
 :root{
-  --primary:#3F6E5D;            /* 5.70:1 on --surface */
-  --primary-strong:#33584A;
-  --primary-soft:#E8F3EE;
-  --primary-gradient:linear-gradient(135deg,#4A7D6A,#33584A);
-  --primary-graphic:#4A7D6A;
-
-  --accent:#A9752F;             /* 3.89:1，用于大字/图形 */
-  --accent-graphic:#D4A373;
-  --accent-soft:#FBF3E6;
-  --danger:#C4562F;             /* 4.35:1 */
-  --danger-graphic:#E07A5F;
-  --danger-soft:#FBEDE8;
-  --success:#2E7D4F;            /* 4.93:1 */
-  --success-graphic:#7CB87C;
-  --info:#4E7599;
-  --violet:#6E5F9E;
-
-  --bg:#F5F5F0;
-  --surface:#FFFCF8;
-  --surface-hover:#F8F6F2;
-  --text:#33332F;
-  --text-secondary:#6B6B66;     /* 5.24:1 */
-  --text-tertiary:#8C8C87;      /* 仅用于 ≥14px 或纯装饰 */
-  --border:#E7E4DE;
-  --border-strong:#D8D4CC;
-
-  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
-  --gutter:16px;
-  --radius-sm:10px; --radius-md:14px; --radius-lg:18px; --radius-full:999px;
-
+  --primary:#3F6E5D;--primary-strong:#33584A;--primary-soft:#E8F3EE;
+  --primary-gradient:linear-gradient(135deg,#4A7D6A,#33584A);--primary-graphic:#4A7D6A;
+  --accent:#A9752F;--accent-graphic:#D4A373;--accent-soft:#FBF3E6;
+  --danger:#C4562F;--danger-graphic:#E07A5F;--danger-soft:#FBEDE8;
+  --success:#2E7D4F;--success-graphic:#7CB87C;--info:#4E7599;--violet:#6E5F9E;
+  --bg:#F5F5F0;--surface:#FFFCF8;--surface-hover:#F8F6F2;
+  --text:#33332F;--text-secondary:#6B6B66;--text-tertiary:#8C8C87;
+  --border:#E7E4DE;--border-strong:#D8D4CC;
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:36px;
+  --gutter:16px;--radius-sm:10px;--radius-md:14px;--radius-lg:18px;--radius-full:999px;
   --shadow-sm:0 1px 3px rgba(51,88,74,.06),0 1px 2px rgba(51,88,74,.04);
   --shadow-md:0 4px 16px rgba(51,88,74,.09);
   --shadow-lg:0 12px 40px rgba(51,88,74,.14);
   --shadow-primary:0 6px 20px rgba(63,110,93,.28);
-
-  --ease-out:cubic-bezier(.22,1,.36,1);
-  --ease-spring:cubic-bezier(.34,1.56,.64,1);
-  --dur-fast:.15s; --dur-base:.25s; --dur-slow:.35s;
-
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-  --safe-left:env(safe-area-inset-left,0px);
-  --safe-right:env(safe-area-inset-right,0px);
+  --ease-out:cubic-bezier(.22,1,.36,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --dur-fast:.15s;--dur-base:.25s;--dur-slow:.35s;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);
 }
-
 @media (prefers-color-scheme:dark){
   :root{
-    --primary:#7FB99B;          /* 6.38:1 on dark --surface */
-    --primary-strong:#5E9C7E;
-    --primary-soft:#24382F;
-    --primary-gradient:linear-gradient(135deg,#3E6B58,#2B4A3E);
-    --primary-graphic:#6FA98F;
-
-    --accent:#D9AE7A;
-    --accent-graphic:#D4A373;
-    --accent-soft:#3A3128;
-    --danger:#E8927A;
-    --danger-graphic:#E07A5F;
-    --danger-soft:#3A2A24;
-    --success:#8CCB94;
-    --success-graphic:#7CB87C;
-    --info:#8FB0CE;
-    --violet:#A99BD8;
-
-    --bg:#191917;
-    --surface:#242422;
-    --surface-hover:#2E2E2B;
-    --text:#EDEDEA;
-    --text-secondary:#A8A8A3;
-    --text-tertiary:#8F8F8A;
-    --border:#383835;
-    --border-strong:#4A4A46;
-
-    --shadow-sm:0 1px 3px rgba(0,0,0,.4);
-    --shadow-md:0 4px 16px rgba(0,0,0,.45);
-    --shadow-lg:0 12px 40px rgba(0,0,0,.55);
-    --shadow-primary:0 6px 20px rgba(0,0,0,.5);
+    --primary:#7FB99B;--primary-strong:#5E9C7E;--primary-soft:#24382F;
+    --primary-gradient:linear-gradient(135deg,#3E6B58,#2B4A3E);--primary-graphic:#6FA98F;
+    --accent:#D9AE7A;--accent-graphic:#D4A373;--accent-soft:#3A3128;
+    --danger:#E8927A;--danger-graphic:#E07A5F;--danger-soft:#3A2A24;
+    --success:#8CCB94;--success-graphic:#7CB87C;--info:#8FB0CE;--violet:#A99BD8;
+    --bg:#191917;--surface:#242422;--surface-hover:#2E2E2B;
+    --text:#EDEDEA;--text-secondary:#A8A8A3;--text-tertiary:#8F8F8A;
+    --border:#383835;--border-strong:#4A4A46;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.4);--shadow-md:0 4px 16px rgba(0,0,0,.45);
+    --shadow-lg:0 12px 40px rgba(0,0,0,.55);--shadow-primary:0 6px 20px rgba(0,0,0,.5);
   }
 }
-
-/* ============================ 基础重置 ============================ */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",Roboto,sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100dvh;overflow:hidden;overscroll-behavior:none;
-  -webkit-font-smoothing:antialiased;
-  font-size:15px;line-height:1.5;
-}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5}
 button,input,textarea,select{font:inherit;color:inherit}
 button{background:none;border:none;cursor:pointer}
-:where(a,button,input,textarea,select,[tabindex]):focus-visible{
-  outline:2px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm);
-}
+:where(a,button,input,textarea,select,[tabindex]):focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:var(--radius-sm)}
 input:focus-visible,textarea:focus-visible{outline:none}
-.sr-only{
-  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
-  clip:rect(0 0 0 0);white-space:nowrap;border:0;
-}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .hidden{display:none!important}
-
-/* ============================ 应用骨架 ============================ */
-#app{
-  max-width:430px;margin:0 auto;height:100dvh;
-  padding-top:var(--safe-top);
-  display:none;flex-direction:column;overflow:hidden;background:var(--bg);
-}
-@supports not (height:100dvh){ #app{height:100vh} }
-
+#app{max-width:430px;margin:0 auto;height:100dvh;padding-top:var(--safe-top);display:none;flex-direction:column;overflow:hidden;background:var(--bg)}
+@supports not (height:100dvh){#app{height:100vh}}
 .header{background:var(--primary-gradient);color:#fff;padding:calc(12px + var(--safe-top)) var(--gutter) 16px;flex-shrink:0;position:relative}
 .header-top{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2)}
 .header-top-left{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
@@ -131,20 +60,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .header-top-left .app-name{font-weight:600;font-size:13px;white-space:nowrap}
 .header-year{font-size:11px;opacity:.85;font-weight:500;white-space:nowrap}
 .header-month{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);padding:var(--sp-1) 0}
-.header-month .nav-arrow{
-  min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:15px;opacity:.85;border-radius:var(--radius-sm);
-  transition:background-color var(--dur-base),opacity var(--dur-base);
-}
+.header-month .nav-arrow{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;opacity:.85;border-radius:var(--radius-sm);transition:background-color var(--dur-base),opacity var(--dur-base)}
 .header-month .nav-arrow:hover{opacity:1;background:rgba(255,255,255,.14)}
 .header-month .nav-arrow:active{transform:scale(.92)}
 .header-month .month-label{font-size:22px;font-weight:700;min-width:96px;text-align:center;user-select:none}
-.header-month .today-btn{
-  font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--radius-full);
-  background:rgba(255,255,255,.16);color:#fff;white-space:nowrap;
-}
+.header-month .today-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--radius-full);background:rgba(255,255,255,.16);color:#fff;white-space:nowrap}
 .header-month .today-btn:hover{background:rgba(255,255,255,.28)}
-
 .stats-bar{display:flex;padding:var(--sp-3) var(--sp-2);background:rgba(255,255,255,.10);border-radius:var(--radius-lg);margin-top:var(--sp-3)}
 .stat-item{flex:1;min-width:0;text-align:center;border-radius:var(--radius-sm);padding:2px}
 .stat-item[data-action]{transition:background-color var(--dur-fast)}
@@ -155,7 +76,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .progress-bg{height:4px;background:rgba(255,255,255,.18);border-radius:var(--radius-full);overflow:hidden}
 .progress-fill{height:100%;background:rgba(255,255,255,.9);border-radius:var(--radius-full);transition:width var(--dur-slow) var(--ease-out);width:0}
 .progress-text{display:flex;justify-content:space-between;font-size:10px;opacity:.85;margin-top:var(--sp-1)}
-
 .sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,.14);border-radius:var(--radius-full);font-size:11px;font-weight:600;color:#fff;min-height:32px}
 .sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .sync-dot.synced{background:#8FD69B}
@@ -165,58 +85,27 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .sync-dot.error{background:#F2A48C}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-
 .page{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
 .page.active{display:flex}
 .page-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:var(--sp-4);overscroll-behavior:contain}
 .page-scroll::-webkit-scrollbar{width:0}
-
-/* ============================ 日历 ============================ */
 .calendar-wrap{background:var(--surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;margin-top:-8px;padding:var(--sp-4) var(--sp-3) var(--sp-3);box-shadow:var(--shadow-md);border-bottom:1px solid var(--border)}
 .calendar-inner{position:relative;transition:transform var(--dur-slow) var(--ease-out);touch-action:pan-y}
 .calendar-inner.swiping{transition:none}
 .weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:var(--sp-2);font-weight:600}
 .weekdays span:first-child,.weekdays span:last-child{color:var(--danger)}
-
-/* 固定 6 行：翻月时高度零跳动（旧版按需生成 4/5/6 行，高度差达 24%）
- * 行高改用 grid-auto-rows 显式给出，而不是 aspect-ratio：
- * aspect-ratio:7/6.5 会算出"宽 > 高"的扁格子（每格宽 1、高 0.93），
- * 三行内容（日期 + 工时 + 农历）放不下就往下溢出；360px 手机上格子仅约 48px 宽，
- * 文字被逐字挤成竖排 —— 这就是手机端日历变形、工时与农历重叠的根因。
- * clamp(50px, 17.5vw, 60px)：50px 是容纳两行文字的下限，60px 是上限。 */
-.days-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  grid-auto-rows:clamp(50px,17.5vw,60px);
-  gap:2px;contain:layout paint;
-}
-.day-cell{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;min-height:0;min-width:0;
-  padding:2px 0;gap:1px;line-height:1;
-  border-radius:var(--radius-md);border:2px solid transparent;background:transparent;
-  font-size:16px;font-weight:500;color:var(--text);position:relative;
-  overflow:hidden;
-  transition:transform var(--dur-fast) var(--ease-spring),background-color var(--dur-fast),border-color var(--dur-fast);
-  touch-action:manipulation;
-}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:clamp(50px,17.5vw,60px);gap:2px;contain:layout paint}
+.day-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:0;min-width:0;padding:2px 0;gap:1px;line-height:1;border-radius:var(--radius-md);border:2px solid transparent;background:transparent;font-size:16px;font-weight:500;color:var(--text);position:relative;overflow:hidden;transition:transform var(--dur-fast) var(--ease-spring),background-color var(--dur-fast),border-color var(--dur-fast);touch-action:manipulation}
 .day-num{line-height:1.05;font-variant-numeric:tabular-nums;white-space:nowrap}
 .day-cell:hover{background:var(--primary-soft)}
 .day-cell:active{transform:scale(.92)}
 .day-cell.other-month{color:var(--text-tertiary);opacity:.55}
 .day-cell.weekend{color:var(--danger)}
 .day-cell.has-record{color:var(--primary);font-weight:700}
-/* 今天：深色渐变实心。
- * 之所以显式写 background-image:none，是因为 .day-cell.selected 也设了 background，
- * 两者叠加时 shorthand/longhand 优先级会出现"深绿+浅绿两块颜色压在一起"的观感。 */
 .day-cell.today{background-image:none;background:var(--primary-gradient);color:#fff;font-weight:800}
 .day-cell.today .day-sub{color:rgba(255,255,255,.92)}
-/* 选中：浅色高亮环；若同时是今天，则改为白描边，避免与深色渐变打架 */
 .day-cell.selected{border-color:var(--primary);background-image:none;background:var(--primary-soft);box-shadow:var(--shadow-sm)}
-.day-cell.today.selected{
-  border-color:rgba(255,255,255,.92);
-  background-image:none;background:var(--primary-gradient);
-  box-shadow:0 0 0 3px var(--primary-soft);
-}
+.day-cell.today.selected{border-color:rgba(255,255,255,.92);background-image:none;background:var(--primary-gradient);box-shadow:0 0 0 3px var(--primary-soft)}
 .day-cell.workday-makeup{color:var(--primary)}
 .day-sub{font-size:10px;line-height:1.1;color:var(--text-secondary);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .day-sub.is-holiday{color:var(--danger);font-weight:700}
@@ -230,30 +119,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .swipe-hint.show{opacity:.7}
 .swipe-hint.left{left:2px}
 .swipe-hint.right{right:2px}
-
-/* ============================ 记录页 ============================ */
 .quick-punch-wrap{padding:var(--sp-2) var(--gutter) var(--sp-3);background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:var(--sp-2)}
-.clock-btn{
-  width:100%;padding:15px;border-radius:var(--radius-full);
-  background:var(--primary-gradient);color:#fff;font-size:16px;font-weight:700;
-  box-shadow:var(--shadow-primary);text-align:center;
-  transition:transform var(--dur-base) var(--ease-spring),box-shadow var(--dur-base);
-}
+.clock-btn{width:100%;padding:15px;border-radius:var(--radius-full);background:var(--primary-gradient);color:#fff;font-size:16px;font-weight:700;box-shadow:var(--shadow-primary);text-align:center;transition:transform var(--dur-base) var(--ease-spring),box-shadow var(--dur-base)}
 .clock-btn:active{transform:scale(.97)}
 .clock-btn.quick{background:linear-gradient(135deg,#C08A4A,#A9752F);box-shadow:0 4px 16px rgba(169,117,47,.3);font-size:15px;padding:13px}
-/* "添加打卡"：浅色描边按钮，与实心的"一键打卡"形成层级区分；
- * 加号用亮绿实心圆，避免原来 ➕ emoji 在深底上发黑看不清。 */
-.clock-btn.add{
-  background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);
-  box-shadow:none;font-size:15px;padding:12px;
-}
+.clock-btn.add{background:var(--surface);color:var(--primary);border:1.5px solid var(--primary);box-shadow:none;font-size:15px;padding:12px}
 .clock-btn.add:hover{background:var(--primary-soft)}
-.clock-btn.add .plus{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:20px;height:20px;margin-right:6px;border-radius:50%;
-  background:var(--success-graphic);color:#fff;font-size:14px;font-weight:800;line-height:1;
-  vertical-align:-3px;
-}
+.clock-btn.add .plus{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-right:6px;border-radius:50%;background:var(--success-graphic);color:#fff;font-size:14px;font-weight:800;line-height:1;vertical-align:-3px}
 .clock-btn[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
 .detail-area{padding:var(--gutter);flex-shrink:0}
 .detail-card{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);box-shadow:var(--shadow-md);border:1px solid var(--border);margin-bottom:var(--sp-3)}
@@ -274,29 +146,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .detail-card-note-row{display:flex;align-items:flex-start;gap:6px;padding-top:var(--sp-3);font-size:13px;color:var(--text-secondary);line-height:1.6}
 .detail-note-area{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);box-shadow:var(--shadow-sm);border:1px solid var(--border);margin-bottom:var(--sp-3)}
 .detail-note-header{display:flex;align-items:center;gap:6px;margin-bottom:var(--sp-2);color:var(--text-secondary);font-weight:600;font-size:13px}
-.note-textarea{
-  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-md);
-  resize:vertical;min-height:60px;font-size:14px;background:var(--surface);color:var(--text);
-  transition:border-color var(--dur-base),box-shadow var(--dur-base);
-}
+.note-textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-md);resize:vertical;min-height:60px;font-size:14px;background:var(--surface);color:var(--text);transition:border-color var(--dur-base),box-shadow var(--dur-base)}
 .note-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 16%,transparent)}
 .detail-note-hint{margin-top:6px;text-align:right;font-size:11px;color:var(--text-tertiary)}
-
-/* 空状态（补齐 title/desc 样式，旧版缺失导致文案无样式） */
 .empty-state{text-align:center;padding:36px var(--sp-6) var(--sp-6);color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:48px;margin-bottom:var(--sp-3);display:block;opacity:.55;line-height:1}
 .empty-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
 .empty-desc{font-size:13px;line-height:1.7;color:var(--text-secondary)}
-
-/* ============================ 底部导航 ============================ */
 .bottom-nav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:6px 0 calc(6px + var(--safe-bottom));flex-shrink:0}
 .nav-item{flex:1;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-tertiary);transition:color var(--dur-base)}
 .nav-item.active{color:var(--primary)}
 .nav-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:19px;border-radius:var(--radius-md);transition:transform var(--dur-base) var(--ease-spring),background-color var(--dur-base)}
 .nav-item.active .nav-icon{background:var(--primary-soft);transform:translateY(-2px)}
 .nav-label{font-size:10px;font-weight:600}
-
-/* ============================ 统计页 ============================ */
 .card{background:var(--surface);margin:var(--gutter);padding:var(--sp-5) var(--sp-5);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);border:1px solid var(--border)}
 .card-title{font-size:13px;color:var(--text-secondary);margin-bottom:6px;font-weight:600}
 .card-num{font-size:34px;font-weight:800;color:var(--primary);letter-spacing:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
@@ -306,12 +168,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .stat-box-num{font-size:25px;font-weight:800;color:var(--text);letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .stat-box-label{font-size:12px;color:var(--text-secondary);margin-top:6px;font-weight:600}
 .stat-grid .stat-box:last-child{grid-column:1 / -1}
-
 .chart-section{background:var(--surface);margin:0 var(--gutter) var(--gutter);border-radius:var(--radius-lg);padding:var(--sp-5);box-shadow:var(--shadow-md);border:1px solid var(--border);overflow:visible}
 .chart-title{font-size:15px;font-weight:700;margin-bottom:var(--sp-4);color:var(--text);display:flex;align-items:center;gap:var(--sp-2)}
 .chart-title::before{content:"";width:4px;height:16px;background:var(--primary);border-radius:2px;flex-shrink:0}
 .chart-empty{display:flex;align-items:center;justify-content:center;height:180px;color:var(--text-secondary);font-size:13px}
-
 .chart-wrap{position:relative;width:100%;height:250px;padding-top:8px}
 .chart-y-axis{position:absolute;left:0;top:34px;bottom:32px;width:44px;font-size:10px;color:var(--text-secondary);font-weight:600;font-variant-numeric:tabular-nums}
 .chart-y-axis span{position:absolute;right:6px;transform:translateY(50%);line-height:1;white-space:nowrap}
@@ -325,24 +185,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .chart-bar:hover{filter:brightness(1.12)}
 .chart-bar.weekend{background:linear-gradient(to top,var(--danger-graphic),color-mix(in srgb,var(--danger-graphic) 30%,transparent))}
 .chart-bar.holiday{background:linear-gradient(to top,var(--accent-graphic),color-mix(in srgb,var(--accent-graphic) 30%,transparent))}
-.chart-bar .bar-value{
-  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
-  background:var(--text);color:var(--surface);padding:3px 7px;border-radius:6px;
-  font-size:10px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity var(--dur-fast);
-  pointer-events:none;z-index:20;box-shadow:var(--shadow-sm);
-}
+.chart-bar .bar-value{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--text);color:var(--surface);padding:3px 7px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity var(--dur-fast);pointer-events:none;z-index:20;box-shadow:var(--shadow-sm)}
 .chart-bar:hover .bar-value,.chart-bar:focus-visible .bar-value,.chart-bar.is-active .bar-value{opacity:1}
-/* 触屏：hover 不可用，默认常显峰值日与选中日 */
-@media (hover:none){
-  .chart-bar:hover .bar-value{opacity:0}
-  .chart-bar.is-peak .bar-value,.chart-bar.is-active .bar-value{opacity:1}
-}
+@media (hover:none){.chart-bar:hover .bar-value{opacity:0}.chart-bar.is-peak .bar-value,.chart-bar.is-active .bar-value{opacity:1}}
 .chart-x-axis{position:absolute;left:50px;right:6px;bottom:6px;height:20px;font-size:10px;color:var(--text-secondary);font-weight:600}
 .chart-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
 .chart-legend{position:absolute;right:0;top:0;display:flex;gap:10px;font-size:10px;color:var(--text-secondary);font-weight:600}
 .chart-legend-item{display:flex;align-items:center;gap:4px}
 .chart-legend-dot{width:8px;height:8px;border-radius:2px}
-
 .hours-dist{display:flex;flex-direction:column;align-items:center;gap:var(--sp-4)}
 .hours-donut{position:relative;width:168px;height:168px;border-radius:50%;flex-shrink:0}
 .hours-donut::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:104px;height:104px;border-radius:50%;background:var(--surface)}
@@ -360,8 +210,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .hours-list-row.is-total{padding-top:var(--sp-3);border-top:2px solid var(--border-strong);margin-top:var(--sp-1);border-bottom:none}
 .hours-list-row.is-total .hours-list-name,.hours-list-row.is-total .hours-list-days{font-weight:800;color:var(--text)}
 .hours-list-row.is-total .hours-list-hours,.hours-list-row.is-total .hours-list-money{font-size:15px;font-weight:900}
-
-/* ============================ 计算器页 ============================ */
 .calc-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 var(--sp-3);gap:4px;position:sticky;top:0;z-index:5}
 .calc-tab{flex:1;min-height:46px;padding:0 var(--sp-3);font-size:14px;font-weight:600;color:var(--text-secondary);border-bottom:3px solid transparent;transition:color var(--dur-base),border-color var(--dur-base)}
 .calc-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
@@ -369,16 +217,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .calc-panel.active{display:block}
 .calc-group{margin-bottom:var(--sp-4)}
 .calc-group>label{display:block;font-size:13px;color:var(--text-secondary);font-weight:600;margin-bottom:6px}
-.calc-input-wrap{
-  display:flex;align-items:center;background:var(--bg);border-radius:var(--radius-md);
-  border:1.5px solid var(--border);overflow:hidden;transition:border-color var(--dur-base),box-shadow var(--dur-base);
-}
+.calc-input-wrap{display:flex;align-items:center;background:var(--bg);border-radius:var(--radius-md);border:1.5px solid var(--border);overflow:hidden;transition:border-color var(--dur-base),box-shadow var(--dur-base)}
 .calc-input-wrap:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
 .calc-input-wrap input{flex:1;min-width:0;padding:12px 14px;border:none;outline:none;font-size:16px;font-weight:600;background:transparent;color:var(--text);-moz-appearance:textfield}
 .calc-input-wrap input::-webkit-outer-spin-button,.calc-input-wrap input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .calc-input-wrap .prefix{padding:12px 0 12px 14px;font-size:15px;font-weight:700;color:var(--text-secondary);white-space:nowrap}
 .calc-input-wrap .suffix{padding:12px 14px 12px 0;font-size:13px;color:var(--text-secondary);white-space:nowrap}
-.calc-input-wrap .suffix-inside{padding:12px 14px 12px 0}
 .ins-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
 .calc-hint{font-size:11px;color:var(--text-secondary);margin-top:6px;line-height:1.6}
 .panel-box{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);border:1px solid var(--border)}
@@ -395,11 +239,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .result-inline{font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.7}
 .result-inline b{color:var(--text);font-weight:700}
 .deduction-list{display:flex;flex-direction:column;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.deduction-item{
-  display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);
-  padding:10px 12px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-md);
-  transition:border-color var(--dur-fast),background-color var(--dur-fast);text-align:left;width:100%;
-}
+.deduction-item{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);padding:10px 12px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-md);transition:border-color var(--dur-fast),background-color var(--dur-fast);text-align:left;width:100%}
 .deduction-item.active{border-color:var(--primary);background:var(--primary-soft)}
 .deduction-info{flex:1;min-width:0}
 .deduction-name{font-size:14px;font-weight:600;color:var(--text-secondary)}
@@ -412,25 +252,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .deduction-total{display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);padding:4px 0}
 .deduction-total b{color:var(--primary);font-weight:700}
 .calc-note{font-size:11px;color:var(--text-secondary);margin-top:var(--sp-3);text-align:center;line-height:1.7}
-
 .calc-display{background:var(--surface);border-radius:var(--radius-lg);padding:var(--sp-4);margin-bottom:var(--sp-3);border:1px solid var(--border);text-align:right;min-height:78px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:4px;overflow:hidden}
 .calc-expr{font-size:13px;font-weight:500;color:var(--text-secondary);line-height:1.4;max-width:100%;text-align:right;word-break:break-all}
 .calc-result{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.2;font-variant-numeric:tabular-nums;word-break:break-all}
 .calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);margin-bottom:var(--sp-2)}
-.calc-key{
-  min-height:52px;border-radius:var(--radius-md);border:1.5px solid var(--border);background:var(--surface);
-  font-size:18px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:center;
-  transition:background-color var(--dur-fast),border-color var(--dur-fast),transform var(--dur-fast);
-  touch-action:manipulation;
-}
+.calc-key{min-height:52px;border-radius:var(--radius-md);border:1.5px solid var(--border);background:var(--surface);font-size:18px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:center;transition:background-color var(--dur-fast),border-color var(--dur-fast),transform var(--dur-fast);touch-action:manipulation}
 .calc-key:hover{background:var(--primary-soft);border-color:var(--primary-soft)}
 .calc-key:active{transform:scale(.95)}
 .calc-key.op{color:var(--primary);border-color:color-mix(in srgb,var(--primary) 30%,transparent);background:var(--primary-soft)}
 .calc-key.eq{background:var(--primary-gradient);color:#fff;border-color:transparent;font-weight:800}
 .calc-key.del{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent);background:var(--danger-soft)}
 .calc-key.sign{color:var(--primary);font-weight:800;font-size:16px}
-
-/* ============================ 设置页 ============================ */
 .section-block{padding:6px 0 var(--sp-5)}
 .mode-card{padding:var(--sp-5);border-radius:var(--radius-lg);margin:var(--gutter);color:#fff;box-shadow:var(--shadow-md)}
 .mode-card.hourly{background:linear-gradient(135deg,#3F7A55,#2E5C40)}
@@ -445,11 +277,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .input-row:last-child{border-bottom:none}
 .input-label{font-size:15px;font-weight:600}
 .input-value{display:flex;align-items:center;gap:6px;font-size:19px;font-weight:800;flex-wrap:wrap;justify-content:flex-end}
-.input-value input{
-  width:88px;padding:4px;text-align:right;font-size:19px;font-weight:800;border:none;outline:none;
-  color:inherit;background:transparent;border-bottom:2px solid transparent;-moz-appearance:textfield;
-  transition:border-color var(--dur-base);
-}
+.input-value input{width:88px;padding:4px;text-align:right;font-size:19px;font-weight:800;border:none;outline:none;color:inherit;background:transparent;border-bottom:2px solid transparent;-moz-appearance:textfield;transition:border-color var(--dur-base)}
 .input-value input:focus{border-bottom-color:var(--primary)}
 .input-value input::-webkit-outer-spin-button,.input-value input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .input-value .unit{color:var(--text-secondary);font-size:13px;font-weight:600}
@@ -466,8 +294,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .goal-input-row input{flex:1;min-width:0;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--bg);-moz-appearance:textfield}
 .goal-btn{padding:9px 18px;border-radius:var(--radius-sm);background:var(--primary-gradient);color:#fff;font-weight:600;font-size:13px;min-height:40px}
 .save-bar{padding:var(--sp-3) var(--gutter)}
-
-/* ============================ 我的页 ============================ */
 .profile-header{text-align:center;padding:var(--sp-8) var(--sp-5) var(--sp-6)}
 .profile-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto var(--sp-4);display:flex;align-items:center;justify-content:center;font-size:38px;background:linear-gradient(135deg,var(--primary-soft),color-mix(in srgb,var(--primary) 18%,transparent));box-shadow:0 6px 20px color-mix(in srgb,var(--primary) 18%,transparent)}
 .profile-name{font-size:21px;font-weight:800;margin-bottom:4px}
@@ -481,21 +307,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .menu-right{color:var(--text-secondary);font-size:12px;display:flex;align-items:center;gap:6px;font-weight:500;white-space:nowrap}
 .menu-right.is-danger{color:var(--danger);font-weight:600}
 .profile-footer{text-align:center;padding:var(--sp-5);color:var(--text-secondary);font-size:11px;line-height:1.9}
-
-/* ============================ 弹窗 ============================ */
-.modal-overlay{
-  position:absolute;inset:0;background:rgba(24,24,22,.55);backdrop-filter:blur(4px);
-  display:none;align-items:flex-end;z-index:100;
-}
+.modal-overlay{position:absolute;inset:0;background:rgba(24,24,22,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:100}
 .modal-overlay.show{display:flex}
 .modal-overlay[aria-hidden="true"]{pointer-events:none}
-.modal-content{
-  background:var(--surface);width:100%;max-height:92%;overflow-y:auto;overscroll-behavior:contain;
-  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-  padding:var(--sp-5) var(--sp-5) calc(var(--sp-6) + var(--safe-bottom));
-  box-shadow:var(--shadow-lg);transform:translateY(100%);
-  transition:transform var(--dur-slow) var(--ease-out);
-}
+.modal-content{background:var(--surface);width:100%;max-height:92%;overflow-y:auto;overscroll-behavior:contain;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:var(--sp-5) var(--sp-5) calc(var(--sp-6) + var(--safe-bottom));box-shadow:var(--shadow-lg);transform:translateY(100%);transition:transform var(--dur-slow) var(--ease-out)}
 .modal-overlay.show .modal-content{transform:translateY(0)}
 @media (prefers-reduced-motion:reduce){.modal-content{transition:none}}
 .modal-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid var(--border)}
@@ -505,15 +320,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .modal-close:hover{background:var(--primary-soft);color:var(--primary)}
 .field-label{font-size:13px;color:var(--text-secondary);margin-bottom:var(--sp-2);font-weight:600;display:flex;align-items:center;gap:var(--sp-2)}
 .field-label::before{content:"";width:4px;height:14px;background:var(--primary);border-radius:2px;flex-shrink:0}
-
 .option-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);margin-bottom:var(--sp-4)}
 .option-grid.cols-2{grid-template-columns:repeat(2,1fr)}
-.option-btn{
-  padding:10px 4px;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--surface);
-  text-align:center;font-size:12px;font-weight:600;color:var(--text-secondary);min-height:56px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  transition:border-color var(--dur-fast),background-color var(--dur-fast),color var(--dur-fast),transform var(--dur-fast);
-}
+.option-btn{padding:10px 4px;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--surface);text-align:center;font-size:12px;font-weight:600;color:var(--text-secondary);min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:border-color var(--dur-fast),background-color var(--dur-fast),color var(--dur-fast),transform var(--dur-fast)}
 .option-btn:hover{border-color:color-mix(in srgb,var(--primary) 40%,transparent)}
 .option-btn:active{transform:scale(.96)}
 .option-btn.active{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
@@ -524,7 +333,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .quick-tag:hover{background:var(--primary-soft);color:var(--primary)}
 .quick-tag.danger{color:var(--danger);background:var(--danger-soft)}
 .quick-tag:disabled{opacity:.45;cursor:not-allowed}
-
 .hours-box{background:var(--bg);border-radius:var(--radius-md);padding:0 var(--sp-4);margin-bottom:var(--sp-4)}
 .hours-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-3) 0;border-bottom:1.5px solid var(--border)}
 .hours-row:last-child{border-bottom:none}
@@ -534,18 +342,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .hours-btn{width:44px;height:44px;min-width:44px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);font-size:14px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;transition:background-color var(--dur-fast),border-color var(--dur-fast),color var(--dur-fast)}
 .hours-btn:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
 .hours-btn:disabled{opacity:.4;cursor:not-allowed}
-.hours-value{
-  min-width:72px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:19px;font-weight:800;color:var(--primary);border-radius:var(--radius-sm);
-  font-variant-numeric:tabular-nums;transition:background-color var(--dur-fast);
-}
+.hours-value{min-width:72px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:var(--primary);border-radius:var(--radius-sm);font-variant-numeric:tabular-nums;transition:background-color var(--dur-fast)}
 .hours-value:hover{background:var(--primary-soft)}
 .hours-value.ot{color:var(--accent)}
 .hours-value.ot:hover{background:var(--accent-soft)}
 .hours-input{width:74px;padding:8px;text-align:center;font-size:17px;font-weight:800;color:var(--primary);border:2px solid var(--primary);border-radius:var(--radius-sm);background:var(--surface);-moz-appearance:textfield}
 .hours-input.ot{color:var(--accent);border-color:var(--accent)}
 .hours-input::-webkit-outer-spin-button,.hours-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-
 .collapse-section{margin-bottom:var(--sp-4);background:var(--bg);border-radius:var(--radius-md);overflow:hidden}
 .collapse-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);width:100%;padding:var(--sp-3) var(--sp-4);text-align:left}
 .collapse-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:var(--sp-2)}
@@ -553,7 +356,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .collapse-arrow.open{transform:rotate(180deg)}
 .collapse-body{display:grid;gap:var(--sp-2);padding:0 var(--sp-4) var(--sp-4);transition:opacity var(--dur-base),transform var(--dur-base),visibility var(--dur-base)}
 .collapse-body.collapsed{grid-template-rows:0fr;height:0;padding:0 var(--sp-4);opacity:0;transform:translateY(-6px);visibility:hidden;pointer-events:none;overflow:hidden}
-
 .note-toggle{display:flex;align-items:center;gap:var(--sp-2);width:100%;padding:var(--sp-3) 0;color:var(--text-secondary);font-size:14px;font-weight:500;border-top:1px solid var(--border);text-align:left}
 .note-toggle:hover{color:var(--primary)}
 .note-toggle .arrow{margin-left:auto;font-size:11px}
@@ -561,7 +363,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .note-area.show{display:block}
 .note-area textarea{width:100%;height:76px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-md);resize:none;font-size:14px;background:var(--surface);transition:border-color var(--dur-base),box-shadow var(--dur-base)}
 .note-area textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
-
 .action-btns{display:flex;gap:var(--sp-3);margin-top:var(--sp-4)}
 .action-btn{flex:1;min-height:50px;padding:14px;border-radius:var(--radius-full);font-size:16px;font-weight:700;text-align:center;transition:transform var(--dur-base) var(--ease-spring),box-shadow var(--dur-base),opacity var(--dur-base)}
 .action-btn:active{transform:scale(.97)}
@@ -576,14 +377,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .confirm-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:15px;background:var(--bg)}
 .confirm-input:focus{border-color:var(--danger)}
 .backup-btn{width:100%;padding:12px;border-radius:var(--radius-md);background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:14px;border:1.5px solid color-mix(in srgb,var(--primary) 24%,transparent)}
-
 .export-options{display:flex;flex-direction:column;gap:var(--sp-2)}
 .export-option{display:flex;align-items:center;gap:var(--sp-3);width:100%;padding:var(--sp-4);background:var(--bg);border-radius:var(--radius-md);border:2px solid transparent;text-align:left;transition:border-color var(--dur-base),background-color var(--dur-base)}
 .export-option:hover{border-color:color-mix(in srgb,var(--primary) 30%,transparent);background:var(--primary-soft)}
 .export-icon{width:42px;height:42px;min-width:42px;background:var(--surface);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:var(--shadow-sm)}
 .export-title{font-size:15px;font-weight:700}
 .export-desc{font-size:12px;color:var(--text-secondary);margin-top:2px}
-
 .dropzone{width:100%;border:2px dashed var(--border-strong);border-radius:var(--radius-lg);padding:var(--sp-8) var(--sp-5);text-align:center;background:var(--bg);transition:border-color var(--dur-base),background-color var(--dur-base)}
 .dropzone:hover,.dropzone.dragover{border-color:var(--primary);background:var(--primary-soft)}
 .dropzone-icon{font-size:38px;margin-bottom:var(--sp-2);opacity:.75}
@@ -599,36 +398,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .warn-box{color:var(--danger);background:var(--danger-soft);font-size:12px;font-weight:600;padding:10px 12px;border-radius:var(--radius-sm);margin-top:var(--sp-3);display:none;line-height:1.7}
 .warn-box.show{display:block}
 .error-list{margin:var(--sp-2) 0 0;padding-left:18px;font-size:12px;color:var(--text-secondary);line-height:1.8;max-height:120px;overflow-y:auto}
-
-/* ============================ Toast ============================
- * 位置：屏幕上方居中（原来在底部，会被"一键打卡"按钮遮住，容易被忽略）。
- * 视觉：半透明白底 + 深色文字 + 毛玻璃，比原来的实色块更轻、不喧宾夺主。
- * 宽度：收窄到 320px 并居中；图标与文字都居中。
- * z-index 高于弹窗(100)，保证任何界面状态下都可见。 */
-.toast-wrap{
-  position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));
-  display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
-  z-index:400;pointer-events:none;padding:0 var(--sp-4);
-}
-.toast{
-  display:flex;align-items:center;justify-content:center;gap:var(--sp-2);
-  width:auto;max-width:320px;min-width:150px;
-  padding:12px 20px;border-radius:var(--radius-md);
-  font-size:14px;font-weight:700;text-align:center;line-height:1.45;
-  color:var(--text);
-  background:rgba(255,255,255,.82);
-  backdrop-filter:blur(14px) saturate(160%);
-  -webkit-backdrop-filter:blur(14px) saturate(160%);
-  box-shadow:0 8px 28px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.06);
-  pointer-events:auto;
-  animation:toastIn var(--dur-slow) var(--ease-spring);
-}
-/* 图标：细描边小圆，只靠颜色传达语义，不再用实心色块堆叠 */
-.toast .toast-icon{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:18px;height:18px;min-width:18px;border-radius:50%;
-  font-size:12px;font-weight:800;line-height:1;color:#fff;
-}
+.toast-wrap{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);z-index:400;pointer-events:none;padding:0 var(--sp-4)}
+.toast{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);width:auto;max-width:320px;min-width:150px;padding:12px 20px;border-radius:var(--radius-md);font-size:14px;font-weight:700;text-align:center;line-height:1.45;color:var(--text);background:rgba(255,255,255,.82);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);box-shadow:0 8px 28px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.06);pointer-events:auto;animation:toastIn var(--dur-slow) var(--ease-spring)}
+.toast .toast-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;border-radius:50%;font-size:12px;font-weight:800;line-height:1;color:#fff}
 .toast.success .toast-icon{background:var(--success-graphic)}
 .toast.error .toast-icon{background:var(--danger-graphic)}
 .toast.info .toast-icon{background:var(--info)}
@@ -643,26 +415,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
   .toast.error{color:var(--danger-graphic)}
 }
 @media (prefers-reduced-motion:reduce){.toast{animation:none}}
-
-/* ============================ 认证页 ============================ */
-.auth-page{
-  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
-  min-height:100dvh;overflow-y:auto;overscroll-behavior:contain;
-  padding:24px calc(20px + var(--safe-left)) calc(24px + var(--safe-bottom));
-  background:linear-gradient(150deg,#4A7D6A 0%,#2F5445 100%);
-}
-.auth-box{
-  background:var(--surface);color:var(--text);border-radius:var(--radius-lg);
-  padding:34px 26px;width:100%;max-width:380px;margin:auto;box-shadow:var(--shadow-lg);
-}
+.auth-page{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;min-height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:24px calc(20px + var(--safe-left)) calc(24px + var(--safe-bottom));background:linear-gradient(150deg,#4A7D6A 0%,#2F5445 100%)}
+.auth-box{background:var(--surface);color:var(--text);border-radius:var(--radius-lg);padding:34px 26px;width:100%;max-width:380px;margin:auto;box-shadow:var(--shadow-lg)}
 .auth-title{text-align:center;margin-bottom:6px;color:var(--primary);font-size:23px;font-weight:800}
 .auth-subtitle{text-align:center;color:var(--text-secondary);font-size:13px;margin-bottom:var(--sp-5)}
 .form-group{margin-bottom:var(--sp-4)}
 .form-group label{display:block;margin-bottom:6px;font-size:13px;color:var(--text-secondary);font-weight:600}
-.form-group input{
-  width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--radius-md);
-  font-size:15px;background:var(--bg);color:var(--text);transition:border-color var(--dur-base),box-shadow var(--dur-base);
-}
+.form-group input{width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--radius-md);font-size:15px;background:var(--bg);color:var(--text);transition:border-color var(--dur-base),box-shadow var(--dur-base)}
 .form-group input:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
 .form-group input[aria-invalid="true"]{border-color:var(--danger)}
 .field-error{display:none;font-size:12px;color:var(--danger);margin-top:5px;font-weight:600}
@@ -672,31 +431,23 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .auth-msg.error{background:var(--danger-soft);color:var(--danger)}
 .auth-msg.warn{background:var(--accent-soft);color:var(--accent)}
 .auth-msg.info{background:var(--primary-soft);color:var(--primary)}
-.auth-btn{
-  width:100%;min-height:50px;padding:14px;border-radius:var(--radius-md);font-size:16px;font-weight:700;
-  background:var(--primary-gradient);color:#fff;box-shadow:var(--shadow-primary);position:relative;
-  transition:opacity var(--dur-base),transform var(--dur-base);
-}
+.auth-btn{width:100%;min-height:50px;padding:14px;border-radius:var(--radius-md);font-size:16px;font-weight:700;background:var(--primary-gradient);color:#fff;box-shadow:var(--shadow-primary);position:relative;transition:opacity var(--dur-base),transform var(--dur-base)}
 .auth-btn:active{transform:scale(.98)}
 .auth-btn[disabled]{opacity:.65;cursor:not-allowed}
 .auth-switch{text-align:center;margin-top:var(--sp-4);font-size:13px;color:var(--text-secondary)}
 .auth-switch button{color:var(--primary);font-weight:700;font-size:13px;min-height:44px;padding:0 6px}
 .auth-foot{text-align:center;margin-top:var(--sp-5);font-size:11px;color:var(--text-secondary);line-height:1.8}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
-
-/* ============================ 骨架屏 ============================ */
 .skeleton{background:linear-gradient(90deg,var(--border) 25%,var(--surface-hover) 37%,var(--border) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:var(--radius-md)}
 @keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
 @media (prefers-reduced-motion:reduce){.skeleton{animation:none}}
-
-/* ============================ 响应式与打印 ============================ */
 @media (orientation:landscape) and (max-height:520px){
   .header{padding-top:calc(6px + var(--safe-top));padding-bottom:8px}
   .header-month .month-label{font-size:18px}
   .stats-bar{padding:8px;margin-top:8px}
   .progress-wrap{margin-top:6px}
   .calendar-wrap{padding:8px 10px}
-  .days-grid{grid-auto-rows:clamp(38px,13vw,48px)}   /* 横屏压缩行高，仍保证两行文字 */
+  .days-grid{grid-auto-rows:clamp(38px,13vw,48px)}
   .day-sub{font-size:9px}
 }
 @media (max-width:359px){
@@ -715,33 +466,25 @@ input:focus-visible,textarea:focus-visible{outline:none}
 </head>
 <body>
 
-<!-- ======================= 登录 / 注册 ======================= -->
 <div class="auth-page" id="authPage">
   <form class="auth-box" id="authForm" novalidate>
     <h1 class="auth-title">⏱️ 工时记录</h1>
     <p class="auth-subtitle" id="authSubtitle">登录到您的账户</p>
     <div class="auth-msg" id="authMsg" role="status" aria-live="polite"></div>
-
     <div class="form-group">
       <label for="username">用户名</label>
-      <input type="text" id="username" name="username" placeholder="3-32 位字母、数字、_ 或 -"
-             autocomplete="username" inputmode="text" autocapitalize="off" autocorrect="off"
-             spellcheck="false" maxlength="32" required aria-describedby="usernameError">
+      <input type="text" id="username" name="username" placeholder="3-32 位字母、数字、_ 或 -" autocomplete="username" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" required aria-describedby="usernameError">
       <div class="field-error" id="usernameError"></div>
     </div>
-
     <div class="form-group">
       <label for="password">密码</label>
-      <input type="password" id="password" name="password" placeholder="请输入密码"
-             autocomplete="current-password" required aria-describedby="passwordError">
+      <input type="password" id="password" name="password" placeholder="请输入密码" autocomplete="current-password" required aria-describedby="passwordError">
       <div class="field-error" id="passwordError"></div>
     </div>
-
     <div class="form-group hidden" id="confirmGroup">
       <label for="confirmPassword">确认密码</label>
       <input type="password" id="confirmPassword" placeholder="再次输入密码" autocomplete="new-password">
     </div>
-
     <button class="auth-btn" id="authBtn" type="submit">登录</button>
     <div class="auth-switch">
       <span id="authSwitchText">还没有账号？</span>
@@ -751,7 +494,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
   </form>
 </div>
 
-<!-- ======================= 主应用 ======================= -->
 <div id="app">
   <header class="header">
     <div class="header-top">
@@ -765,43 +507,31 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <span id="syncText">未连接</span>
       </button>
     </div>
-
     <div class="header-month">
       <button class="nav-arrow" type="button" id="prevMonth" aria-label="上一个月">◀</button>
       <span class="month-label" id="headerMonth" aria-live="polite">八月</span>
       <button class="nav-arrow" type="button" id="nextMonth" aria-label="下一个月">▶</button>
       <button class="today-btn hidden" type="button" id="todayBtn">今天</button>
     </div>
-
     <div class="stats-bar">
-      <div class="stat-item">
-        <div class="stat-value" id="stDays">0天</div>
-        <div class="stat-label">📅 出勤</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stHours">0H</div>
-        <div class="stat-label">🕐 工时</div>
-      </div>
+      <div class="stat-item"><div class="stat-value" id="stDays">0天</div><div class="stat-label">📅 出勤</div></div>
+      <div class="stat-item"><div class="stat-value" id="stHours">0H</div><div class="stat-label">🕐 工时</div></div>
       <button class="stat-item" type="button" id="incomeStatItem" data-action="toggle-income" aria-pressed="false">
         <div class="stat-value" id="stMoney">¥0</div>
         <div class="stat-label" id="stMoneyLabel">💰 收入</div>
       </button>
     </div>
-
     <div class="progress-wrap">
       <div class="progress-bg"><div class="progress-fill" id="monthProgress"></div></div>
       <div class="progress-text"><span>本月时间进度</span><span id="progressText">0%</span></div>
     </div>
   </header>
 
-  <!-- 记录 -->
   <section class="page active" id="pageRecord" role="tabpanel" aria-labelledby="navRecord">
     <div class="page-scroll">
       <div class="calendar-wrap">
         <div class="calendar-inner" id="calendarInner">
-          <div class="weekdays" aria-hidden="true">
-            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
-          </div>
+          <div class="weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
           <div class="days-grid" id="calGrid" role="grid" aria-label="月历"></div>
           <div class="swipe-hint left" id="swipeLeft" aria-hidden="true">‹</div>
           <div class="swipe-hint right" id="swipeRight" aria-hidden="true">›</div>
@@ -815,7 +545,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     </div>
   </section>
 
-  <!-- 统计 -->
   <section class="page" id="pageStats" role="tabpanel" aria-labelledby="navStats">
     <div class="page-scroll">
       <div class="card">
@@ -841,7 +570,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     </div>
   </section>
 
-  <!-- 计算器 -->
   <section class="page" id="pageCalculator" role="tabpanel" aria-labelledby="navCalculator">
     <div class="page-scroll">
       <div class="calc-tabs" role="tablist" aria-label="计算工具">
@@ -849,17 +577,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <button class="calc-tab" type="button" role="tab" aria-selected="false" data-tab="salary">工资</button>
         <button class="calc-tab" type="button" role="tab" aria-selected="false" data-tab="simple">计算器</button>
       </div>
-
-      <!-- 个税 -->
       <div class="calc-panel active" id="calcTax" role="tabpanel">
         <div class="calc-group">
           <label for="taxIncome">税前月收入（元）</label>
-          <div class="calc-input-wrap">
-            <span class="prefix">¥</span>
-            <input type="number" id="taxIncome" value="15000" step="100" min="0" max="10000000" inputmode="decimal" enterkeyhint="done">
-          </div>
+          <div class="calc-input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal" enterkeyhint="done"></div>
         </div>
-
         <div class="calc-group">
           <label>五险一金比例（%）</label>
           <div class="ins-grid">
@@ -870,7 +592,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           </div>
           <p class="calc-hint">按实际缴纳比例填写，0 表示不扣除</p>
         </div>
-
         <div class="panel-box">
           <div class="panel-box-title">📋 计算明细</div>
           <div class="detail-row"><span class="label">税前收入</span><span class="value" id="dtGross">¥0</span></div>
@@ -882,7 +603,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           <div class="detail-row"><span class="label">速算扣除数</span><span class="value" id="dtQuick">¥0</span></div>
           <div class="detail-row"><span class="label">应缴个税</span><span class="value" id="dtTax">¥0</span></div>
         </div>
-
         <div class="result-box emphasis">
           <div style="flex:1;min-width:0">
             <div class="result-label" style="color:var(--text);font-weight:700">💰 税后收入</div>
@@ -890,13 +610,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
           </div>
           <div class="result-value net" id="dtNet" style="margin-top:0">¥0</div>
         </div>
-
         <div class="calc-group" style="margin-top:16px">
           <label id="deductionLabel">专项附加扣除（元/月）— 点击卡片启用，金额可改</label>
           <div class="deduction-list" id="taxDeductions"></div>
           <div class="deduction-total"><span>专项附加扣除合计</span><b id="taxDeductionTotal">¥0</b></div>
         </div>
-
         <div class="result-box emphasis" style="margin-bottom:0">
           <div style="flex:1;min-width:0">
             <div class="result-label">剩余收入 = 税后 − 专项扣除 − 其他开支</div>
@@ -904,39 +622,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
           </div>
           <div class="result-value net" id="residualIncome" style="font-size:24px;margin-top:0">¥0</div>
         </div>
-
         <p class="calc-note">基于 2025 年综合所得税率表（起征点 5000 元/月）<br>专项附加扣除标准：子女教育/婴幼儿照护 2000 元/孩·月</p>
       </div>
-
-      <!-- 工资 -->
       <div class="calc-panel" id="calcSalary" role="tabpanel">
-        <div class="calc-group">
-          <label for="salaryRate">时薪（元/小时）</label>
-          <div class="calc-input-wrap"><span class="prefix">¥</span><input type="number" id="salaryRate" value="43" step=".5" min="0" max="10000" inputmode="decimal"></div>
-        </div>
-        <div class="calc-group">
-          <label for="salaryHours">每日工时（小时）</label>
-          <div class="calc-input-wrap"><input type="number" id="salaryHours" value="8" step=".5" min="0" max="24" inputmode="decimal"><span class="suffix">h</span></div>
-        </div>
-        <div class="calc-group">
-          <label for="salaryDays">每月工作天数</label>
-          <div class="calc-input-wrap"><input type="number" id="salaryDays" value="21.75" step=".5" min="0" max="31" inputmode="decimal"><span class="suffix">天</span></div>
-        </div>
-        <div class="result-box">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><div class="result-label">日薪</div><div class="result-value" id="salaryDaily">¥0</div></div>
-            <div><div class="result-label">月薪</div><div class="result-value" id="salaryMonthly">¥0</div></div>
-          </div>
-        </div>
+        <div class="calc-group"><label for="salaryRate">时薪（元/小时）</label><div class="calc-input-wrap"><span class="prefix">¥</span><input type="number" id="salaryRate" value="43" step=".5" min="0" max="10000" inputmode="decimal"></div></div>
+        <div class="calc-group"><label for="salaryHours">每日工时（小时）</label><div class="calc-input-wrap"><input type="number" id="salaryHours" value="8" step=".5" min="0" max="24" inputmode="decimal"><span class="suffix">h</span></div></div>
+        <div class="calc-group"><label for="salaryDays">每月工作天数</label><div class="calc-input-wrap"><input type="number" id="salaryDays" value="21.75" step=".5" min="0" max="31" inputmode="decimal"><span class="suffix">天</span></div></div>
+        <div class="result-box"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div class="result-label">日薪</div><div class="result-value" id="salaryDaily">¥0</div></div><div><div class="result-label">月薪</div><div class="result-value" id="salaryMonthly">¥0</div></div></div></div>
         <p class="calc-note">日薪 = 时薪 × 每日工时；月薪 = 日薪 × 每月工作天数</p>
       </div>
-
-      <!-- 计算器 -->
       <div class="calc-panel" id="calcSimple" role="tabpanel">
-        <div class="calc-display">
-          <div class="calc-expr" id="calcExpr"></div>
-          <div class="calc-result" id="calcResult" aria-live="polite">0</div>
-        </div>
+        <div class="calc-display"><div class="calc-expr" id="calcExpr"></div><div class="calc-result" id="calcResult" aria-live="polite">0</div></div>
         <div class="calc-keys" id="calcKeys">
           <button class="calc-key" type="button" data-key="C">C</button>
           <button class="calc-key del" type="button" data-key="⌫" aria-label="退格">⌫</button>
@@ -964,7 +660,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     </div>
   </section>
 
-  <!-- 目标 / 设置 -->
   <section class="page" id="pageSettings" role="tabpanel" aria-labelledby="navSettings">
     <div class="page-scroll">
       <div class="section-block">
@@ -977,66 +672,30 @@ input:focus-visible,textarea:focus-visible{outline:none}
             <button class="mode-switch" type="button" id="modeSwitch">⇄ 切换</button>
           </div>
         </div>
-
         <div id="hourlyForm">
           <div class="input-card">
-            <div class="input-row">
-              <label class="input-label" for="inNormal">日常时薪 / H</label>
-              <div class="input-value" style="color:var(--primary)">¥<input type="number" id="inNormal" step=".5" min="0" max="10000" inputmode="decimal"></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inHoliday">节假时薪 / H</label>
-              <div class="input-value" style="color:var(--danger)">¥<input type="number" id="inHoliday" step=".5" min="0" max="10000" inputmode="decimal" style="color:var(--danger)"></div>
-            </div>
+            <div class="input-row"><label class="input-label" for="inNormal">日常时薪 / H</label><div class="input-value" style="color:var(--primary)">¥<input type="number" id="inNormal" step=".5" min="0" max="10000" inputmode="decimal"></div></div>
+            <div class="input-row"><label class="input-label" for="inHoliday">节假时薪 / H</label><div class="input-value" style="color:var(--danger)">¥<input type="number" id="inHoliday" step=".5" min="0" max="10000" inputmode="decimal" style="color:var(--danger)"></div></div>
           </div>
           <p class="hint-text">💡 小时工平时加班不进行加倍计算，节假可单独设置时薪</p>
         </div>
-
         <div id="salaryForm" class="hidden">
           <div class="input-card">
-            <div class="input-row">
-              <label class="input-label" for="inBaseSalary">底薪（月薪）</label>
-              <div class="input-value" style="color:var(--primary)">¥<input type="number" id="inBaseSalary" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inSalaryDays">月计薪天数</label>
-              <div class="input-value"><input type="number" id="inSalaryDays" step=".25" min="1" max="31" inputmode="decimal"><span class="unit">天</span></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inSalaryHours">每日工时</label>
-              <div class="input-value"><input type="number" id="inSalaryHours" step=".5" min="1" max="24" inputmode="decimal"><span class="unit">H</span></div>
-            </div>
+            <div class="input-row"><label class="input-label" for="inBaseSalary">底薪（月薪）</label><div class="input-value" style="color:var(--primary)">¥<input type="number" id="inBaseSalary" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
+            <div class="input-row"><label class="input-label" for="inSalaryDays">月计薪天数</label><div class="input-value"><input type="number" id="inSalaryDays" step=".25" min="1" max="31" inputmode="decimal"><span class="unit">天</span></div></div>
+            <div class="input-row"><label class="input-label" for="inSalaryHours">每日工时</label><div class="input-value"><input type="number" id="inSalaryHours" step=".5" min="1" max="24" inputmode="decimal"><span class="unit">H</span></div></div>
           </div>
-
           <div class="input-card" style="margin-top:14px">
-            <div class="input-row" style="border-bottom:none;padding-bottom:4px">
-              <span class="input-label" style="font-size:13px;color:var(--text-secondary)">💰 时薪倍数</span>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inRateNormal">正班</label>
-              <div class="input-value"><input type="number" id="inRateNormal" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewNormal">¥0/H</span></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inRateOt">加班</label>
-              <div class="input-value"><input type="number" id="inRateOt" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewOt" style="color:var(--success)">¥0/H</span></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inRateWeekend">周末</label>
-              <div class="input-value"><input type="number" id="inRateWeekend" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewWeekend" style="color:var(--accent)">¥0/H</span></div>
-            </div>
-            <div class="input-row">
-              <label class="input-label" for="inRateHoliday">节假</label>
-              <div class="input-value"><input type="number" id="inRateHoliday" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewHoliday" style="color:var(--danger)">¥0/H</span></div>
-            </div>
+            <div class="input-row" style="border-bottom:none;padding-bottom:4px"><span class="input-label" style="font-size:13px;color:var(--text-secondary)">💰 时薪倍数</span></div>
+            <div class="input-row"><label class="input-label" for="inRateNormal">正班</label><div class="input-value"><input type="number" id="inRateNormal" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewNormal">¥0/H</span></div></div>
+            <div class="input-row"><label class="input-label" for="inRateOt">加班</label><div class="input-value"><input type="number" id="inRateOt" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewOt" style="color:var(--success)">¥0/H</span></div></div>
+            <div class="input-row"><label class="input-label" for="inRateWeekend">周末</label><div class="input-value"><input type="number" id="inRateWeekend" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewWeekend" style="color:var(--accent)">¥0/H</span></div></div>
+            <div class="input-row"><label class="input-label" for="inRateHoliday">节假</label><div class="input-value"><input type="number" id="inRateHoliday" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewHoliday" style="color:var(--danger)">¥0/H</span></div></div>
           </div>
           <p class="hint-text">💡 基础时薪 = 底薪 ÷ 月计薪天数 ÷ 日工时；各时薪 = 基础时薪 × 对应倍数</p>
         </div>
-
         <div class="goal-card">
-          <div class="goal-header">
-            <span class="goal-title">🎯 月度工时目标</span>
-            <span class="goal-value" id="goalDisplay">0 / 0 h</span>
-          </div>
+          <div class="goal-header"><span class="goal-title">🎯 月度工时目标</span><span class="goal-value" id="goalDisplay">0 / 0 h</span></div>
           <div class="goal-bar"><div class="goal-bar-fill" id="goalBarFill"></div></div>
           <div class="goal-input-row">
             <label for="goalInput">目标工时</label>
@@ -1044,15 +703,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
             <button class="goal-btn" type="button" id="goalSaveBtn">保存</button>
           </div>
         </div>
-
-        <div class="save-bar">
-          <button class="clock-btn" type="button" id="saveSettingsBtn">💾 保存设置</button>
-        </div>
+        <div class="save-bar"><button class="clock-btn" type="button" id="saveSettingsBtn">💾 保存设置</button></div>
       </div>
     </div>
   </section>
 
-  <!-- 我的 -->
   <section class="page" id="pageProfile" role="tabpanel" aria-labelledby="navProfile">
     <div class="page-scroll">
       <div class="section-block">
@@ -1061,73 +716,32 @@ input:focus-visible,textarea:focus-visible{outline:none}
           <div class="profile-name" id="profileName">工时记录助手</div>
           <div class="profile-sub" id="profileSub">未连接</div>
         </div>
-
         <div class="menu-list">
-          <button class="menu-item" type="button" data-page="pageSettings">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">⚙️</span>薪资设置</span>
-            <span class="menu-right">▶</span>
-          </button>
-          <button class="menu-item" type="button" data-page="pageCalculator">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">🧮</span>计算器</span>
-            <span class="menu-right">▶</span>
-          </button>
-          <button class="menu-item" type="button" id="openExportBtn">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">📤</span>导出数据</span>
-            <span class="menu-right">JSON / CSV ▶</span>
-          </button>
-          <button class="menu-item" type="button" id="openImportBtn">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">📥</span>导入数据</span>
-            <span class="menu-right">恢复备份 ▶</span>
-          </button>
-          <button class="menu-item" type="button" id="clearAllBtn">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">🗑️</span>清空数据</span>
-            <span class="menu-right is-danger">⚠️ 危险 ▶</span>
-          </button>
-          <button class="menu-item" type="button" id="logoutBtn">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">🚪</span>退出登录</span>
-            <span class="menu-right is-danger">退出 ▶</span>
-          </button>
-          <div class="menu-item" style="cursor:default">
-            <span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span>
-            <span class="menu-right" id="versionText">v5.0.0</span>
-          </div>
+          <button class="menu-item" type="button" data-page="pageSettings"><span class="menu-left"><span class="menu-icon" aria-hidden="true">⚙️</span>薪资设置</span><span class="menu-right">▶</span></button>
+          <button class="menu-item" type="button" data-page="pageCalculator"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🧮</span>计算器</span><span class="menu-right">▶</span></button>
+          <button class="menu-item" type="button" id="openExportBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📤</span>导出数据</span><span class="menu-right">JSON / CSV ▶</span></button>
+          <button class="menu-item" type="button" id="openImportBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📥</span>导入数据</span><span class="menu-right">恢复备份 ▶</span></button>
+          <button class="menu-item" type="button" id="clearAllBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🗑️</span>清空数据</span><span class="menu-right is-danger">⚠️ 危险 ▶</span></button>
+          <button class="menu-item" type="button" id="deleteAccountBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">☠️</span>注销账号</span><span class="menu-right is-danger">永久删除 ▶</span></button>
+          <button class="menu-item" type="button" id="logoutBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🚪</span>退出登录</span><span class="menu-right is-danger">退出 ▶</span></button>
+          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.1.0</span></div>
         </div>
-
-        <p class="profile-footer">
-          数据保存到你的私有仓库，登录后自动同步<br>
-          多设备共享 · 冲突时按修改时间保留较新记录<br>
-          <span style="color:var(--primary);font-weight:600">建议定期导出备份</span>
-        </p>
+        <p class="profile-footer">数据保存到你的私有仓库，登录后自动同步<br>多设备共享 · 冲突时按修改时间保留较新记录<br><span style="color:var(--primary);font-weight:600">建议定期导出备份</span></p>
       </div>
     </div>
   </section>
 
   <nav class="bottom-nav" role="tablist" aria-label="主导航">
-    <button class="nav-item active" type="button" role="tab" aria-selected="true" id="navRecord" data-page="pageRecord">
-      <span class="nav-icon" aria-hidden="true">📝</span><span class="nav-label">记录</span>
-    </button>
-    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navStats" data-page="pageStats">
-      <span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">统计</span>
-    </button>
-    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navCalculator" data-page="pageCalculator">
-      <span class="nav-icon" aria-hidden="true">🧮</span><span class="nav-label">计算器</span>
-    </button>
-    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navSettings" data-page="pageSettings">
-      <span class="nav-icon" aria-hidden="true">🎯</span><span class="nav-label">目标</span>
-    </button>
-    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navProfile" data-page="pageProfile">
-      <span class="nav-icon" aria-hidden="true">👤</span><span class="nav-label">我的</span>
-    </button>
+    <button class="nav-item active" type="button" role="tab" aria-selected="true" id="navRecord" data-page="pageRecord"><span class="nav-icon" aria-hidden="true">📝</span><span class="nav-label">记录</span></button>
+    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navStats" data-page="pageStats"><span class="nav-icon" aria-hidden="true">📊</span><span class="nav-label">统计</span></button>
+    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navCalculator" data-page="pageCalculator"><span class="nav-icon" aria-hidden="true">🧮</span><span class="nav-label">计算器</span></button>
+    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navSettings" data-page="pageSettings"><span class="nav-icon" aria-hidden="true">🎯</span><span class="nav-label">目标</span></button>
+    <button class="nav-item" type="button" role="tab" aria-selected="false" id="navProfile" data-page="pageProfile"><span class="nav-icon" aria-hidden="true">👤</span><span class="nav-label">我的</span></button>
   </nav>
 
-  <!-- 打卡弹窗 -->
   <div class="modal-overlay" id="clockModal" role="dialog" aria-modal="true" aria-labelledby="clockModalTitle" aria-hidden="true">
     <div class="modal-content" id="clockModalContent">
-      <div class="modal-header">
-        <h2 class="modal-title" id="clockModalTitle">打卡 <span class="date-badge" id="modalDate"></span></h2>
-        <button class="modal-close" type="button" data-close="clockModal" aria-label="关闭">✕</button>
-      </div>
-
+      <div class="modal-header"><h2 class="modal-title" id="clockModalTitle">打卡 <span class="date-badge" id="modalDate"></span></h2><button class="modal-close" type="button" data-close="clockModal" aria-label="关闭">✕</button></div>
       <div class="field-label">选择班次</div>
       <div class="option-grid" id="shiftRow">
         <button class="option-btn active" type="button" data-shift="day"><span class="opt-icon" aria-hidden="true">☀️</span>白班</button>
@@ -1135,7 +749,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <button class="option-btn" type="button" data-shift="mid"><span class="opt-icon" aria-hidden="true">🌞</span>中班</button>
         <button class="option-btn" type="button" data-shift="night"><span class="opt-icon" aria-hidden="true">🌙</span>晚班</button>
       </div>
-
       <div class="field-label">记录类型</div>
       <div class="option-grid" id="typeRow">
         <button class="option-btn active compact" type="button" data-type="normal">正班</button>
@@ -1143,7 +756,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <button class="option-btn compact" type="button" data-type="holiday">节假</button>
         <button class="option-btn compact" type="button" data-type="daily">日结</button>
       </div>
-
       <div class="field-label">快捷操作</div>
       <div class="quick-tags">
         <button class="quick-tag" type="button" data-quick="preset">全勤 8h</button>
@@ -1151,33 +763,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <button class="quick-tag" type="button" data-quick="ot15">加班 +1.5h</button>
         <button class="quick-tag danger" type="button" data-quick="clear">🗑 清零</button>
       </div>
-
       <div class="hours-box">
-        <div class="hours-row">
-          <span class="hours-label">正常上班 <span class="hint">(正班)</span></span>
-          <div class="hours-control">
-            <button class="hours-btn" type="button" data-adjust="normal" data-delta="-0.5" aria-label="正班减少半小时">−0.5</button>
-            <button class="hours-value" type="button" id="valNormal" data-edit="normal" aria-label="编辑正班工时">8.0 H</button>
-            <input class="hours-input hidden" type="number" id="inputNormal" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="正班工时输入">
-            <button class="hours-btn" type="button" data-adjust="normal" data-delta="0.5" aria-label="正班增加半小时">+0.5</button>
-          </div>
-        </div>
-        <div class="hours-row">
-          <span class="hours-label">正常加班 <span class="hint">(额外)</span></span>
-          <div class="hours-control">
-            <button class="hours-btn" type="button" data-adjust="ot" data-delta="-0.5" aria-label="加班减少半小时">−0.5</button>
-            <button class="hours-value ot" type="button" id="valOt" data-edit="ot" aria-label="编辑加班工时">0.0 H</button>
-            <input class="hours-input ot hidden" type="number" id="inputOt" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="加班工时输入">
-            <button class="hours-btn" type="button" data-adjust="ot" data-delta="0.5" aria-label="加班增加半小时">+0.5</button>
-          </div>
-        </div>
+        <div class="hours-row"><span class="hours-label">正常上班 <span class="hint">(正班)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="normal" data-delta="-0.5" aria-label="正班减少半小时">−0.5</button><button class="hours-value" type="button" id="valNormal" data-edit="normal" aria-label="编辑正班工时">8.0 H</button><input class="hours-input hidden" type="number" id="inputNormal" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="正班工时输入"><button class="hours-btn" type="button" data-adjust="normal" data-delta="0.5" aria-label="正班增加半小时">+0.5</button></div></div>
+        <div class="hours-row"><span class="hours-label">正常加班 <span class="hint">(额外)</span></span><div class="hours-control"><button class="hours-btn" type="button" data-adjust="ot" data-delta="-0.5" aria-label="加班减少半小时">−0.5</button><button class="hours-value ot" type="button" id="valOt" data-edit="ot" aria-label="编辑加班工时">0.0 H</button><input class="hours-input ot hidden" type="number" id="inputOt" step=".5" min="0" max="24" inputmode="decimal" enterkeyhint="done" aria-label="加班工时输入"><button class="hours-btn" type="button" data-adjust="ot" data-delta="0.5" aria-label="加班增加半小时">+0.5</button></div></div>
       </div>
-
       <div class="collapse-section">
-        <button class="collapse-header" type="button" id="leaveToggle" aria-expanded="false" aria-controls="leaveGrid">
-          <span class="collapse-title">🍵 状态</span>
-          <span class="collapse-arrow" id="leaveArrow" aria-hidden="true">▼</span>
-        </button>
+        <button class="collapse-header" type="button" id="leaveToggle" aria-expanded="false" aria-controls="leaveGrid"><span class="collapse-title">🍵 状态</span><span class="collapse-arrow" id="leaveArrow" aria-hidden="true">▼</span></button>
         <div class="collapse-body collapsed" id="leaveGrid">
           <div class="option-grid" style="margin-bottom:0">
             <button class="option-btn active" type="button" data-leave="none"><span class="opt-icon" aria-hidden="true">💼</span>上班</button>
@@ -1187,56 +778,27 @@ input:focus-visible,textarea:focus-visible{outline:none}
           </div>
         </div>
       </div>
-
-      <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteArea">
-        <span aria-hidden="true">📝</span><span>添加备注</span><span class="arrow" id="noteArrow" aria-hidden="true">▼</span>
-      </button>
-      <div class="note-area" id="noteArea">
-        <textarea id="noteInput" maxlength="500" placeholder="添加备注，例如：夜班补贴 30 元"></textarea>
-      </div>
-
-      <div class="action-btns">
-        <button class="action-btn btn-cancel" type="button" data-close="clockModal">取消</button>
-        <button class="action-btn btn-save" type="button" id="clockSaveBtn">保存记录</button>
-      </div>
+      <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteArea"><span aria-hidden="true">📝</span><span>添加备注</span><span class="arrow" id="noteArrow" aria-hidden="true">▼</span></button>
+      <div class="note-area" id="noteArea"><textarea id="noteInput" maxlength="500" placeholder="添加备注，例如：夜班补贴 30 元"></textarea></div>
+      <div class="action-btns"><button class="action-btn btn-cancel" type="button" data-close="clockModal">取消</button><button class="action-btn btn-save" type="button" id="clockSaveBtn">保存记录</button></div>
     </div>
   </div>
 
-  <!-- 导出弹窗 -->
   <div class="modal-overlay" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportTitle" aria-hidden="true">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title" id="exportTitle">📤 导出数据</h2>
-        <button class="modal-close" type="button" data-close="exportModal" aria-label="关闭">✕</button>
-      </div>
+      <div class="modal-header"><h2 class="modal-title" id="exportTitle">📤 导出数据</h2><button class="modal-close" type="button" data-close="exportModal" aria-label="关闭">✕</button></div>
       <div class="export-options">
-        <button class="export-option" type="button" id="exportJsonBtn">
-          <span class="export-icon" aria-hidden="true">📋</span>
-          <span><span class="export-title">导出 JSON</span><span class="export-desc">完整备份，可随时导入恢复</span></span>
-        </button>
-        <button class="export-option" type="button" id="exportCsvBtn">
-          <span class="export-icon" aria-hidden="true">📊</span>
-          <span><span class="export-title">导出 CSV</span><span class="export-desc">Excel 可直接打开，便于表格统计</span></span>
-        </button>
+        <button class="export-option" type="button" id="exportJsonBtn"><span class="export-icon" aria-hidden="true">📋</span><span><span class="export-title">导出 JSON</span><span class="export-desc">完整备份，可随时导入恢复</span></span></button>
+        <button class="export-option" type="button" id="exportCsvBtn"><span class="export-icon" aria-hidden="true">📊</span><span><span class="export-title">导出 CSV</span><span class="export-desc">Excel 可直接打开，便于表格统计</span></span></button>
       </div>
     </div>
   </div>
 
-  <!-- 导入弹窗 -->
   <div class="modal-overlay" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importTitle" aria-hidden="true">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title" id="importTitle">📥 导入数据</h2>
-        <button class="modal-close" type="button" data-close="importModal" aria-label="关闭">✕</button>
-      </div>
-
-      <button class="dropzone" type="button" id="dropzone">
-        <div class="dropzone-icon" aria-hidden="true">📂</div>
-        <div class="dropzone-text">点击选择 JSON 文件<br>或将文件拖到此处</div>
-        <div class="dropzone-hint">支持本工具导出的 .json 备份</div>
-      </button>
+      <div class="modal-header"><h2 class="modal-title" id="importTitle">📥 导入数据</h2><button class="modal-close" type="button" data-close="importModal" aria-label="关闭">✕</button></div>
+      <button class="dropzone" type="button" id="dropzone"><div class="dropzone-icon" aria-hidden="true">📂</div><div class="dropzone-text">点击选择 JSON 文件<br>或将文件拖到此处</div><div class="dropzone-hint">支持本工具导出的 .json 备份</div></button>
       <input type="file" class="hidden" id="importFile" accept=".json,application/json">
-
       <div class="preview-box" id="importPreview">
         <div class="preview-title">📋 文件预览</div>
         <div class="preview-row"><span class="preview-label">记录条数</span><span class="preview-value" id="previewRecords">0</span></div>
@@ -1245,38 +807,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <div class="preview-row"><span class="preview-label">版本</span><span class="preview-value" id="previewVersion">-</span></div>
         <div id="previewErrors"></div>
       </div>
-
       <div class="field-label" style="margin-top:16px" id="strategyLabel">导入方式</div>
       <div class="option-grid cols-2" id="strategyRow">
-        <button class="option-btn active" type="button" data-strategy="merge">
-          <span>智能合并</span><span style="font-size:11px;font-weight:500">保留现有，按时间取新</span>
-        </button>
-        <button class="option-btn" type="button" data-strategy="overwrite">
-          <span>完全覆盖</span><span style="font-size:11px;font-weight:500">用备份替换全部数据</span>
-        </button>
+        <button class="option-btn active" type="button" data-strategy="merge"><span>智能合并</span><span style="font-size:11px;font-weight:500">保留现有，按时间取新</span></button>
+        <button class="option-btn" type="button" data-strategy="overwrite"><span>完全覆盖</span><span style="font-size:11px;font-weight:500">用备份替换全部数据</span></button>
       </div>
       <div class="warn-box" id="importWarn">⚠️ 覆盖后当前所有记录将被替换，且会同步到云端。建议先导出备份。</div>
-
-      <div class="action-btns" id="importActions" style="display:none">
-        <button class="action-btn btn-cancel" type="button" data-close="importModal">取消</button>
-        <button class="action-btn btn-save" type="button" id="importConfirmBtn">确认导入</button>
-      </div>
+      <div class="action-btns" id="importActions" style="display:none"><button class="action-btn btn-cancel" type="button" data-close="importModal">取消</button><button class="action-btn btn-save" type="button" id="importConfirmBtn">确认导入</button></div>
     </div>
   </div>
 
-  <!-- 危险操作确认弹窗 -->
   <div class="modal-overlay" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-hidden="true">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title" id="confirmTitle">确认操作</h2>
-        <button class="modal-close" type="button" data-close="confirmModal" aria-label="关闭">✕</button>
-      </div>
+      <div class="modal-header"><h2 class="modal-title" id="confirmTitle">确认操作</h2><button class="modal-close" type="button" data-close="confirmModal" aria-label="关闭">✕</button></div>
       <div class="danger-desc" id="confirmBody"></div>
       <div id="confirmExtra"></div>
-      <div class="action-btns">
-        <button class="action-btn btn-cancel" type="button" id="confirmCancelBtn">取消</button>
-        <button class="action-btn btn-danger" type="button" id="confirmOkBtn">确认</button>
-      </div>
+      <div class="action-btns"><button class="action-btn btn-cancel" type="button" id="confirmCancelBtn">取消</button><button class="action-btn btn-danger" type="button" id="confirmOkBtn">确认</button></div>
     </div>
   </div>
 
@@ -1286,29 +832,26 @@ input:focus-visible,textarea:focus-visible{outline:none}
 <script>
 "use strict";
 /* =============================================================================
- * 工时记录助手 v5.0.0
- * 单文件前端：设计令牌 + 语义化结构 + 纯逻辑层 + 状态/同步/视图层
+ * 工时记录助手 v5.1.0
  *
- * 相对 v4.6.1 的关键修复：
- *   数据完整性
- *     1. 同步改为"服务端记录级合并 + 回传合并结果"，消除多设备静默丢数据
- *     2. 保存状态机（单飞 + 合流 + 退避 + 卸载 keepalive），消除丢写
- *     3. 一键打卡不再静默清空备注，覆盖前明确列出将丢失的内容
- *     4. 导入校验拒绝 2026-02-31 这类假日期；CSV 导出防公式注入
- *   安全
- *     5. 密码派生升级 PBKDF2-SHA256(600k)，服务端支持惰性迁移
- *     6. 全部文案渲染改用 textContent，escapeHtml 补全 ' 与 `
- *     7. 请求超时 + 取消 + 错误分类；响应归属校验（拒绝串号数据）
- *   体验
- *     8. 月历固定 6 行，翻月高度零跳动；斜杠/输入设备键盘适配
- *     9. 无障碍：语义化控件、焦点陷阱、aria-live、对比度达标、支持缩放
- *    10. 暗色模式全量适配；骨架屏、空状态、错误横幅；图表触屏可读
+ * 相对 v5.0.0 的修复：
+ *   P0-B  Store.flush 水位线改为"请求发起时刻"的快照，避免请求中的改动被漏传
+ *   P1-C  Store.reconcile 先合并服务端墓碑，避免其他设备删除的记录在本地复活
+ *   P3-I  stripLeadingIcon 收紧到真 emoji，不误伤 ① ← ✓ ✗ ℹ
+ *   P3-J  清理 render 里的冗余 void
+ *   P3-L  clearAll 同步清墓碑
+ *   新增  注销账号（HTML 按钮 + Api.deleteUser + App.deleteAccount）
+ *
+ * v5.0.0 已含的关键修复（保留）：
+ *   数据完整性：记录级合并 + 墓碑；保存状态机（单飞/合流/退避/keepalive）；
+ *              一键打卡不静默清备注；导入严格日期校验；CSV 防公式注入
+ *   安全：PBKDF2-SHA256(600k)；textContent 渲染；请求超时+取消+错误分类；
+ *        响应归属校验；会话失效全局复位
+ *   体验：固定 6 行月历；键盘与读屏器适配；暗色模式；骨架屏；图表可点
  * ========================================================================== */
 (function () {
-  /* ==========================================================================
-   * 第 0 层：常量与纯工具
-   * ======================================================================== */
-  const APP_VERSION = '5.0.0';
+  /* ---------------------------- 常量 ---------------------------- */
+  const APP_VERSION = '5.1.0';
   const SCHEMA_VERSION = 3;
   const API_BASE = 'https://api.leoani.dpdns.org/';
   const USERNAME_RE = /^[A-Za-z0-9_-]{3,32}$/;
@@ -1359,13 +902,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const MASK = '****';
 
   /**
-   * 去掉消息文本开头自带的图标/emoji。
-   * Toast 左侧已经有统一的图标，消息里再带一个就会出现"两个勾"这类重复。
-   * 注意：只剥离"开头的非文字符号"，不会误伤正常文案。
+   * P3-I 收紧：只剥离真正的 emoji 与变体选择符。
+   * 不误伤 ①、←、✓、✗、ℹ 这类普通符号（旧版会把 ① 也吞掉）。
    */
   function stripLeadingIcon(message) {
     return String(message || '')
-      .replace(/^[\s\u2000-\u3300\uFE0F\u20E3\u2190-\u21FF\u2600-\u27BF\u2B00-\u2BFF\uD800-\uDBFF\uDC00-\uDFFF]+/u, '')
+      .replace(/^[\s\uFE0F\u200D\u20E3]+/u, '')
+      .replace(/^[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]+/u, '')
       .trim();
   }
   const MAX_TOASTS = 3;
@@ -1373,6 +916,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const RETRY_BACKOFF_MS = [800, 2000, 5000, 12000];
   const SWIPE_ANIM_MS = 350;
   const REQUEST_TIMEOUT_MS = 25000;
+  const REQUEST_TIMEOUT_REGISTER_MS = 45000;
   const AUTH_RETRY = 2;
   const AGGREGATE_CACHE_MAX = 24;
 
@@ -1424,30 +968,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return o.hidden ? MASK : '¥' + nfMoney.format(num(v));
     },
     group(v) { return nfGroup.format(num(v)); },
-    hours(v) { return round1(v).toFixed(1) + 'h'; },
   };
 
-  function safeGet(key) {
-    try { return localStorage.getItem(key); } catch (e) { return null; }
-  }
-  function safeSet(key, value) {
-    try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
-  }
-  function safeRemove(key) {
-    try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
-  }
+  function safeGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeSet(key, value) { try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
+  function safeRemove(key) { try { localStorage.removeItem(key); } catch (e) { /* ignore */ } }
   function safeJson(key) {
     const raw = safeGet(key);
     if (!raw) return null;
     try { return JSON.parse(raw); } catch (e) { return null; }
   }
 
-  /**
-   * 数值输入的"前导零"清理。
-   * 浏览器 number 输入框在值为 "0" 时继续键入会得到 "099"（清空需要手按退格），
-   * 视觉上很别扭且容易误读。这里在 input 事件里把前导零去掉，只保留单个 0。
-   * 注意：仅在"0 后面还有内容"时才处理，"0"、"0."、"0.5" 均保持原样。
-   */
   function sanitizeNumericInput(el) {
     if (!el || typeof el.value !== 'string') return;
     let v = el.value.replace(/[^\d.]/g, '');
@@ -1458,19 +989,15 @@ input:focus-visible,textarea:focus-visible{outline:none}
     }
     if (out !== el.value) {
       el.value = out;
-      // 直接赋值会把光标重置到末尾，这里显式移回末尾，避免连续输入时丢字符
       if (typeof el.setSelectionRange === 'function') {
-        try { el.setSelectionRange(out.length, out.length); } catch (e) { /* 输入类型不支持时忽略 */ }
+        try { el.setSelectionRange(out.length, out.length); } catch (e) { /* ignore */ }
       }
     }
   }
 
-  /* ==========================================================================
-   * 第 1 层：日期/假日/农历（与 v4 数据表一致，增加边界守卫）
-   * ======================================================================== */
-  const WEEKDAYS_CN = ['一', '二', '三', '四', '五', '六', '日'];
+  /* ---------------------------- 农历 / 节气 ---------------------------- */
   const LUNAR_INFO = [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,0x14b60];
-  const LUNAR_MONTHS = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'];
+  const LUNAR_MONTHS = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
   const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
   const SOLAR_TERMS = ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
   const TERM_INFO = [0,21208,42467,63836,85337,107014,128867,150921,173149,195551,218072,240693,263343,285989,308563,331033,353350,375494,397447,419210,440795,462224,483532,504758];
@@ -1480,7 +1007,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const Lunar = {
     cache: new Map(),
     dirty: false,
-
     leapMonth(y) { return LUNAR_INFO[y - 1900] & 0xf; },
     leapDays(y) { return this.leapMonth(y) ? ((LUNAR_INFO[y - 1900] & 0x10000) ? 30 : 29) : 0; },
     monthDays(y, m) { return (LUNAR_INFO[y - 1900] & (0x10000 >> m)) ? 30 : 29; },
@@ -1489,13 +1015,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       for (let i = 0x8000; i > 0x8; i >>= 1) sum += (LUNAR_INFO[y - 1900] & i) ? 1 : 0;
       return sum + this.leapDays(y);
     },
-
-    /** @returns {{year:number,month:number,day:number,isLeap:boolean}|null} 越界返回 null 而非抛错 */
     dateInfo(date) {
       if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
       const totalOffset = Math.floor((date - LUNAR_BASE) / 86400000);
       if (totalOffset < 0) return null;
-
       let year = 1900;
       let offset = totalOffset;
       while (year <= LUNAR_MAX_YEAR) {
@@ -1505,16 +1028,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
         year += 1;
       }
       if (year > LUNAR_MAX_YEAR) return null;
-
       const leap = this.leapMonth(year);
       let isLeap = false;
       let month = 1;
       let daysInMonth = 0;
       for (; month < 13; month++) {
         if (leap > 0 && month === leap + 1 && !isLeap) {
-          month -= 1;
-          isLeap = true;
-          daysInMonth = this.leapDays(year);
+          month -= 1; isLeap = true; daysInMonth = this.leapDays(year);
         } else {
           daysInMonth = this.monthDays(year, month);
         }
@@ -1524,8 +1044,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
       return { year, month, day: offset + 1, isLeap };
     },
-
-    /** 农历短标签；超出 1900-2100 返回 '—' 而不是空白 */
     label(date) {
       const key = formatDateKey(date);
       if (this.cache.has(key)) return this.cache.get(key);
@@ -1538,7 +1056,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.dirty = true;
       return text;
     },
-
     loadCache() {
       const parsed = safeJson(LUNAR_KEY);
       if (parsed && typeof parsed === 'object') {
@@ -1573,7 +1090,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     get(y, m, d) { return this.monthTerms(y, m)[d] || null; },
   };
 
-  /* 法定节假日：内置 2024-2026 精确表；更远年份按固定规则推算（标注为估算） */
   const HOLIDAY_ARRANGEMENTS = {
     2024: {
       off: {
@@ -1616,16 +1132,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
     holidays: null,
     workdays: null,
     estimating: false,
-
     build() {
       const h = {};
       const w = {};
-      for (const [year, item] of Object.entries(HOLIDAY_ARRANGEMENTS)) {
+      for (const item of Object.values(HOLIDAY_ARRANGEMENTS)) {
         for (const [key, name] of Object.entries(item.off)) h[key] = name;
         for (const key of item.work) w[key] = true;
-        void year;
       }
-
       const covered = new Set(Object.keys(h).map((k) => k.slice(0, 4)));
       for (let year = 2025; year <= 2035; year++) {
         const y = String(year);
@@ -1647,26 +1160,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const midAutumn = this.lunarToSolar(year, 8, 15, false);
         if (midAutumn) h[formatDateKey(midAutumn)] = '中秋';
       }
-
       this.holidays = h;
       this.workdays = w;
       this.estimating = true;
       safeSet(HOLIDAY_KEY, JSON.stringify({ v: 2, data: h, workdays: w }));
     },
-
     lunarToSolar(year, lunarMonth, lunarDay, isLeap) {
       const cur = new Date(year, 0, 1);
       const end = new Date(year, 11, 31);
       while (cur <= end) {
         const info = Lunar.dateInfo(cur);
-        if (info && info.month === lunarMonth && info.day === lunarDay && info.isLeap === Boolean(isLeap)) {
-          return new Date(cur);
-        }
+        if (info && info.month === lunarMonth && info.day === lunarDay && info.isLeap === Boolean(isLeap)) return new Date(cur);
         cur.setDate(cur.getDate() + 1);
       }
       return null;
     },
-
     load() {
       const parsed = safeJson(HOLIDAY_KEY);
       if (parsed && parsed.v === 2 && parsed.data && parsed.workdays) {
@@ -1676,24 +1184,15 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
       return false;
     },
-
-    ensure() {
-      if (!this.holidays || !this.workdays) {
-        if (!this.load()) this.build();
-      }
-    },
-
+    ensure() { if (!this.holidays || !this.workdays) { if (!this.load()) this.build(); } },
     isHoliday(key) { this.ensure(); return Boolean(this.holidays[key]); },
     isWorkday(key) { this.ensure(); return Boolean(this.workdays[key]); },
     name(key) { this.ensure(); return this.holidays[key] || null; },
   };
 
-  /* ==========================================================================
-   * 第 2 层：计薪 / 个税 / 聚合（纯函数）
-   * ======================================================================== */
+  /* ---------------------------- 计薪 / 个税 ---------------------------- */
   function createIncomeEngine(settings, holiday) {
     const mode = settings.mode === 'salary' ? 'salary' : 'hourly';
-
     function bucketOf(rec, date) {
       const key = formatDateKey(date);
       const makeup = holiday.isWorkday(key);
@@ -1701,18 +1200,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if ((isWeekend(date) && !makeup) || rec.type === 'weekend') return 'weekend';
       return 'normal';
     }
-
     function rateOf(kind) {
       if (mode === 'hourly') return kind === 'holiday' ? num(settings.holidayRate) : num(settings.normalRate);
       const map = {
-        normal: num(settings.salaryNormal),
-        ot: num(settings.salaryOt),
-        weekend: num(settings.salaryWeekend),
-        holiday: num(settings.salaryHoliday),
+        normal: num(settings.salaryNormal), ot: num(settings.salaryOt),
+        weekend: num(settings.salaryWeekend), holiday: num(settings.salaryHoliday),
       };
       return map[kind] || 0;
     }
-
     function of(rec, date) {
       if (!rec || (rec.leave && rec.leave !== 'none')) return 0;
       const normal = num(rec.normal);
@@ -1723,7 +1218,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (bucket === 'weekend') return (normal + ot) * rateOf('weekend');
       return normal * rateOf('normal') + ot * rateOf('ot');
     }
-
     return { mode, bucketOf, rateOf, of };
   }
 
@@ -1732,11 +1226,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
     const gross = clamp(opts.grossIncome, 0, 1e7, 0);
     const insurance = opts.insurance || {};
     const deductions = opts.deductions || {};
-
     const rates = {};
     for (const key of INSURANCE_KEYS) rates[key] = clamp(insurance[key], 0, INSURANCE_LIMITS[key], 0);
     const insuranceTotal = gross * (rates.pension + rates.medical + rates.unemployment + rates.fund) / 100;
-
     let pretax = 0;
     let other = 0;
     for (const key of DEDUCTION_KEYS) {
@@ -1746,13 +1238,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (key === 'other') other += val;
       else if (PRETAX_DEDUCTIONS.indexOf(key) !== -1) pretax += val;
     }
-
     const taxableBase = Math.max(0, gross - insuranceTotal - pretax - THRESHOLD);
     let bracket = IIT_BRACKETS[IIT_BRACKETS.length - 1];
     for (const item of IIT_BRACKETS) { if (taxableBase <= item.max) { bracket = item; break; } }
     const tax = Math.max(0, taxableBase * bracket.rate - bracket.quick);
     const net = gross - insuranceTotal - tax;
-
     return {
       gross, insurance: insuranceTotal, insuranceRates: rates,
       pretaxDeduction: pretax, otherCost: other,
@@ -1766,26 +1256,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
     const cacheKey = year + '-' + month + '|' + rev;
     const hit = aggregateCache.get(cacheKey);
     if (hit) return hit;
-
     const income = createIncomeEngine(settings, holiday);
     const days = [];
     const cat = {
-      normal: { hours: 0, days: 0, income: 0 },
-      ot: { hours: 0, days: 0, income: 0 },
-      weekend: { hours: 0, days: 0, income: 0 },
-      holiday: { hours: 0, days: 0, income: 0 },
+      normal: { hours: 0, days: 0, income: 0 }, ot: { hours: 0, days: 0, income: 0 },
+      weekend: { hours: 0, days: 0, income: 0 }, holiday: { hours: 0, days: 0, income: 0 },
     };
-    let totalDays = 0;
-    let totalHours = 0;
-    let totalIncome = 0;
-
+    let totalDays = 0, totalHours = 0, totalIncome = 0;
     for (const key in records) {
       if (!Object.prototype.hasOwnProperty.call(records, key)) continue;
       const rec = records[key];
       const date = parseDateKey(key);
       if (!date || date.getFullYear() !== year || date.getMonth() !== month) continue;
       if (rec.leave && rec.leave !== 'none') continue;
-
       const normal = num(rec.normal);
       const ot = num(rec.ot);
       const dayIncome = income.of(rec, date);
@@ -1793,26 +1276,16 @@ input:focus-visible,textarea:focus-visible{outline:none}
       totalHours += normal + ot;
       totalIncome += dayIncome;
       days.push({ day: date.getDate(), income: dayIncome, hours: normal + ot, type: rec.type });
-
       const bucket = income.bucketOf(rec, date);
       if (bucket === 'weekend' || bucket === 'holiday') {
         cat[bucket].hours += normal + ot;
         cat[bucket].days += 1;
         cat[bucket].income += dayIncome;
       } else {
-        if (normal > 0) {
-          cat.normal.hours += normal;
-          cat.normal.days += 1;
-          cat.normal.income += normal * income.rateOf('normal');
-        }
-        if (ot > 0) {
-          cat.ot.hours += ot;
-          cat.ot.days += 1;
-          cat.ot.income += ot * income.rateOf('ot');
-        }
+        if (normal > 0) { cat.normal.hours += normal; cat.normal.days += 1; cat.normal.income += normal * income.rateOf('normal'); }
+        if (ot > 0) { cat.ot.hours += ot; cat.ot.days += 1; cat.ot.income += ot * income.rateOf('ot'); }
       }
     }
-
     days.sort((a, b) => a.day - b.day);
     const paidDays = days.filter((d) => d.income > 0).length;
     const safeGoal = num(goal) > 0 ? num(goal) : 160;
@@ -1823,7 +1296,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       maxDailyIncome: days.reduce((m, d) => Math.max(m, d.income), 0),
       goalPct: Math.min(100, (totalHours / safeGoal) * 100),
     };
-
     if (aggregateCache.size >= AGGREGATE_CACHE_MAX) {
       const firstKey = aggregateCache.keys().next().value;
       aggregateCache.delete(firstKey);
@@ -1832,9 +1304,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     return summary;
   }
 
-  /* ==========================================================================
-   * 第 3 层：schema 归一（前端侧，与服务端同构）
-   * ======================================================================== */
+  /* ---------------------------- schema 归一 ---------------------------- */
   function normalizeRecord(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const rec = {
@@ -1853,14 +1323,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
     if (rec.leave !== 'none') { rec.normal = 0; rec.ot = 0; }
     return rec;
   }
-
   function defaultSettings() {
     return {
       mode: 'hourly', normalRate: 43, holidayRate: 43,
       baseSalary: 0, salaryDays: 21.75, salaryHours: 8,
       salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
-      salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0,
-      rule: 'fixed',
+      salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0, rule: 'fixed',
     };
   }
   function defaultDeductions() {
@@ -1872,15 +1340,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
   function defaultUserData() {
     return {
       schemaVersion: SCHEMA_VERSION,
-      records: {},
-      settings: defaultSettings(),
-      goal: 160,
-      deductions: defaultDeductions(),
-      insurance: defaultInsurance(),
-      dataRev: 0,
+      records: {}, settings: defaultSettings(), goal: 160,
+      deductions: defaultDeductions(), insurance: defaultInsurance(), dataRev: 0,
     };
   }
-
   function normalizeSettings(raw) {
     const out = defaultSettings();
     if (!raw || typeof raw !== 'object') return out;
@@ -1900,7 +1363,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     out.salaryHoliday = clamp(raw.salaryHoliday, 0, 10000, out.salaryHoliday);
     return out;
   }
-
   function normalizeDeductions(raw) {
     const out = defaultDeductions();
     const src = raw && typeof raw === 'object' ? raw : {};
@@ -1913,13 +1375,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     }
     return out;
   }
-
-  /**
-   * 五险一金归一。
-   * 默认值已改为全 0（用户只需按实际缴纳比例填写）。
-   * 为兼容历史数据：只要该字段在数据里真实存在（哪怕是用户手填的 0），就一律沿用；
-   * 只有字段整体缺失时才套用新的 0 默认值 —— 避免把老用户已填的比例悄悄抹掉。
-   */
   function normalizeInsurance(raw) {
     const out = defaultInsurance();
     const src = raw && typeof raw === 'object' ? raw : {};
@@ -1929,8 +1384,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     }
     return out;
   }
-
-  /** 全量归一（服务端响应 / 缓存 / 导入共用） */
   function normalizeUserData(raw) {
     const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const records = {};
@@ -1951,8 +1404,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       dataRev: clamp(src.dataRev, 0, Number.MAX_SAFE_INTEGER, 0),
     };
   }
-
-  /** 导入校验：返回 {ok, data, errors, dropped}，绝不抛异常 */
   function normalizeImport(payload) {
     const errors = [];
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -1964,18 +1415,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
     const data = normalizeUserData(payload);
     const total = Object.keys(payload.records).length;
     const dropped = total - Object.keys(data.records).length;
-    if (dropped > 200) {
-      return { ok: false, errors: ['异常记录过多，文件可能已损坏'], data: null, dropped };
-    }
+    if (dropped > 200) return { ok: false, errors: ['异常记录过多，文件可能已损坏'], data: null, dropped };
     if (dropped > 0) errors.push(`${dropped} 条记录因日期或结构不合法被跳过`);
     return { ok: true, errors, data, dropped };
   }
 
-  /* 与服务端一致的记录级合并（导入与同步回执共用） */
   function mergeRecordSets(base, incoming) {
     const out = { ...base };
-    let added = 0;
-    let updated = 0;
+    let added = 0, updated = 0;
     for (const key in incoming) {
       if (!Object.prototype.hasOwnProperty.call(incoming, key)) continue;
       const rec = incoming[key];
@@ -1998,7 +1445,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     return { records: out, added, updated };
   }
 
-  /* ---- 打卡草稿状态机：单点收敛全部工时边界规则 ---- */
   function createClockDraft(init) {
     const source = init || {};
     const draft = {
@@ -2009,7 +1455,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       ot: clamp(source.ot, 0, MAX_DAY_HOURS, 0),
       note: typeof source.note === 'string' ? source.note.slice(0, MAX_NOTE_LEN) : '',
     };
-
     function clampTotal() {
       draft.normal = clamp(draft.normal, 0, MAX_DAY_HOURS, 0);
       draft.ot = clamp(draft.ot, 0, MAX_DAY_HOURS, 0);
@@ -2020,7 +1465,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (draft.leave !== 'none') { draft.normal = 0; draft.ot = 0; }
       return draft;
     }
-
     const api = {
       get state() { return Object.assign({}, draft); },
       clampTotal,
@@ -2052,31 +1496,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
       isEmpty() { return draft.normal === 0 && draft.ot === 0 && draft.leave === 'none'; },
       toRecord(now) {
         return {
-          shift: draft.shift,
-          type: draft.type,
-          leave: draft.leave,
-          normal: draft.normal,
-          ot: draft.ot,
-          note: draft.note,
+          shift: draft.shift, type: draft.type, leave: draft.leave,
+          normal: draft.normal, ot: draft.ot, note: draft.note,
           updatedAt: now === undefined ? Date.now() : now,
         };
       },
     };
-
-    // 初始化即归一：即使带着请假初始化，也不会残留工时
     clampTotal();
     return api;
   }
 
-  /** CSV 单元格：中和 Excel 公式注入（= + - @ 制表符开头） */
   function csvCell(value) {
-    let s = String(value === null || value === undefined ? '' : value)
-      .replace(/\r?\n/g, ' ')
-      .replace(/"/g, '""');
+    let s = String(value === null || value === undefined ? '' : value).replace(/\r?\n/g, ' ').replace(/"/g, '""');
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
     return '"' + s + '"';
   }
-
   function buildCsv(records, incomeOf, options) {
     const hidden = Boolean(options && options.hidden);
     const lines = [['日期', '星期', '班次', '类型', '状态', '正班时长', '加班时长', '备注', '收入'].map(csvCell).join(',')];
@@ -2086,23 +1520,16 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const date = parseDateKey(key);
       if (!date) continue;
       lines.push([
-        key,
-        WEEKDAY_NAMES[date.getDay()],
-        SHIFT_NAMES[rec.shift] || '',
-        TYPE_NAMES[rec.type] || '',
-        LEAVE_NAMES[rec.leave] || '',
-        num(rec.normal),
-        num(rec.ot),
-        rec.note || '',
+        key, WEEKDAY_NAMES[date.getDay()],
+        SHIFT_NAMES[rec.shift] || '', TYPE_NAMES[rec.type] || '', LEAVE_NAMES[rec.leave] || '',
+        num(rec.normal), num(rec.ot), rec.note || '',
         hidden ? MASK : incomeOf(rec, date).toFixed(2),
       ].map(csvCell).join(','));
     }
     return '\ufeff' + lines.join('\r\n');
   }
 
-  /* ==========================================================================
-   * 第 4 层：API 客户端（超时 / 取消 / 错误分类 / 令牌注入）
-   * ======================================================================== */
+  /* ---------------------------- API ---------------------------- */
   function ApiError(message, code, status, detail) {
     const err = new Error(message);
     err.name = 'ApiError';
@@ -2115,13 +1542,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const Api = {
     baseUrl: API_BASE,
     token: null,
-    kdfCache: new Map(),
 
-    /**
-     * 发起请求，并对"幂等且可能因弱网失败"的动作（getSalt / login / getData）自动重试。
-     * 这在移动网络下很关键：PBKDF2 600k 轮在手机上要 1-3 秒，加上两次往返，
-     * 弱网时单次请求很容易触发超时；自动重试可以避免用户被迫手动重试。
-     */
     async call(action, payload, options) {
       const opts = options || {};
       const retries = typeof opts.retries === 'number'
@@ -2130,11 +1551,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
       let lastError = null;
       for (let attempt = 0; attempt <= retries; attempt++) {
         if (attempt > 0) await new Promise((r) => setTimeout(r, 700 * attempt));
-        try {
-          return await this._once(action, payload || {}, opts);
-        } catch (err) {
+        try { return await this._once(action, payload || {}, opts); }
+        catch (err) {
           lastError = err;
-          // 只重试网络/超时类；鉴权失败重试没有意义
           if (err && (err.code === 'TIMEOUT' || err.code === 'NETWORK')) continue;
           throw err;
         }
@@ -2145,20 +1564,18 @@ input:focus-visible,textarea:focus-visible{outline:none}
     async _once(action, payload, opts) {
       const controller = typeof AbortController === 'function' ? new AbortController() : null;
       let timedOut = false;
-      const timer = controller ? setTimeout(() => { timedOut = true; controller.abort(); }, REQUEST_TIMEOUT_MS) : null;
-
+      const timeoutMs = action === 'register' ? REQUEST_TIMEOUT_REGISTER_MS : REQUEST_TIMEOUT_MS;
+      const timer = controller ? setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs) : null;
       const headers = { 'Content-Type': 'application/json' };
       if (this.token) headers.Authorization = 'Bearer ' + this.token;
 
       let res;
       try {
         res = await fetch(this.baseUrl, {
-          method: 'POST',
-          headers,
+          method: 'POST', headers,
           body: JSON.stringify(Object.assign({ action }, payload)),
           signal: controller ? controller.signal : undefined,
-          cache: 'no-store',
-          credentials: 'omit',
+          cache: 'no-store', credentials: 'omit',
           keepalive: opts.keepalive === true,
         });
       } catch (e) {
@@ -2171,9 +1588,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       const text = await res.text();
       let data = {};
-      if (text) {
-        try { data = JSON.parse(text); } catch (e) { data = { error: text.slice(0, 200) }; }
-      }
+      if (text) { try { data = JSON.parse(text); } catch (e) { data = { error: text.slice(0, 200) }; } }
 
       if (!res.ok) {
         const message = data.detail || data.error || ('请求失败 (' + res.status + ')');
@@ -2185,7 +1600,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return data;
     },
 
-    /* ---- PBKDF2 派生（新）与单轮 SHA-256（兼容旧服务端） ---- */
     async deriveHash(password, salt, kdf, iterations) {
       if (kdf === 'PBKDF2-SHA256') {
         const rounds = clamp(iterations, 100000, 2000000, 600000);
@@ -2209,35 +1623,47 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return btoa(bin);
     },
 
-    async getSalt(username) {
-      return this.call('getSalt', { username });
-    },
-
+    async getSalt(username) { return this.call('getSalt', { username }); },
     async register(username, hash, salt, kdf, iterations) {
       return this.call('register', { username, hash, salt, kdf, iterations });
     },
 
-    async login(username, hash) {
-      return this.call('login', { username, hash });
+    /**
+     * 登录：支持 KDF 惰性迁移。
+     * 若服务端仍为旧 KDF，客户端同时提交 newHash + newSalt，
+     * 校验通过后由 Worker 一次性原子替换。401 改写为 BAD_CREDENTIALS。
+     */
+    async login(username, hash, upgrade) {
+      const payload = { username, hash };
+      if (upgrade && upgrade.newHash && upgrade.newSalt) {
+        payload.newHash = upgrade.newHash;
+        payload.newSalt = upgrade.newSalt;
+      }
+      try {
+        return await this.call('login', payload);
+      } catch (e) {
+        if (e && e.code === 'UNAUTHORIZED') {
+          const err = new Error('用户名或密码错误');
+          err.code = 'BAD_CREDENTIALS';
+          err.status = 401;
+          throw err;
+        }
+        throw e;
+      }
     },
 
-    async getData(username) {
-      return this.call('getData', { username });
-    },
+    async getData(username) { return this.call('getData', { username }); },
 
     async setData(username, data, settingsTouched, options) {
       return this.call('setData', { username, data, settingsTouched: settingsTouched === true }, options);
     },
+
+    async deleteUser(username) {
+      return this.call('deleteUser', { username }, { retries: 0 });
+    },
   };
 
-  /**
-   * 删除墓碑（tombstone）。
-   * 背景：记录被删除后，如果只是从本地 records 里去掉，下一次同步时服务端那份旧记录
-   * 会被 reconcile 当成"服务端较新"而原样保留回来 —— 表现就是"清空工时保存后，过几秒记录又回来了"。
-   * 做法：删除时写入 deleted[日期] = 时间戳，随 setData 一起上行；服务端在同一时间戳比较下
-   * 真正删除该记录，并在响应里回传 deleted，客户端据此清理自己的墓碑。
-   * 墓碑保留 30 天（防止长期离线设备带着旧记录复活已删除的数据）。
-   */
+  /* ---------------------------- 墓碑 / 合并 ---------------------------- */
   const TOMBSTONE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
   function pruneTombstones(deleted, now) {
@@ -2249,17 +1675,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
     return out;
   }
 
-  /**
-   * 客户端记录合并（用于 reconcile / 导入）。
-   * 顺序很重要：先处理删除墓碑，再按 updatedAt 合并，最后清掉被墓碑覆盖的记录。
-   * @param {object} localRecords 本地记录
-   * @param {object} serverRecords 服务端记录
-   * @param {object} deleted 本地墓碑（dateKey -> 删除时间戳）
-   */
   function mergeRecordSetsWithTombstones(localRecords, serverRecords, deleted) {
     const out = Object.assign({}, serverRecords);
     let keptLocal = 0;
-
     for (const key in localRecords) {
       if (!Object.prototype.hasOwnProperty.call(localRecords, key)) continue;
       const local = localRecords[key];
@@ -2267,22 +1685,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (!server) { out[key] = local; keptLocal += 1; continue; }
       if (num(local.updatedAt) > num(server.updatedAt)) { out[key] = local; keptLocal += 1; }
     }
-
     for (const key in deleted || {}) {
       if (!Object.prototype.hasOwnProperty.call(deleted, key)) continue;
       const delAt = num(deleted[key]);
       const server = out[key];
-      if (!server) continue;                       // 服务端已无此记录，视为删除已生效
-      if (delAt >= num(server.updatedAt)) delete out[key];   // 删除发生在服务端版本之后 → 真删
-      // 否则说明该日期在删除后又被重新记录过，保留记录（后写优先）
+      if (!server) continue;
+      if (delAt >= num(server.updatedAt)) delete out[key];
     }
-
     return { records: out, keptLocal };
   }
 
-  /* ==========================================================================
-   * 第 5 层：Store（唯一数据真相 + 可靠的防抖保存）
-   * ======================================================================== */
+  /* ---------------------------- Store ---------------------------- */
   const Store = {
     state: defaultUserData(),
     rev: 0,
@@ -2300,15 +1713,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
     },
 
-    /** 记录某日期已被删除（写入墓碑，随下次同步上行） */
-    markDeleted(key, at) {
-      this.deleted[key] = at === undefined ? Date.now() : at;
-    },
-
-    /** 持久化/恢复时携带墓碑，避免刷新后删除意图丢失 */
-    pruneDeleted(now) {
-      this.deleted = pruneTombstones(this.deleted, now === undefined ? Date.now() : now);
-    },
+    markDeleted(key, at) { this.deleted[key] = at === undefined ? Date.now() : at; },
+    pruneDeleted(now) { this.deleted = pruneTombstones(this.deleted, now === undefined ? Date.now() : now); },
 
     mutate(fn, reason) {
       const result = fn(this.state);
@@ -2316,38 +1722,42 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.rev += 1;
       this.persistCache();
       this.scheduleSave();
-      // 渲染监听器抛错不应影响数据写入 —— 数据已经进了 state
-      try {
-        this.emit(reason || 'mutate');
-      } catch (e) {
-        if (typeof console !== 'undefined' && console.error) console.error('[store] emit failed', e);
-      }
+      try { this.emit(reason || 'mutate'); }
+      catch (e) { if (typeof console !== 'undefined' && console.error) console.error('[store] emit failed', e); }
       return true;
     },
 
-    /** 服务器合并结果回执：以服务端为准，但保留本地尚未上传的更新 */
+    /**
+     * 服务器合并结果回执。
+     * P1-C：先合并"服务端墓碑"，再合并记录。
+     * 否则：设备 A 删某天，设备 B 从旧缓存打开仍持有该记录 → 本地复活并被再次上行。
+     */
     reconcile(remote, options) {
       const opts = options || {};
       const next = normalizeUserData(remote);
-      const localRecords = this.state.records;
 
-      // 记录级：本地更新的保留本地；被墓碑标记的日期真正删除（不再被旧记录复活）
-      const merged = mergeRecordSetsWithTombstones(localRecords, next.records, this.deleted);
-
-      next.records = merged.records;
-      // 服务端已确认删除的日期 → 清理本地墓碑，避免无限上行
       const serverDeleted = (remote && remote.deleted) || {};
+      for (const key in serverDeleted) {
+        if (!Object.prototype.hasOwnProperty.call(serverDeleted, key)) continue;
+        const sAt = num(serverDeleted[key]);
+        if (sAt > num(this.deleted[key])) this.deleted[key] = sAt;
+      }
+      this.deleted = pruneTombstones(this.deleted, Date.now());
+
+      const merged = mergeRecordSetsWithTombstones(this.state.records, next.records, this.deleted);
+      next.records = merged.records;
+
       const remaining = {};
       for (const key in this.deleted) {
         if (!Object.prototype.hasOwnProperty.call(this.deleted, key)) continue;
         const ackAt = num(serverDeleted[key]);
-        if (ackAt >= num(this.deleted[key])) continue;   // 已被服务端确认
-        if (!merged.records[key] && !next.records[key]) continue;  // 记录已不存在，墓碑无意义
+        if (ackAt >= num(this.deleted[key])) continue;
+        if (!merged.records[key] && !next.records[key]) continue;
         remaining[key] = this.deleted[key];
       }
       this.deleted = pruneTombstones(remaining, Date.now());
       next.deleted = Object.assign({}, serverDeleted, this.deleted);
-      // 偏好字段：本地刚改过则以本地为准（服务端也接受本地值，这里避免抖动）
+
       if (opts.prefsDirty) {
         next.settings = this.state.settings;
         next.goal = this.state.goal;
@@ -2357,7 +1767,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       this.state = next;
       this.rev += 1;
-      this.lastSyncedAt = Date.now();
       this.persistCache();
       this.emit('remote');
       return merged.keptLocal;
@@ -2374,18 +1783,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     persistCache() {
       if (!Session.username) return;
-      // 墓碑随缓存一起持久化：否则刷新页面会丢掉"删除意图"，旧记录又被云端带回来
-      safeSet(this.cacheKey(), JSON.stringify({
-        __state: this.state,
-        __deleted: this.deleted,
-      }));
+      safeSet(this.cacheKey(), JSON.stringify({ __state: this.state, __deleted: this.deleted }));
     },
 
     loadCache() {
       if (!Session.username) return false;
       const parsed = safeJson(this.cacheKey());
       if (!parsed || typeof parsed !== 'object') return false;
-      // 兼容两种格式：带墓碑的新格式 {__state,__deleted} 与早期直接存 state 的格式
       const payload = parsed.__state ? parsed.__state : parsed;
       this.state = normalizeUserData(payload);
       this.deleted = pruneTombstones(parsed.__deleted || {}, Date.now());
@@ -2395,7 +1799,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     clearCache() { if (Session.username) safeRemove(this.cacheKey()); },
 
-    /* ---- 保存：防抖 + 单飞 + 合流 + 退避 ---- */
     saveTimer: null,
     inflight: null,
     dirtyAgain: false,
@@ -2407,7 +1810,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.setStatus('pending');
     },
 
-    /** 只上传自上次同步后被修改的记录 + 所有未确认的删除墓碑 */
     buildPayload() {
       const records = {};
       const since = this.lastSyncedAt;
@@ -2427,12 +1829,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
       };
     },
 
+    /**
+     * P0-B：水位线取"请求发起时刻"的快照。
+     * 旧版用响应返回时的 Date.now()，会把请求进行中用户新产生的改动
+     * 一并算作"已同步" → buildPayload 用 updatedAt > lastSyncedAt 过滤时，
+     * 那批新改动永远传不上去（静默丢数据）。
+     */
     async flush(options) {
       const opts = options || {};
       clearTimeout(this.saveTimer);
       if (this.inflight) { this.dirtyAgain = true; return this.inflight; }
       if (!Session.token) return null;
 
+      const snapshotTime = Date.now();
       const payload = this.buildPayload();
       const settingsTouched = this.settingsDirty;
       this.settingsDirty = false;
@@ -2443,17 +1852,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
           const res = await Api.setData(Session.username, payload, settingsTouched, { keepalive: opts.keepalive === true });
           const dropped = num(res.droppedCount);
           if (res.data) {
-            // 服务端已把本次改动落盘，据此更新水位线（回执中的记录都视为已同步）
             Store.reconcile(res.data, { prefsDirty: false });
-            Store.lastSyncedAt = Date.now();
-          } else {
-            this.lastSyncedAt = Date.now();
           }
+          this.lastSyncedAt = snapshotTime;
           this.lastError = null;
           this.retryIndex = 0;
-          if (dropped > 0) {
-            UI.toast('已同步：' + dropped + ' 天的记录被其他设备的较新修改保留', 'info');
-          }
+          if (dropped > 0) UI.toast('已同步：' + dropped + ' 天的记录被其他设备的较新修改保留', 'info');
           if (this.dirtyAgain) {
             this.dirtyAgain = false;
             this.inflight = null;
@@ -2472,7 +1876,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
             const wait = RETRY_BACKOFF_MS[Math.min(this.retryIndex, RETRY_BACKOFF_MS.length - 1)];
             this.retryIndex += 1;
             this.setStatus('pending');
-            // 冲突后必须重新读取服务端最新数据，避免用旧快照覆盖
             if (err.code === 'CONFLICT') this.lastSyncedAt = 0;
             this.saveTimer = setTimeout(() => { this.inflight = null; this.flush(); }, wait);
             return null;
@@ -2483,19 +1886,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
           if (this.syncStatus !== 'pending') this.inflight = null;
         }
       })();
-
       return this.inflight;
     },
 
-    setStatus(status) {
-      this.syncStatus = status;
-      this.emit('sync');
-    },
+    setStatus(status) { this.syncStatus = status; this.emit('sync'); },
   };
 
-  /* ==========================================================================
-   * 第 6 层：会话
-   * ======================================================================== */
+  /* ---------------------------- Session ---------------------------- */
   const Session = {
     username: null,
     token: null,
@@ -2520,9 +1917,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 第 7 层：UI 基础件（Toast / Modal / 渲染调度）
-   * ======================================================================== */
+  /* ---------------------------- Scheduler / UI ---------------------------- */
   const Scheduler = (() => {
     let queued = false;
     const tasks = new Set();
@@ -2535,9 +1930,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           queued = false;
           const batch = Array.from(tasks);
           tasks.clear();
-          for (const task of batch) {
-            try { task(); } catch (e) { console.error('[render]', e); }
-          }
+          for (const task of batch) { try { task(); } catch (e) { console.error('[render]', e); } }
         });
       },
     };
@@ -2555,26 +1948,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.applyIncomeVisibilityUI();
     },
 
-    /** 全部使用 textContent —— 数据永远不当 HTML 解析（防 XSS） */
     toast(message, type) {
       const kind = type || 'info';
       const wrap = this.toastWrap || byId('toastWrap');
       if (!wrap) return;
       while (wrap.childElementCount >= MAX_TOASTS) wrap.firstElementChild.remove();
-
       const el = document.createElement('div');
       el.className = 'toast ' + kind;
       el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-
       const icon = document.createElement('span');
       icon.className = 'toast-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.textContent = ICONS[kind] || ICONS.info;
       const text = document.createElement('span');
-      // 去掉消息里自带的对勾/叉/感叹号等前缀图标，避免和左侧图标重复（出现"两个勾"）
       text.textContent = stripLeadingIcon(String(message === null || message === undefined ? '' : message));
       el.append(icon, text);
-
       let timer = setTimeout(dismiss, kind === 'error' ? 4200 : 2600);
       function dismiss() {
         clearTimeout(timer);
@@ -2585,7 +1973,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       el.addEventListener('click', dismiss);
       el.addEventListener('pointerenter', () => clearTimeout(timer));
       el.addEventListener('pointerleave', () => { timer = setTimeout(dismiss, 1200); });
-
       wrap.appendChild(el);
     },
 
@@ -2602,7 +1989,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       else safeRemove(HIDE_INCOME_KEY);
       this.applyIncomeVisibilityUI();
       Render.all();
-      this.toast(this.incomeHidden ? '收入已隐藏（仅视觉遮罩）' : '收入已显示', 'info');
+      this.toast(this.incomeHidden ? '收入已隐藏' : '收入已显示', 'info');
     },
 
     syncBadge(status, text) {
@@ -2639,8 +2026,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     trapFocus(event) {
       if (event.key === 'Escape') {
         event.stopPropagation();
-        const modal = event.currentTarget;
-        UI.closeModal(modal.id);
+        UI.closeModal(event.currentTarget.id);
         return;
       }
       if (event.key !== 'Tab') return;
@@ -2665,7 +2051,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       Render.all();
     },
 
-    /** 危险操作确认：必须输入指定文本才可提交 */
     confirmDangerous(options) {
       return new Promise((resolve) => {
         const extra = byId('confirmExtra');
@@ -2673,7 +2058,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const cancelBtn = byId('confirmCancelBtn');
         byId('confirmTitle').textContent = options.title;
         byId('confirmBody').innerHTML = options.body;
-
         extra.replaceChildren();
         let input = null;
         if (options.confirmText) {
@@ -2698,11 +2082,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
           backup.addEventListener('click', () => { ImportExport.exportJson(); });
           extra.appendChild(backup);
         }
-
         okBtn.disabled = Boolean(options.confirmText);
         okBtn.textContent = options.okText || '确认';
         cancelBtn.textContent = options.cancelText || '取消';
-
         const cleanup = () => {
           okBtn.removeEventListener('click', onOk);
           cancelBtn.removeEventListener('click', onCancel);
@@ -2711,7 +2093,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const onOk = () => { cleanup(); UI.closeModal('confirmModal'); resolve(true); };
         const onCancel = () => { cleanup(); UI.closeModal('confirmModal'); resolve(false); };
         const onBackdrop = (e) => { if (e.target === e.currentTarget) onCancel(); };
-
         okBtn.addEventListener('click', onOk);
         cancelBtn.addEventListener('click', onCancel);
         byId('confirmModal').addEventListener('click', onBackdrop);
@@ -2720,9 +2101,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 第 8 层：视图
-   * ======================================================================== */
+  /* ---------------------------- Calendar ---------------------------- */
   const Calendar = {
     currentDate: new Date(),
     selectedDate: null,
@@ -2746,7 +2125,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
       grid.replaceChildren(frag);
       this.nodes = Array.from(grid.children);
-
       grid.addEventListener('click', (e) => {
         const cell = e.target.closest('.day-cell');
         if (!cell) return;
@@ -2756,7 +2134,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const key = cell.dataset.key;
         if (key) this.select(key);
       });
-
       byId('prevMonth').addEventListener('click', () => this.changeMonth(-1));
       byId('nextMonth').addEventListener('click', () => this.changeMonth(1));
       byId('todayBtn').addEventListener('click', () => this.goToday());
@@ -2781,12 +2158,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       Render.all();
     },
 
-    select(key) {
-      this.selectedDate = key;
-      Render.all();
-    },
+    select(key) { this.selectedDate = key; Render.all(); },
 
-    /** 仅刷新"有备注/仅有记录"角标，用于备注输入后的轻量更新 */
     updateNoteBadge() {
       const key = this.selectedDate;
       if (!key) return;
@@ -2805,7 +2178,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
     },
 
-    /** 稳定定位子节点：不依赖 children 下标，角标增删也不会错位 */
     ensureParts(cell) {
       let numEl = cell.querySelector('.day-num');
       if (!numEl) {
@@ -2822,15 +2194,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return { numEl, subEl };
     },
 
-    /**
-     * 增量渲染：42 格只创建一次，之后仅改 textContent 与 classList。
-     * 关键约束（修掉"工时无限叠加"）：
-     *   1. day-num / day-sub 一律用类名定位，不再假设它们是第一个/最后一个子节点
-     *      —— 角标 append 到末尾后，lastElementChild 会变成角标，工时就被写进角标、
-     *      再把角标类名改成 day-sub，下一轮又建新角标，越滚越多；
-     *   2. 每格渲染前清掉所有非结构性子节点（历史遗留的重复 day-sub / 角标），
-     *      保证无论 render 被触发多少次，格子内容都收敛到正确状态。
-     */
     render(summary, todayKey) {
       const year = this.year;
       const month = this.month;
@@ -2842,48 +2205,38 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       byId('headerYear').textContent = year + '年';
       byId('headerMonth').textContent = MONTH_NAMES[month];
-
       const isCurrentMonth = year === new Date().getFullYear() && month === new Date().getMonth();
       byId('todayBtn').classList.toggle('hidden', isCurrentMonth);
 
       for (let i = 0; i < this.nodes.length; i++) {
         const cell = this.nodes[i];
         const offset = i - lead;
-        let date;
-        let muted = false;
+        let date, muted = false;
         if (offset < 0) { date = new Date(year, month - 1, prevDays + offset + 1); muted = true; }
         else if (offset >= daysInMonth) { date = new Date(year, month + 1, offset - daysInMonth + 1); muted = true; }
         else date = new Date(year, month, offset + 1);
-
         const key = formatDateKey(date);
         const rec = muted ? null : records[key];
 
-        // 1) 清理：只保留 day-num / day-sub 两个结构节点，其余（旧角标、历史重复节点）全部移除
         for (const child of Array.from(cell.children)) {
           const cls = child.className || '';
-          if (child.querySelector && child.querySelector('.day-num, .day-sub')) continue;
           if (cls === 'day-num' || cls.indexOf('day-sub') === 0) continue;
           child.remove();
         }
         const { numEl, subEl } = this.ensureParts(cell);
-        // 兜底：万一历史数据留下多个 day-sub，这里也只保留第一个
         const extras = cell.querySelectorAll('.day-sub');
         for (let k = extras.length - 1; k > 0; k--) extras[k].remove();
 
         numEl.textContent = String(date.getDate());
-
         let sub = '';
         let subClass = 'day-sub';
-        if (muted) {
-          sub = '';
-        } else if (rec) {
+        if (muted) sub = '';
+        else if (rec) {
           if (rec.leave && rec.leave !== 'none') { sub = LEAVE_NAMES[rec.leave]; subClass += ' is-leave'; }
           else { sub = round1(num(rec.normal) + num(rec.ot)).toFixed(1) + 'h'; subClass += ' is-hours'; }
-        } else if (Holiday.isWorkday(key)) {
-          sub = '班'; subClass += ' is-term';
-        } else if (Holiday.isHoliday(key)) {
-          sub = Holiday.name(key); subClass += ' is-holiday';
-        } else {
+        } else if (Holiday.isWorkday(key)) { sub = '班'; subClass += ' is-term'; }
+        else if (Holiday.isHoliday(key)) { sub = Holiday.name(key); subClass += ' is-holiday'; }
+        else {
           const term = SolarTerm.get(year, month + 1, date.getDate());
           if (term) { sub = term; subClass += ' is-term'; }
           else sub = Lunar.label(date);
@@ -2906,7 +2259,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           (date.getMonth() + 1) + '月' + date.getDate() + '日 ' + WEEKDAY_NAMES[date.getDay()]
           + (sub ? ' ' + sub : '') + (hasNote ? ' 有备注' : ''));
 
-        // 角标（清理阶段已移除旧角标，这里最多新建一个）
         const wantBadge = rec ? (hasNote ? 'star' : 'dot') : null;
         if (wantBadge) {
           const badge = document.createElement('span');
@@ -2914,9 +2266,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           badge.textContent = wantBadge === 'star' ? '★' : '';
           cell.appendChild(badge);
         }
-        void summary;
       }
-
       Lunar.flush();
     },
   };
@@ -2930,7 +2280,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const progress = monthProgressValue(Calendar.year, Calendar.month);
       byId('monthProgress').style.width = progress + '%';
       byId('progressText').textContent = progress.toFixed(0) + '%';
-      void hidden;
     },
   };
 
@@ -2945,16 +2294,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
   }
 
   const Detail = {
-    render(summary) {
+    render() {
       const area = byId('detailArea');
       const key = Calendar.selectedDate;
       const hidden = UI.incomeHidden;
-
       if (!key) {
         area.replaceChildren(buildEmptyState('📅', '选择日期', '点击日历上的日期查看或添加打卡记录'));
         return;
       }
-
       const date = parseDateKey(key);
       const rec = Store.state.records[key];
       const engine = createIncomeEngine(Store.state.settings, Holiday);
@@ -2964,10 +2311,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const isLeave = rec.leave && rec.leave !== 'none';
         const income = isLeave ? 0 : engine.of(rec, date);
         const incomeText = isLeave ? '¥0' : fmt.compact(income, { hidden });
-
         const card = document.createElement('div');
         card.className = 'detail-card';
-
         const header = document.createElement('div');
         header.className = 'detail-card-header';
         const dateEl = document.createElement('div');
@@ -2981,7 +2326,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         incomeEl.className = 'detail-card-income';
         incomeEl.textContent = incomeText;
         header.append(dateEl, incomeEl);
-
         const body = document.createElement('div');
         body.className = 'detail-card-body';
         const left = document.createElement('div');
@@ -2994,7 +2338,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         shiftName.className = 'detail-card-shift-name';
         shiftName.textContent = SHIFT_NAMES[rec.shift] || '白班';
         left.append(sun, shiftName);
-
         const right = document.createElement('div');
         right.className = 'detail-card-right';
         const row = document.createElement('div');
@@ -3015,15 +2358,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
         money.className = 'detail-card-money';
         money.textContent = incomeText;
         row.append(badges, money);
-
         const noteRow = document.createElement('div');
         noteRow.className = 'detail-card-note-row';
         const icon = document.createElement('span');
         icon.setAttribute('aria-hidden', 'true');
         icon.textContent = '🕐';
         const text = document.createElement('span');
-        text.textContent = isLeave
-          ? '休假中，不计工时'
+        text.textContent = isLeave ? '休假中，不计工时'
           : '正班 ' + round1(rec.normal).toFixed(1) + 'h' + (num(rec.ot) ? ' · 加班 ' + round1(rec.ot).toFixed(1) + 'h' : '');
         noteRow.append(icon, text);
         right.append(row, noteRow);
@@ -3031,17 +2372,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
         card.append(header, body);
         wrap.appendChild(card);
 
-        // 备注：本地即时保存，不触发整页重渲染（保留光标焦点）
         const noteArea = document.createElement('div');
         noteArea.className = 'detail-note-area';
         const noteHeader = document.createElement('div');
         noteHeader.className = 'detail-note-header';
         noteHeader.textContent = '📝 备注';
-        // 复用已有 textarea：即使发生重渲染，也不替换用户正在输入的节点（否则丢焦点与光标）
         let textarea = byId('detailNoteInput');
-        if (textarea) {
-          if (textarea.parentNode) textarea.parentNode.removeChild(textarea);
-        } else {
+        if (textarea) { if (textarea.parentNode) textarea.parentNode.removeChild(textarea); }
+        else {
           textarea = document.createElement('textarea');
           textarea.className = 'note-textarea';
           textarea.id = 'detailNoteInput';
@@ -3050,7 +2388,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           textarea.setAttribute('aria-label', '当日备注');
           textarea.addEventListener('input', () => NoteSaver.schedule());
         }
-        // 正在输入时不覆盖用户内容
         if (document.activeElement !== textarea) textarea.value = rec.note || '';
         const hint = document.createElement('div');
         hint.className = 'detail-note-hint';
@@ -3058,14 +2395,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
         noteArea.append(noteHeader, textarea, hint);
         wrap.appendChild(noteArea);
       } else {
-        // 操作按钮已上移到日历下方的操作区（一键打卡 / 添加打卡），此处只留空状态说明
-        wrap.appendChild(
-          buildEmptyState('🗓', '这一天还没有记录', '用上方「一键打卡」记 8 小时，或用「添加打卡」自定义工时')
-        );
+        wrap.appendChild(buildEmptyState('🗓', '这一天还没有记录', '用上方「一键打卡」记 8 小时，或用「添加打卡」自定义工时'));
       }
-
       area.replaceChildren(wrap);
-      void summary;
     },
   };
 
@@ -3102,11 +2434,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
           Store.mutate((state) => {
             state.records[key] = Object.assign({}, state.records[key], { note: next, updatedAt: Date.now() });
           }, 'note');
-          Toast2Saved();
         }, 600);
       },
     };
-    function Toast2Saved() { /* 静默保存，不打扰用户 */ }
   })();
 
   const Stats = {
@@ -3120,7 +2450,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('boxNormal').textContent = round1(summary.cat.normal.hours).toFixed(1);
       byId('boxOt').textContent = round1(summary.cat.ot.hours).toFixed(1);
       byId('avgDailyHours').textContent = summary.avgDailyHours.toFixed(1);
-
       this.renderIncomeChart(summary, hidden);
       this.renderHoursPie(summary, hidden);
     },
@@ -3131,9 +2460,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const month = summary.month;
       const lastDay = new Date(year, month + 1, 0).getDate();
       const byDay = new Map();
-      let maxIncome = 0;
-      let total = 0;
-      let validDays = 0;
+      let maxIncome = 0, total = 0, validDays = 0;
       for (const d of summary.days) {
         byDay.set(d.day, d);
         if (d.income > 0) {
@@ -3142,19 +2469,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
           validDays += 1;
         }
       }
-
-      if (maxIncome === 0) {
-        container.replaceChildren(buildChartEmpty('本月暂无收入记录'));
-        return;
-      }
-
+      if (maxIncome === 0) { container.replaceChildren(buildChartEmpty('本月暂无收入记录')); return; }
       const avg = validDays ? total / validDays : 0;
       const niceMax = niceCeil(maxIncome * 1.05);
       const ySteps = 4;
       const wrap = document.createElement('div');
       wrap.className = 'chart-wrap';
-
-      // Y 轴
       const yAxis = document.createElement('div');
       yAxis.className = 'chart-y-axis';
       yAxis.setAttribute('aria-hidden', 'true');
@@ -3165,8 +2485,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         yAxis.appendChild(span);
       }
       wrap.appendChild(yAxis);
-
-      // 绘图区
       const plot = document.createElement('div');
       plot.className = 'chart-plot';
       for (let i = 0; i <= ySteps; i++) {
@@ -3185,12 +2503,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
         avgLine.appendChild(avgLabel);
         plot.appendChild(avgLine);
       }
-
       const bars = document.createElement('div');
       bars.className = 'chart-bars';
-      const peakDays = new Set(
-        summary.days.slice().sort((a, b) => b.income - a.income).slice(0, 3).map((d) => d.day)
-      );
+      const peakDays = new Set(summary.days.slice().sort((a, b) => b.income - a.income).slice(0, 3).map((d) => d.day));
       const barNodes = [];
       for (let day = 1; day <= lastDay; day++) {
         const data = byDay.get(day);
@@ -3202,16 +2517,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
           + (show && data.type === 'weekend' ? ' weekend' : '')
           + (show && peakDays.has(day) ? ' is-peak' : '');
         bar.style.height = show ? Math.max((data.income / niceMax) * 100, 2.5) + '%' : '0%';
-        bar.setAttribute('aria-label',
-          month + 1 + '月' + day + '日 ' + (show ? '收入 ' + fmt.money(data.income, { hidden }) : '无记录'));
+        bar.setAttribute('aria-label', month + 1 + '月' + day + '日 ' + (show ? '收入 ' + fmt.money(data.income, { hidden }) : '无记录'));
         if (show) {
           const value = document.createElement('span');
           value.className = 'bar-value';
           value.textContent = day + '日 ' + fmt.money(data.income, { hidden });
           bar.appendChild(value);
-        } else {
-          bar.tabIndex = -1;
-        }
+        } else bar.tabIndex = -1;
         barNodes.push(bar);
         bars.appendChild(bar);
       }
@@ -3223,8 +2535,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         if (!active) bar.classList.add('is-active');
       });
       plot.appendChild(bars);
-
-      // 图例
       const legend = document.createElement('div');
       legend.className = 'chart-legend';
       for (const item of [['平日', 'var(--primary-graphic)'], ['周末', 'var(--danger-graphic)'], ['节假', 'var(--accent-graphic)']]) {
@@ -3240,8 +2550,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
       plot.appendChild(legend);
       wrap.appendChild(plot);
-
-      // X 轴
       const xAxis = document.createElement('div');
       xAxis.className = 'chart-x-axis';
       xAxis.setAttribute('aria-hidden', 'true');
@@ -3254,13 +2562,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
       unique.forEach((day, index) => {
         const span = document.createElement('span');
         span.textContent = String(day);
-        if (index === 0) { span.style.left = '0'; }
+        if (index === 0) span.style.left = '0';
         else if (index === unique.length - 1) { span.style.right = '0'; span.style.left = 'auto'; span.style.transform = 'none'; }
         else span.style.left = (((day - 0.5) / lastDay) * 100) + '%';
         xAxis.appendChild(span);
       });
       wrap.appendChild(xAxis);
-
       container.replaceChildren(wrap);
     },
 
@@ -3268,19 +2575,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const container = byId('hoursPie');
       const cat = summary.cat;
       const totalHours = cat.normal.hours + cat.ot.hours + cat.weekend.hours + cat.holiday.hours;
-
-      if (totalHours === 0) {
-        container.replaceChildren(buildChartEmpty('本月暂无工时记录'));
-        return;
-      }
-
+      if (totalHours === 0) { container.replaceChildren(buildChartEmpty('本月暂无工时记录')); return; }
       const p1 = (cat.normal.hours / totalHours) * 100;
       const p2 = p1 + (cat.ot.hours / totalHours) * 100;
       const p3 = p2 + (cat.weekend.hours / totalHours) * 100;
-
       const wrap = document.createElement('div');
       wrap.className = 'hours-dist';
-
       const donut = document.createElement('div');
       donut.className = 'hours-donut';
       donut.style.background = 'conic-gradient('
@@ -3301,7 +2601,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       center.append(totalEl, labelEl);
       donut.appendChild(center);
       wrap.appendChild(donut);
-
       const list = document.createElement('div');
       list.className = 'hours-list';
       const rows = [
@@ -3347,7 +2646,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       totalRow.append(tName, tDays, tHours, tMoney);
       list.appendChild(totalRow);
       wrap.appendChild(list);
-
       container.replaceChildren(wrap);
     },
   };
@@ -3358,7 +2656,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     el.textContent = text;
     return el;
   }
-
   function niceCeil(value) {
     if (value <= 0) return 1;
     const exp = Math.pow(10, Math.floor(Math.log10(value)));
@@ -3367,7 +2664,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     for (const step of steps) if (f <= step) return step * exp;
     return 10 * exp;
   }
-
   function shortMoney(value) {
     const n = Math.round(num(value));
     if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + 'w';
@@ -3376,9 +2672,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   }
 
   const Render = {
-    all() {
-      Scheduler.schedule(() => this.now());
-    },
+    all() { Scheduler.schedule(() => this.now()); },
     now() {
       const summary = aggregateMonth(
         Calendar.year, Calendar.month, Store.state.records, Store.state.settings,
@@ -3395,9 +2689,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 第 9 层：打卡（草稿状态机，修掉"一键打卡清空备注"）
-   * ======================================================================== */
+  /* ---------------------------- Clock ---------------------------- */
   const Clock = {
     draft: null,
     targetKey: null,
@@ -3406,13 +2698,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     init() {
       const modal = byId('clockModal');
-      modal.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) UI.closeModal('clockModal');
-      });
+      modal.addEventListener('click', (e) => { if (e.target === e.currentTarget) UI.closeModal('clockModal'); });
       document.querySelectorAll('[data-close]').forEach((btn) => {
         btn.addEventListener('click', () => UI.closeModal(btn.dataset.close));
       });
-
       byId('shiftRow').addEventListener('click', (e) => {
         const btn = e.target.closest('[data-shift]');
         if (!btn) return;
@@ -3448,14 +2737,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         input.addEventListener('blur', () => this.endEdit(field));
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
       }
-
       document.querySelectorAll('[data-quick]').forEach((btn) => {
         btn.addEventListener('click', () => {
           if (!this.draft) return;
-          if (this.draft.state.leave !== 'none' && btn.dataset.quick !== 'clear') {
-            UI.toast('休假中不可调整工时', 'info');
-            return;
-          }
+          if (this.draft.state.leave !== 'none' && btn.dataset.quick !== 'clear') { UI.toast('休假中不可调整工时', 'info'); return; }
           const kind = btn.dataset.quick;
           if (kind === 'preset') this.draft.setHours('normal', HOUR_PRESET[this.draft.state.shift] || 8);
           else if (kind === 'ot1') this.draft.adjust('ot', 1);
@@ -3464,7 +2749,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           this.syncDraftUI();
         });
       });
-
       byId('leaveToggle').addEventListener('click', () => this.collapseLeave(!this.leaveOpen));
       byId('noteToggle').addEventListener('click', () => this.toggleNote());
       byId('clockSaveBtn').addEventListener('click', () => this.save());
@@ -3496,11 +2780,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const date = parseDateKey(key);
       const rec = Store.state.records[key];
       byId('modalDate').textContent = (date.getMonth() + 1) + '月' + date.getDate() + '日';
-
       this.draft = createClockDraft(rec
         ? { shift: rec.shift, type: rec.type, leave: rec.leave, normal: rec.normal, ot: rec.ot, note: rec.note }
         : { type: this.defaultType(key), normal: HOUR_PRESET.day, ot: 0, leave: 'none', note: '' });
-
       byId('noteInput').value = this.draft.state.note;
       this.toggleNote(false);
       this.collapseLeave(true);
@@ -3536,14 +2818,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       });
       byId('valNormal').textContent = state.normal.toFixed(1) + ' H';
       byId('valOt').textContent = state.ot.toFixed(1) + ' H';
-      // 隐藏输入框也必须与草稿同步：否则用户在未点击数值的情况下直接保存，
-      // endEdit() 会从空输入框读回 0，导致"确认打卡却存成 0 小时"。
       byId('inputNormal').value = String(state.normal);
       byId('inputOt').value = String(state.ot);
       document.querySelectorAll('[data-adjust]').forEach((btn) => { btn.disabled = onLeave; });
-      document.querySelectorAll('[data-quick]').forEach((btn) => {
-        btn.disabled = onLeave && btn.dataset.quick !== 'clear';
-      });
+      document.querySelectorAll('[data-quick]').forEach((btn) => { btn.disabled = onLeave && btn.dataset.quick !== 'clear'; });
     },
 
     beginEdit(field) {
@@ -3569,19 +2847,15 @@ input:focus-visible,textarea:focus-visible{outline:none}
     save() {
       if (!this.draft || !this.targetKey) return;
       try {
-        // 关闭弹窗前先提交正在编辑的输入框，避免"刚输入的值没生效"
         for (const field of ['normal', 'ot']) {
           const inputEl = byId(field === 'normal' ? 'inputNormal' : 'inputOt');
           if (!inputEl.classList.contains('hidden')) this.endEdit(field);
         }
         this.draft.setNote(byId('noteInput').value);
-
         const key = this.targetKey;
         const isEmpty = this.draft.isEmpty();
         const record = this.draft.toRecord();
-
         if (isEmpty) {
-          // 清空工时 → 删除记录，并写入墓碑防止被云端旧数据复活
           Store.mutate((state) => {
             delete state.records[key];
             Store.markDeleted(key, record.updatedAt);
@@ -3589,11 +2863,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         } else {
           Store.mutate((state) => {
             state.records[key] = record;
-            delete Store.deleted[key];   // 重新记录同一天 → 撤销旧墓碑
+            delete Store.deleted[key];
           }, 'clock');
         }
-
-        UI.toast(isEmpty ? '🗑️ 记录已删除' : '✅ 已保存 ' + key.slice(5) + ' 的记录', isEmpty ? 'info' : 'success');
+        UI.toast(isEmpty ? '记录已删除' : '已保存 ' + key.slice(5) + ' 的记录', isEmpty ? 'info' : 'success');
         UI.closeModal('clockModal');
         Calendar.select(key);
       } catch (err) {
@@ -3602,19 +2875,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
     },
 
-    /**
-     * 同步操作按钮区：
-     *   - 该日已有记录时隐藏"一键打卡"（它固定写 8h，会覆盖已有数据，属高危误操作），
-     *     只保留"添加打卡"——里面可以自由填工时、班次、备注；
-     *   - 该日无记录时两个都显示。
-     */
     updateQuickPunchLabel() {
       const punchBtn = byId('quickPunchBtn');
       const addBtn = byId('addRecordBtn');
       const { key, date } = this.targetDate();
       const hasRecord = Boolean(Store.state.records[key]);
       const label = (date.getMonth() + 1) + '月' + date.getDate() + '日';
-
       if (punchBtn) {
         punchBtn.classList.toggle('hidden', hasRecord);
         punchBtn.disabled = hasRecord;
@@ -3641,13 +2907,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return { key: formatDateKey(now), date: now };
     },
 
-    /** 一键打卡：绝不静默丢弃已有内容 */
     async quickPunch() {
       const { key, date } = this.targetDate();
       const autoType = this.defaultType(key);
       const prev = Store.state.records[key];
       const label = (date.getMonth() + 1) + '/' + date.getDate();
-
       if (prev && (prev.note || num(prev.ot) > 0 || num(prev.normal) !== HOUR_PRESET.day || (prev.leave && prev.leave !== 'none'))) {
         const parts = [];
         if (prev.note) parts.push('备注「' + (prev.note.length > 16 ? prev.note.slice(0, 16) + '…' : prev.note) + '」');
@@ -3661,32 +2925,23 @@ input:focus-visible,textarea:focus-visible{outline:none}
         });
         if (!ok) return;
       }
-
       Store.mutate((state) => {
         state.records[key] = {
-          shift: 'day',
-          type: autoType,
-          leave: 'none',
-          normal: HOUR_PRESET.day,
-          ot: 0,
+          shift: 'day', type: autoType, leave: 'none',
+          normal: HOUR_PRESET.day, ot: 0,
           note: prev ? prev.note || '' : '',
           updatedAt: Date.now(),
         };
       }, 'quickPunch');
-
-      // 作废打卡弹窗草稿：否则用户随后点"保存记录"会用旧草稿把刚打的卡覆盖回去
       this.draft = null;
       this.targetKey = null;
       UI.closeModal('clockModal');
-
       Calendar.select(key);
-      UI.toast('✅ ' + label + ' 打卡完成（8 小时' + (TYPE_NAMES[autoType] || '正班') + '）', 'success');
+      UI.toast('打卡完成（8 小时' + (TYPE_NAMES[autoType] || '正班') + '）', 'success');
     },
   };
 
-  /* ==========================================================================
-   * 第 10 层：设置
-   * ======================================================================== */
+  /* ---------------------------- Settings ---------------------------- */
   const Settings = {
     init() {
       byId('modeSwitch').addEventListener('click', () => this.toggleMode());
@@ -3737,22 +2992,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.calcRates();
     },
 
-    /** 预览并同步派生时薪；只在月薪制下改写派生值，避免污染小时制数据 */
     calcRates() {
       const hidden = UI.incomeHidden;
       const isSalary = Store.state.settings.mode === 'salary';
       const previews = {
-        previewNormal: byId('previewNormal'),
-        previewOt: byId('previewOt'),
-        previewWeekend: byId('previewWeekend'),
-        previewHoliday: byId('previewHoliday'),
+        previewNormal: byId('previewNormal'), previewOt: byId('previewOt'),
+        previewWeekend: byId('previewWeekend'), previewHoliday: byId('previewHoliday'),
       };
-
       if (!isSalary) {
         for (const el of Object.values(previews)) el.textContent = hidden ? MASK : '¥0/H';
         return;
       }
-
       const base = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
       const days = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
       const hours = clamp(byId('inSalaryHours').value, 1, 24, 8);
@@ -3760,30 +3010,23 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const rO = clamp(byId('inRateOt').value, 0, 5, 1.5);
       const rW = clamp(byId('inRateWeekend').value, 0, 5, 2);
       const rH = clamp(byId('inRateHoliday').value, 0, 5, 3);
-
       const baseRate = base / days / hours;
       const values = {
-        previewNormal: baseRate * rN,
-        previewOt: baseRate * rO,
-        previewWeekend: baseRate * rW,
-        previewHoliday: baseRate * rH,
+        previewNormal: baseRate * rN, previewOt: baseRate * rO,
+        previewWeekend: baseRate * rW, previewHoliday: baseRate * rH,
       };
       for (const [id, value] of Object.entries(values)) {
         previews[id].textContent = hidden ? MASK : '¥' + value.toFixed(2) + '/H';
       }
-
       Store.mutate((state) => {
         const s = state.settings;
         s.salaryNormal = Number((baseRate * rN).toFixed(2));
         s.salaryOt = Number((baseRate * rO).toFixed(2));
         s.salaryWeekend = Number((baseRate * rW).toFixed(2));
         s.salaryHoliday = Number((baseRate * rH).toFixed(2));
-        s.salaryDays = days;
-        s.salaryHours = hours;
-        s.salaryRateNormal = rN;
-        s.salaryRateOt = rO;
-        s.salaryRateWeekend = rW;
-        s.salaryRateHoliday = rH;
+        s.salaryDays = days; s.salaryHours = hours;
+        s.salaryRateNormal = rN; s.salaryRateOt = rO;
+        s.salaryRateWeekend = rW; s.salaryRateHoliday = rH;
       }, 'rates');
       Store.settingsDirty = true;
     },
@@ -3804,8 +3047,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       Store.settingsDirty = true;
       if (Store.state.settings.mode === 'salary') this.calcRates();
       this.loadInputs();
-      // 不强制跳页：用户可能正在连续调参
-      UI.toast('✅ 设置已保存', 'success');
+      UI.toast('设置已保存', 'success');
     },
 
     renderGoal(summary) {
@@ -3821,37 +3063,29 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (!Number.isFinite(value)) { UI.toast('请输入有效数字', 'error'); return; }
       Store.mutate((state) => { state.goal = value; }, 'goal');
       Store.settingsDirty = true;
-      UI.toast('✅ 目标已更新为 ' + value + ' 小时', 'success');
+      UI.toast('目标已更新为 ' + value + ' 小时', 'success');
     },
   };
 
-  /* ==========================================================================
-   * 第 11 层：计算器
-   * ======================================================================== */
+  /* ---------------------------- Calculator ---------------------------- */
   const Calculator = {
     _hide: false,
     init() {
       document.querySelectorAll('.calc-tab').forEach((tab) => {
         tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
       });
-
-      const taxInputs = ['taxIncome', 'taxPension', 'taxMedical', 'taxUnemployment', 'taxFund'];
-      for (const id of taxInputs) {
+      for (const id of ['taxIncome', 'taxPension', 'taxMedical', 'taxUnemployment', 'taxFund']) {
         byId(id).addEventListener('input', (e) => {
-          sanitizeNumericInput(e.target);   // 去掉前导零（099 → 99）
+          sanitizeNumericInput(e.target);
           this.onInsuranceInput();
         });
       }
       for (const id of ['salaryRate', 'salaryHours', 'salaryDays']) {
-        byId(id).addEventListener('input', (e) => {
-          sanitizeNumericInput(e.target);
-          this.calcSalary();
-        });
+        byId(id).addEventListener('input', (e) => { sanitizeNumericInput(e.target); this.calcSalary(); });
       }
       byId('taxDeductions').addEventListener('click', (e) => {
         const item = e.target.closest('.deduction-item');
         if (!item) return;
-        // 输入框自行处理，避免点数字时误切换开关
         if (e.target.closest('.deduction-amount')) return;
         this.toggleDeduction(item.dataset.key);
       });
@@ -3861,13 +3095,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
         sanitizeNumericInput(input);
         this.setDeductionAmount(input.dataset.deduction, input.value, input);
       });
-
       byId('calcKeys').addEventListener('click', (e) => {
         const key = e.target.closest('[data-key]');
         if (key) this.input(key.dataset.key);
       });
       document.addEventListener('keydown', (e) => this.onKeydown(e));
-
       this.buildDeductionList();
       this.syncInputs();
     },
@@ -3896,7 +3128,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         item.setAttribute('role', 'button');
         item.tabIndex = 0;
         if (key === 'other') item.style.borderStyle = 'dashed';
-
         const info = document.createElement('div');
         info.className = 'deduction-info';
         const name = document.createElement('div');
@@ -3906,23 +3137,16 @@ input:focus-visible,textarea:focus-visible{outline:none}
         hint.className = 'deduction-hint';
         hint.textContent = meta.hint;
         info.append(name, hint);
-
         const amount = document.createElement('div');
         amount.className = 'deduction-amount';
         const prefix = document.createElement('span');
         prefix.textContent = '¥';
         prefix.style.cssText = 'font-size:12px;color:var(--text-secondary);font-weight:600';
         const input = document.createElement('input');
-        input.type = 'number';
-        input.step = '100';
-        input.min = '0';
-        input.max = '100000';
-        input.value = '0';
-        input.dataset.deduction = key;
-        input.inputMode = 'decimal';
+        input.type = 'number'; input.step = '100'; input.min = '0'; input.max = '100000';
+        input.value = '0'; input.dataset.deduction = key; input.inputMode = 'decimal';
         input.setAttribute('aria-label', meta.name + '金额');
         amount.append(prefix, input);
-
         item.append(info, amount);
         item.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleDeduction(key); }
@@ -3938,7 +3162,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('taxMedical').value = ins.medical;
       byId('taxUnemployment').value = ins.unemployment;
       byId('taxFund').value = ins.fund;
-
       const deds = Store.state.deductions;
       document.querySelectorAll('#taxDeductions .deduction-item').forEach((item) => {
         const key = item.dataset.key;
@@ -3951,7 +3174,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.refreshFromRecords();
     },
 
-    /** 用当月预估收入作为个税默认输入（仅在用户未手动改过时） */
     refreshFromRecords() {
       const summary = aggregateMonth(
         Calendar.year, Calendar.month, Store.state.records, Store.state.settings,
@@ -4010,7 +3232,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       });
       const hidden = UI.incomeHidden;
       const money = (v) => fmt.money(v, { hidden });
-
       byId('taxDeductionTotal').textContent = money(result.pretaxDeduction);
       byId('dtGross').textContent = money(result.gross);
       byId('dtInsurance').textContent = money(result.insurance);
@@ -4040,7 +3261,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('salaryMonthly').textContent = fmt.compact(monthly, { hidden });
     },
 
-    /* ---- 简易计算器：C 风格优先级，无 eval ---- */
     tokens: [],
     current: '0',
     justEvaluated: false,
@@ -4048,12 +3268,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
     input(value) {
       const OPS = '+-×÷';
       if (value === 'C') { this.tokens = []; this.current = '0'; this.justEvaluated = false; this.updateDisplay(); return; }
-
       if (value === '⌫') {
         if (this.justEvaluated) { this.tokens = []; this.current = '0'; this.justEvaluated = false; this.updateDisplay(); return; }
         if (this.current) {
-          this.current = this.current.length <= 1 || (this.current.length === 2 && this.current.startsWith('-'))
-            ? '' : this.current.slice(0, -1);
+          this.current = this.current.length <= 1 || (this.current.length === 2 && this.current.startsWith('-')) ? '' : this.current.slice(0, -1);
         } else if (this.tokens.length) {
           const last = this.tokens.pop();
           if (last !== undefined && !isNaN(parseFloat(last))) this.current = last;
@@ -4061,7 +3279,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.updateDisplay();
         return;
       }
-
       if (value === '±') {
         if (this.current && this.current !== '0') {
           this.current = this.current.startsWith('-') ? this.current.slice(1) : '-' + this.current;
@@ -4069,14 +3286,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.updateDisplay();
         return;
       }
-
       if (value === '%') {
         const n = parseFloat(this.current);
         if (!isNaN(n)) this.current = this.format(n / 100);
         this.updateDisplay();
         return;
       }
-
       if (OPS.indexOf(value) !== -1) {
         if (this.justEvaluated) { this.tokens = []; this.justEvaluated = false; }
         if (this.current) { this.tokens.push(this.current); this.current = ''; }
@@ -4085,7 +3300,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.updateDisplay();
         return;
       }
-
       if (value === '=') {
         if (this.current) this.tokens.push(this.current);
         while (this.tokens.length && isNaN(parseFloat(this.tokens[this.tokens.length - 1]))) this.tokens.pop();
@@ -4100,7 +3314,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.justEvaluated = true;
         return;
       }
-
       if (value === '.') {
         if (this.justEvaluated) { this.tokens = []; this.current = '0'; this.justEvaluated = false; }
         if (!this.current) this.current = '0.';
@@ -4108,7 +3321,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.updateDisplay();
         return;
       }
-
       if (this.justEvaluated) { this.tokens = []; this.current = '0'; this.justEvaluated = false; }
       if (!this.current || this.current === '0') this.current = value;
       else if (this.current.replace('-', '').replace('.', '').length < 14) this.current += value;
@@ -4119,10 +3331,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const parts = this.tokens.slice();
       if (this.current) parts.push(this.current);
       byId('calcExpr').textContent = parts.join(' ');
-
       const forCalc = parts.slice();
       if (forCalc.length && isNaN(parseFloat(forCalc[forCalc.length - 1]))) forCalc.pop();
-
       let text;
       if (!forCalc.length) text = this.current || '0';
       else if (forCalc.length === 1) text = forCalc[0];
@@ -4166,7 +3376,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
       if (UI.activePage !== 'pageCalculator') return;
       if (!byId('calcSimple').classList.contains('active')) return;
-
       const map = { '*': '×', 'x': '×', '/': '÷', 'Enter': '=', '=': '=', 'Escape': 'C', 'Backspace': '⌫', '%': '%', '+': '+', '-': '-' };
       if (e.key >= '0' && e.key <= '9') { this.input(e.key); e.preventDefault(); }
       else if (e.key === '.') { this.input('.'); e.preventDefault(); }
@@ -4175,9 +3384,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 第 12 层：导入导出
-   * ======================================================================== */
+  /* ---------------------------- ImportExport ---------------------------- */
   const ImportExport = {
     pending: null,
     pendingData: null,
@@ -4190,7 +3397,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('openImportBtn').addEventListener('click', () => this.openImport());
       byId('exportJsonBtn').addEventListener('click', () => { this.exportJson(); UI.closeModal('exportModal'); });
       byId('exportCsvBtn').addEventListener('click', () => { this.exportCsv(); UI.closeModal('exportModal'); });
-
       byId('dropzone').addEventListener('click', () => byId('importFile').click());
       byId('importFile').addEventListener('change', (e) => this.handleFile(e.target.files[0]));
       const dropzone = byId('dropzone');
@@ -4206,7 +3412,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
         if (file) this.handleFile(file);
       });
-
       byId('strategyRow').addEventListener('click', (e) => {
         const btn = e.target.closest('[data-strategy]');
         if (!btn) return;
@@ -4217,7 +3422,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         byId('importWarn').classList.toggle('show', this.strategy === 'overwrite');
         this.updateImportMeta();
       });
-
       byId('importConfirmBtn').addEventListener('click', () => this.executeImport());
     },
 
@@ -4236,14 +3440,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     exportJson() {
       const data = Object.assign({}, Store.state, {
-        version: APP_VERSION,
-        schemaVersion: SCHEMA_VERSION,
-        exportedAt: new Date().toISOString(),
-        app: '工时记录助手',
+        version: APP_VERSION, schemaVersion: SCHEMA_VERSION,
+        exportedAt: new Date().toISOString(), app: '工时记录助手',
       });
       const stamp = formatDateKey(new Date());
       this.download('worktime_backup_' + stamp + '.json', JSON.stringify(data, null, 2), 'application/json');
-      UI.toast('✅ JSON 已导出', 'success');
+      UI.toast('JSON 已导出', 'success');
     },
 
     exportCsv() {
@@ -4251,7 +3453,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const csv = buildCsv(Store.state.records, (rec, date) => engine.of(rec, date), { hidden: UI.incomeHidden });
       const stamp = formatDateKey(new Date());
       this.download('worktime_export_' + stamp + '.csv', csv, 'text/csv;charset=utf-8');
-      UI.toast('✅ CSV 已导出', 'success');
+      UI.toast('CSV 已导出', 'success');
     },
 
     openImport() {
@@ -4279,24 +3481,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
       reader.readAsText(file);
     },
 
-    /**
-     * 解析并校验导入文本（与 handleFile 共用同一条链路，便于自动化测试）。
-     * 校验不通过时不改变任何状态，只提示错误。
-     * @returns {boolean} 是否通过校验并进入待导入状态
-     */
     processImportText(text) {
       let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch (err) {
-        UI.toast('文件不是有效的 JSON', 'error');
-        return false;
-      }
+      try { parsed = JSON.parse(text); }
+      catch (err) { UI.toast('文件不是有效的 JSON', 'error'); return false; }
       const result = normalizeImport(parsed);
-      if (!result.ok) {
-        UI.toast(result.errors[0] || '导入文件格式无效', 'error');
-        return false;
-      }
+      if (!result.ok) { UI.toast(result.errors[0] || '导入文件格式无效', 'error'); return false; }
       this.pending = parsed;
       this.pendingData = result.data;
       this.pendingDropped = result.dropped || 0;
@@ -4309,7 +3499,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('previewMode').textContent = result.data.settings.mode === 'hourly' ? '小时工' : '月薪制';
       byId('previewTime').textContent = parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString('zh-CN') : '-';
       byId('previewVersion').textContent = parsed.version || '-';
-
       const errorBox = byId('previewErrors');
       errorBox.replaceChildren();
       if (result.errors.length) {
@@ -4322,13 +3511,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
         }
         errorBox.appendChild(list);
       }
-
       byId('importPreview').classList.add('show');
       byId('importActions').style.display = 'flex';
       this.updateImportMeta();
     },
 
-    /** 覆盖前把"将被删除/新增多少条"讲清楚 */
     updateImportMeta() {
       if (!this.pendingData) return;
       const localKeys = Object.keys(Store.state.records);
@@ -4357,7 +3544,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     async executeImport() {
       if (!this.pendingData) return;
       const incoming = this.pendingData;
-
       if (this.strategy === 'overwrite') {
         const localCount = Object.keys(Store.state.records).length;
         const ok = await UI.confirmDangerous({
@@ -4365,13 +3551,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
           body: '<p>将用备份中的 <strong>' + Object.keys(incoming.records).length + '</strong> 条记录'
             + '替换当前 <strong>' + localCount + '</strong> 条记录，并同步到云端。</p>'
             + '<p style="margin-top:8px">此操作不可撤销。</p>',
-          confirmText: '覆盖',
-          okText: '确认覆盖',
+          confirmText: '覆盖', okText: '确认覆盖',
           backupLabel: '① 先导出当前数据备份（推荐）',
         });
         if (!ok) return;
       }
-
       Store.mutate((state) => {
         if (this.strategy === 'overwrite') {
           state.records = incoming.records;
@@ -4388,32 +3572,26 @@ input:focus-visible,textarea:focus-visible{outline:none}
           state.settings = Object.assign({}, incoming.settings, state.settings);
         }
       }, 'import');
-
       Store.settingsDirty = true;
       Settings.loadInputs();
       Calculator.syncInputs();
       UI.closeModal('importModal');
       const dropped = this.pendingDropped || 0;
-      this.pending = null;
-      this.pendingData = null;
-      this.pendingDropped = 0;
-
-      UI.toast('✅ 导入完成' + (dropped ? '（跳过 ' + dropped + ' 条异常记录）' : ''), 'success');
+      this.pending = null; this.pendingData = null; this.pendingDropped = 0;
+      UI.toast('导入完成' + (dropped ? '（跳过 ' + dropped + ' 条异常记录）' : ''), 'success');
     },
   };
 
-  /* ==========================================================================
-   * 第 13 层：应用生命周期
-   * ======================================================================== */
+  /* ---------------------------- App ---------------------------- */
   const App = {
     booted: false,
+    _starting: null,
 
     init() {
       Session.init();
       Holiday.ensure();
       Lunar.loadCache();
       UI.init();
-
       Calendar.init();
       Clock.init();
       Settings.init();
@@ -4422,8 +3600,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.bindGlobal();
 
       Store.subscribe((reason) => {
-        // 同步状态与备注都是"局部更新"：绝不能触发整页重渲染，
-        // 否则会把用户正在输入的 textarea 换掉（丢焦点与光标）。
         if (reason === 'sync') { this.renderSyncBadge(); return; }
         if (reason === 'note') {
           Scheduler.schedule(() => {
@@ -4456,6 +3632,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('syncBar').addEventListener('click', () => this.manualSync());
       byId('logoutBtn').addEventListener('click', () => this.logout());
       byId('clearAllBtn').addEventListener('click', () => this.clearAll());
+      byId('deleteAccountBtn').addEventListener('click', () => this.deleteAccount());
 
       byId('authForm').addEventListener('submit', (e) => { e.preventDefault(); Auth.submit(); });
       byId('authSwitchLink').addEventListener('click', () => Auth.toggleMode());
@@ -4466,13 +3643,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       window.addEventListener('online', () => {
         if (!Session.token) return;
-        UI.toast('🌐 网络已恢复，正在同步', 'info');
+        UI.toast('网络已恢复，正在同步', 'info');
         this.manualSync();
       });
       window.addEventListener('offline', () => {
         if (!Session.token) return;
         UI.syncBadge('offline', '离线');
-        UI.toast('📴 离线模式，改动会先保存在本地', 'info');
+        UI.toast('离线模式，改动会先保存在本地', 'info');
       });
       window.addEventListener('pagehide', () => {
         if (Session.token && Store.rev > 0) Store.flush({ keepalive: true });
@@ -4505,9 +3682,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           Calendar.currentDate = new Date(date.getFullYear(), date.getMonth(), 1);
           Calendar.selectedDate = nextKey;
           Render.all();
-        } else {
-          Calendar.select(nextKey);
-        }
+        } else Calendar.select(nextKey);
         setTimeout(() => {
           const target = document.querySelector('.day-cell.selected');
           if (target) target.focus({ preventScroll: true });
@@ -4532,11 +3707,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('profileSub').textContent = '已连接 · 自动同步';
     },
 
-    /**
-     * 启动：缓存秒开 → 后台拉取 → 收敛。
-     * 幂等：登录成功与页面初始化都会调用它，若不加锁会发出两次 getData，
-     * 后到的旧快照会把期间产生的本地改动覆盖掉（真实丢数据路径）。
-     */
     async start() {
       if (this._starting) return this._starting;
       this._starting = (async () => {
@@ -4544,38 +3714,26 @@ input:focus-visible,textarea:focus-visible{outline:none}
         this.currentUsernameAtBoot = usernameAtBoot;
         this.showApp();
         UI.syncBadge('syncing', '加载中');
-
         const hadCache = Store.loadCache();
         if (hadCache) {
           Settings.loadInputs();
           Calculator.syncInputs();
           Render.now();
           UI.syncBadge('syncing', '正在刷新');
-        } else {
-          this.renderSkeleton();
-        }
-
+        } else this.renderSkeleton();
         try {
           const remote = await Api.getData(usernameAtBoot);
-          // 请求期间可能已登出或切换账号：丢弃过期响应，避免串号
           if (Session.username !== usernameAtBoot) return;
           Store.lastSyncedAt = Date.now();
-          if (Store.rev > 0) {
-            // 引导期间用户已经改过数据（例如离线补打卡）：
-            // 用 reconcile 而非 replace，避免服务端快照把尚未上传的本地改动抹掉
-            Store.reconcile(remote, { prefsDirty: false });
-          } else {
-            Store.replace(remote);
-          }
+          if (Store.rev > 0) Store.reconcile(remote, { prefsDirty: false });
+          else Store.replace(remote);
           Settings.loadInputs();
           Calculator.syncInputs();
           Render.now();
           if (remote._degraded) {
             UI.syncBadge('pending', '离线数据');
             UI.toast('当前显示的是最近一次成功同步的数据，网络恢复后会自动上传改动', 'info');
-          } else {
-            UI.syncBadge('synced', '已同步');
-          }
+          } else UI.syncBadge('synced', '已同步');
           byId('profileSub').textContent = '已连接 · 自动同步';
         } catch (err) {
           if (err && err.code === 'UNAUTHORIZED') { this.forceLogout('登录已失效，请重新登录'); return; }
@@ -4596,13 +3754,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     renderSkeleton() {
       byId('detailArea').replaceChildren(buildEmptyState('⏳', '正在加载数据', '首次加载需要从云端读取，请稍候'));
-      const holder = document.createElement('div');
-      holder.className = 'card';
-      const bar = document.createElement('div');
-      bar.className = 'skeleton';
-      bar.style.height = '80px';
-      holder.appendChild(bar);
-      void holder;
     },
 
     renderLoadError(err) {
@@ -4647,7 +3798,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         Store.replace(remote);
         Render.all();
         if (remote._degraded) UI.syncBadge('pending', '离线数据');
-        else { UI.syncBadge('synced', '已同步'); UI.toast('✅ 同步完成', 'success'); }
+        else { UI.syncBadge('synced', '已同步'); UI.toast('同步完成', 'success'); }
       } catch (err) {
         if (err && err.code === 'UNAUTHORIZED') { this.forceLogout('登录已失效，请重新登录'); return; }
         UI.syncBadge('error', '同步失败');
@@ -4666,13 +3817,61 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.forceLogout('');
     },
 
-    forceLogout(message) {
-      // 顺序很重要：clearCache() 的 key 依赖 Session.username，
-      // 必须"先清缓存、再清会话"，否则缓存键会退化成 wc_cache_anon 而残留。
+    /**
+     * 注销账号：删除云端 GitHub 目录 + 清本地缓存 + 清会话。
+     * 与 forceLogout 不同：注销后云端数据被永久删除。
+     */
+    async deleteAccount() {
+      if (!Session.username || !Session.token) return;
+      const ok = await UI.confirmDangerous({
+        title: '⚠️ 注销账号',
+        body: '<p>将<strong>永久删除</strong>该账号的云端与本地全部数据：</p>'
+          + '<ul style="margin:8px 0 0;padding-left:20px;font-size:13px;line-height:1.9">'
+          + '<li>GitHub 私有仓库中的 profile.json 与 data.json</li>'
+          + '<li>本机浏览器缓存</li>'
+          + '<li>当前登录状态</li>'
+          + '</ul>'
+          + '<p style="margin-top:10px">此操作<strong>不可恢复</strong>。建议先导出备份。</p>',
+        confirmText: Session.username,
+        okText: '注销',
+        cancelText: '取消',
+        backupLabel: '① 先导出数据备份（强烈推荐）',
+      });
+      if (!ok) return;
+      UI.syncBadge('syncing', '注销中…');
+      try {
+        await Api.deleteUser(Session.username);
+      } catch (err) {
+        if (err && err.code === 'UNAUTHORIZED') { this.forceLogout('登录已失效，请重新登录'); return; }
+        UI.syncBadge('error', '注销失败');
+        UI.toast('注销失败：' + ((err && err.message) || '未知错误'), 'error');
+        return;
+      }
       Store.clearCache();
       Session.clear();
       Api.token = null;
-      // 彻底复位 Store：避免上一个账号的墓碑/水位线/在途状态残留到下一个会话
+      Store.state = defaultUserData();
+      Store.rev = 0;
+      Store.deleted = {};
+      Store.lastSyncedAt = 0;
+      Store.settingsDirty = false;
+      Store.syncStatus = 'idle';
+      Store.retryIndex = 0;
+      Store.dirtyAgain = false;
+      Store.inflight = null;
+      clearTimeout(Store.saveTimer);
+      byId('password').value = '';
+      byId('confirmPassword').value = '';
+      this.showAuth();
+      Auth.setMessage('账号已注销，欢迎随时重新注册', 'info');
+      UI.toast('账号已注销', 'success');
+    },
+
+    forceLogout(message) {
+      // 顺序：先清缓存（缓存 key 依赖 Session.username），再清会话
+      Store.clearCache();
+      Session.clear();
+      Api.token = null;
       Store.state = defaultUserData();
       Store.rev = 0;
       Store.deleted = {};
@@ -4696,12 +3895,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         title: '⚠️ 清空所有数据',
         body: '<p>将删除 <strong>' + count + ' 条</strong>打卡记录，并把薪资设置、五险一金、'
           + '专项附加扣除与目标工时恢复默认，<strong>立即同步到云端且不可恢复</strong>。</p>',
-        confirmText: '清空',
-        okText: '确认清空',
+        confirmText: '清空', okText: '确认清空',
         backupLabel: '① 先导出备份（推荐）',
       });
       if (!ok) return;
-
       Store.mutate((state) => {
         const fresh = defaultUserData();
         state.records = fresh.records;
@@ -4710,18 +3907,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
         state.deductions = fresh.deductions;
         state.insurance = fresh.insurance;
       }, 'clearAll');
+      Store.deleted = {};   // P3-L：清空全部数据时同步清墓碑
       Store.settingsDirty = true;
       Store.lastSyncedAt = 0;
       Settings.loadInputs();
       Calculator.syncInputs();
       byId('taxIncome').value = 0;
-      UI.toast('🗑️ 已清空并恢复默认设置', 'success');
+      UI.toast('已清空并恢复默认设置', 'success');
     },
   };
 
-  /* ==========================================================================
-   * 第 14 层：认证
-   * ======================================================================== */
+  /* ---------------------------- Auth ---------------------------- */
   const Auth = {
     isLoginMode: true,
     busy: false,
@@ -4778,9 +3974,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const spinner = document.createElement('span');
         spinner.className = 'spinner';
         btn.append(spinner, document.createTextNode(label || '请稍候…'));
-      } else {
-        btn.textContent = this.isLoginMode ? '登录' : '注册';
-      }
+      } else btn.textContent = this.isLoginMode ? '登录' : '注册';
     },
 
     async submit() {
@@ -4788,51 +3982,34 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const username = byId('username').value.trim();
       const password = byId('password').value;
       const confirm = byId('confirmPassword').value;
-
       this.clearFieldErrors();
       this.setMessage('', '');
-
       if (!username) { this.fieldError('username', '请输入用户名'); return; }
       if (!USERNAME_RE.test(username)) { this.fieldError('username', '3-32 位，仅限字母、数字、下划线和连字符'); return; }
       if (!password) { this.fieldError('password', '请输入密码'); return; }
       if (!this.isLoginMode) {
         if (password.length < 6) { this.fieldError('password', '密码至少 6 位'); return; }
         if (password !== confirm) { this.fieldError('password', '两次输入的密码不一致'); return; }
-        // 弱密码只提示、不强制（避免用户被规则挡在门外）
         const advice = Auth.passwordAdvice(password);
         if (advice.canRegister) {
           const ok = await UI.confirmDangerous({
             title: '密码强度偏低',
             body: '<p>你设置的密码<strong>强度偏低</strong>：' + advice.reasons.join('、') + '。</p>'
-              + '<p style="margin-top:8px">弱密码更容易被离线爆破（攻击者拿到哈希后可高速尝试）。'
-              + '建议混合大小写字母、数字与符号，长度 12 位以上。</p>'
+              + '<p style="margin-top:8px">弱密码更容易被离线爆破。建议混合大小写字母、数字与符号，长度 12 位以上。</p>'
               + '<p style="margin-top:8px">仍然要用当前密码注册吗？</p>',
-            okText: '仍要注册',
-            cancelText: '返回修改',
+            okText: '仍要注册', cancelText: '返回修改',
           });
           if (!ok) { byId('password').focus({ preventScroll: true }); return; }
-        } else {
-          this.fieldError('password', advice.reasons[0]);
-          return;
-        }
+        } else { this.fieldError('password', advice.reasons[0]); return; }
       }
-
       this.setBusy(true, this.isLoginMode ? '登录中…' : '注册中…');
       try {
         if (this.isLoginMode) await this.doLogin(username, password);
         else await this.doRegister(username, password);
-      } catch (err) {
-        this.handleAuthError(err);
-      } finally {
-        this.setBusy(false);
-      }
+      } catch (err) { this.handleAuthError(err); }
+      finally { this.setBusy(false); }
     },
 
-    /**
-     * 评估密码强度（仅用于"建议"，不强制）。
-     * canRegister=false 只用于真正无法接受的情况（当前：长度不足）。
-     * @returns {{score:number, canRegister:boolean, reasons:string[]}}
-     */
     passwordAdvice(password) {
       const reasons = [];
       const len = String(password || '').length;
@@ -4841,17 +4018,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const hasDigit = /\d/.test(password);
       const hasSymbol = /[^A-Za-z0-9]/.test(password);
       const classes = [hasLower, hasUpper, hasDigit, hasSymbol].filter(Boolean).length;
-
       if (len < 6) reasons.push('长度不足 6 位');
       if (len < 12) reasons.push('长度少于 12 位');
       if (classes < 3) reasons.push('字符种类少于 3 类（大小写/数字/符号）');
       if (/^(?:\d+|[a-z]+|[A-Z]+)$/.test(password)) reasons.push('只由单一类型字符组成');
-      // 精确匹配常见弱口令，不用前缀匹配（否则 "Abc123456!xyz" 这类会被误报）
       const COMMON = ['123456', '12345678', '123456789', '654321', 'password', 'passw0rd',
         'qwerty', 'qwerty123', 'abc123', '111111', '000000', 'admin', 'admin123',
         'letmein', 'iloveyou', 'welcome', 'monkey', 'dragon'];
       if (COMMON.indexOf(String(password).toLowerCase()) !== -1) reasons.push('是常见弱口令');
-
       return {
         canRegister: len >= 6,
         score: Math.max(0, Math.min(4, classes + (len >= 12 ? 1 : 0) - (len < 8 ? 1 : 0))),
@@ -4859,15 +4033,25 @@ input:focus-visible,textarea:focus-visible{outline:none}
       };
     },
 
+    /**
+     * 登录：兼容旧 KDF。
+     * 若服务端仍为 SHA256-LEGACY，客户端同时计算"旧校验 hash + 新 KDF 迁移材料"，
+     * 校验通过后由 Worker 一次性原子替换。
+     */
     async doLogin(username, password) {
       const saltInfo = await Api.getSalt(username);
       if (!saltInfo || typeof saltInfo.salt !== 'string') {
         throw ApiError('服务器未返回有效的 salt', 'FATAL', 0);
       }
       const hash = await Api.deriveHash(password, saltInfo.salt, saltInfo.kdf, saltInfo.iterations);
-      const res = await Api.login(username, hash);
+      let upgrade = null;
+      if (saltInfo.kdf !== 'PBKDF2-SHA256') {
+        const newSalt = Api.generateSalt();
+        const newHash = await Api.deriveHash(password, newSalt, 'PBKDF2-SHA256', 600000);
+        upgrade = { newSalt, newHash };
+      }
+      const res = await Api.login(username, hash, upgrade);
       if (!res || !res.token) throw ApiError('服务器未返回登录令牌', 'FATAL', 0);
-
       Session.set(username, res.token);
       safeSet('wc_last_user', username);
       byId('password').value = '';
@@ -4917,9 +4101,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 第 15 层：手势与弹窗遮罩
-   * ======================================================================== */
+  /* ---------------------------- Modal / Swipe ---------------------------- */
   const ModalRig = {
     init() {
       document.querySelectorAll('.modal-overlay').forEach((overlay) => {
@@ -4934,15 +4116,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
     init() {
       const el = byId('calendarInner');
       if (!el) return;
-      let startX = 0;
-      let startY = 0;
-      let active = false;
-      let horizontal = false;
-      let deltaX = 0;
+      let startX = 0, startY = 0, active = false, horizontal = false, deltaX = 0;
       let lastTouchAt = 0;
       const threshold = 40;
       const maxOffset = 60;
-
       const showHint = (offset) => {
         byId('swipeLeft').classList.toggle('show', offset < -15);
         byId('swipeRight').classList.toggle('show', offset > 15);
@@ -4955,32 +4132,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
         el.classList.remove('swiping');
         el.style.transition = 'transform ' + (SWIPE_ANIM_MS / 1000) + 's cubic-bezier(.22,1,.36,1)';
         reset();
-        // 关键：无论是否切换月份，都必须把位移归零。
-        // 原来只在"未达阈值"分支里重置，切月后 translateX 会残留，
-        // 表现为"滑动切换月份后日历整体偏移"。
         el.style.transform = 'translateX(0)';
         if (horizontal && Math.abs(deltaX) > threshold) {
           if (deltaX > 0) Calendar.changeMonth(-1);
           else Calendar.changeMonth(1);
         }
-        active = false;
-        horizontal = false;
-        deltaX = 0;
+        active = false; horizontal = false; deltaX = 0;
       };
-
       el.addEventListener('touchstart', (e) => {
         lastTouchAt = Date.now();
         const touch = e.touches[0];
-        startX = touch.clientX;
-        startY = touch.clientY;
-        active = true;
-        horizontal = false;
-        deltaX = 0;
+        startX = touch.clientX; startY = touch.clientY;
+        active = true; horizontal = false; deltaX = 0;
         el.classList.add('swiping');
         el.style.transition = 'none';
         reset();
       }, { passive: true });
-
       el.addEventListener('touchmove', (e) => {
         if (!active) return;
         const touch = e.touches[0];
@@ -4997,19 +4164,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
         deltaX = dx;
         showHint(offset);
       }, { passive: false });
-
       el.addEventListener('touchend', () => { if (active) finish(); }, { passive: true });
       el.addEventListener('touchcancel', () => { if (active) finish(); }, { passive: true });
-
-      // 鼠标拖拽（桌面端），触摸后 800ms 内忽略以避免双触发
       let mouseDown = false;
       el.addEventListener('mousedown', (e) => {
         if (Date.now() - lastTouchAt < 800 || e.button !== 0) return;
         mouseDown = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        horizontal = false;
-        deltaX = 0;
+        startX = e.clientX; startY = e.clientY;
+        horizontal = false; deltaX = 0;
         el.classList.add('swiping');
         el.style.transition = 'none';
         reset();
@@ -5038,23 +4200,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
-  /* ==========================================================================
-   * 启动
-   * ======================================================================== */
+  /* ---------------------------- 启动 ---------------------------- */
   window.App = {
-    store: Store,
-    session: Session,
-    auth: Auth,
-    ui: UI,
-    calendar: Calendar,
-    clock: Clock,
-    settings: Settings,
-    calculator: Calculator,
-    importExport: ImportExport,
-    holiday: Holiday,
-    lunar: Lunar,
-    render: Render,
-    /** 立即执行所有挂起的渲染（供自动化测试与调试使用，不影响正常流程） */
+    store: Store, session: Session, auth: Auth, ui: UI, calendar: Calendar,
+    clock: Clock, settings: Settings, calculator: Calculator, importExport: ImportExport,
+    holiday: Holiday, lunar: Lunar, render: Render,
     flushRender: () => Render.now(),
     forceLogout: () => App.forceLogout(''),
     passwordAdvice: (pw) => Auth.passwordAdvice(pw),
