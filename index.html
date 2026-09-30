@@ -236,10 +236,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .input-value .multiple.weekend{color:var(--accent);background:var(--accent-light)}
 .input-value .multiple.holiday{color:var(--danger);background:#F5E0DB}
 .input-placeholder{color:var(--text-tertiary);font-size:16px;font-weight:600}
-.rule-row{display:flex;justify-content:flex-end;gap:8px;align-items:center;padding:14px 0}
-.rule-btn{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;color:var(--text-secondary);transition:all .2s;font-weight:500}
-.rule-btn:hover{border-color:var(--primary-light);transform:translateY(-1px)}
-.rule-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700}
 .goal-card{background:var(--surface);margin:14px;padding:18px 20px;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--border)}
 .goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .goal-title{font-size:15px;font-weight:700;color:var(--text)}
@@ -850,7 +846,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div class="menu-item">
             <div class="menu-left"><span>📱</span><span>版本</span></div>
-            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.6.0</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.6.1</div>
           </div>
         </div>
         <div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:11px;font-weight:500;line-height:1.8">
@@ -1215,7 +1211,7 @@ async function loadData() {
 
   var loadedSettings = { ...defaultUserData().settings, ...(data.settings || {}) };
 
-  // 迁移：老版月薪制 → 新版（反推底薪，保持月薪总额不变）
+  // 迁移：老版月薪制 → 新版
   if (loadedSettings.salaryRateNormal == null && loadedSettings.salaryNormal > 0) {
     var oldDays = loadedSettings.salaryDays || 21.75;
     var oldHours = loadedSettings.salaryHours || 8;
@@ -1305,128 +1301,141 @@ function refreshCalculatorDefaults() {
 }
 
 async function initMainApp() {
-  App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
-  App.holiday.loadFromCache();
-
-  var cached = loadCachedUserData();
-  if (cached) {
-    applyUserData(cached);
-  }
-
-  App.settings.initSettings();
-  App.ui.initIncomeVisibility();
-  App.calendar.render();
-  App.clock.renderDetail();
-  App.ui.updateCloudMenu();
-  App.setupSwipe();
-
   try {
-    var prewarmNow = new Date();
-    var curY = prewarmNow.getFullYear();
-    var curM = prewarmNow.getMonth();
-    var curDays = new Date(curY, curM + 1, 0).getDate();
-    for (var day = 1; day <= curDays; day++) {
-      App.lunar.getLunarDay(new Date(curY, curM, day));
-    }
-    App.lunar.flush();
-  } catch (e) {}
-
-  if (cached) {
-    refreshCalculatorDefaults();
-    App.ui.updateSyncUI('syncing', '正在刷新...');
-  } else {
+    // ============ 阶段 0：先更新用户信息 ============
+    document.getElementById('profileName').textContent = currentUser || '工时记录助手';
+    document.getElementById('profileSub').textContent = 'Cloudflare Worker · 自动同步';
     App.ui.updateSyncUI('syncing', '加载中...');
-  }
 
-  var loaded = true;
-  try {
-    await loadData();
-  } catch (err) {
-    loaded = false;
-    if (err.status === 401 || err.status === 403) {
-      forceLogout('登录已失效，请重新登录');
-      return;
-    } else {
-      if (!cached) {
-        alert('加载数据失败: ' + err.message);
-        return;
-      }
-      App.ui.updateSyncUI('error', '网络异常，显示缓存');
+    // ============ 阶段 1：立即渲染骨架 ============
+    App.calendar.currentDate = new Date(App.calendar.currentDate.getFullYear(), App.calendar.currentDate.getMonth(), 1);
+    App.holiday.loadFromCache();
+
+    var cached = loadCachedUserData();
+    if (cached) {
+      applyUserData(cached);
     }
-  }
-  if (!loaded) return;
 
-  applyUserData(userData);
-  saveCachedUserData(userData);
+    App.settings.initSettings();
+    App.ui.initIncomeVisibility();
+    App.calendar.render();
+    App.clock.renderDetail();
+    App.ui.updateCloudMenu();
+    App.setupSwipe();
 
-  App.data._saving = false;
-  App.data._pendingRetry = false;
-
-  App.data.save = function() {
-    clearTimeout(App.data._saveTimer);
-    App.data._saveTimer = setTimeout(function() {
-      App.data._queueSave();
-    }, 300);
-  };
-
-  App.data._queueSave = async function() {
-    if (App.data._saving) {
-      App.data._pendingRetry = true;
-      return;
-    }
-    App.data._saving = true;
     try {
-      await saveData();
-      App.ui.updateSyncUI('synced', '已同步');
-      App.data._pendingRetry = false;
-    } catch (e) {
-      console.error('保存失败', e);
-      if (e.status === 401 || e.status === 403) {
-        App.ui.updateSyncUI('error', '登录失效');
-        forceLogout('登录已失效，请重新登录');
-      } else if (e.status === 409) {
-        App.ui.updateSyncUI('pending', '冲突重试中...');
-        App.data._pendingRetry = true;
-      } else {
-        App.ui.updateSyncUI('error', e.message || '保存失败');
-      }
-    } finally {
-      App.data._saving = false;
-      if (App.data._pendingRetry) {
-        App.data._pendingRetry = false;
-        setTimeout(function() { App.data._queueSave(); }, 800);
-      }
-    }
-  };
-
-  App.data.load = function() {};
-
-  App.settings.initSettings();
-  App.calendar.render();
-  App.clock.renderDetail();
-  refreshCalculatorDefaults();
-
-  document.getElementById('profileName').textContent = currentUser || '工时记录助手';
-  document.getElementById('profileSub').textContent = '已连接 Worker · 自动同步';
-  App.ui.updateSyncUI('synced', '已连接');
-
-  setTimeout(function() {
-    try {
-      App.holiday.getHoliday('2025-01-01');
-      var now = new Date();
-      for (var offset = -1; offset <= 1; offset += 2) {
-        var py = now.getFullYear();
-        var pm = now.getMonth() + offset;
-        var daysInPre = new Date(py, pm + 1, 0).getDate();
-        for (var day = 1; day <= daysInPre; day++) {
-          App.lunar.getLunarDay(new Date(py, pm, day));
-        }
+      var prewarmNow = new Date();
+      var curY = prewarmNow.getFullYear();
+      var curM = prewarmNow.getMonth();
+      var curDays = new Date(curY, curM + 1, 0).getDate();
+      for (var day = 1; day <= curDays; day++) {
+        App.lunar.getLunarDay(new Date(curY, curM, day));
       }
       App.lunar.flush();
     } catch (e) {}
-  }, 400);
 
-  console.log('⏱ 工时记录助手（Worker 版）v4.6.0 已启动');
+    if (cached) {
+      refreshCalculatorDefaults();
+      App.ui.updateSyncUI('syncing', '正在刷新...');
+    }
+
+    // ============ 阶段 2：后台加载数据 ============
+    var loaded = true;
+    try {
+      await loadData();
+    } catch (err) {
+      loaded = false;
+      if (err.status === 401 || err.status === 403) {
+        forceLogout('登录已失效，请重新登录');
+        return;
+      } else {
+        if (!cached) {
+          App.ui.updateSyncUI('error', '加载失败');
+          alert('加载数据失败\n\n错误: ' + err.message + '\n状态码: ' + (err.status || '-'));
+          return;
+        }
+        App.ui.updateSyncUI('error', '网络异常，显示缓存');
+      }
+    }
+    if (!loaded) return;
+
+    // ============ 阶段 3：数据到了，覆盖缓存 ============
+    applyUserData(userData);
+    saveCachedUserData(userData);
+
+    App.data._saving = false;
+    App.data._pendingRetry = false;
+
+    App.data.save = function() {
+      clearTimeout(App.data._saveTimer);
+      App.data._saveTimer = setTimeout(function() {
+        App.data._queueSave();
+      }, 300);
+    };
+
+    App.data._queueSave = async function() {
+      if (App.data._saving) {
+        App.data._pendingRetry = true;
+        return;
+      }
+      App.data._saving = true;
+      try {
+        await saveData();
+        App.ui.updateSyncUI('synced', '已同步');
+        App.data._pendingRetry = false;
+      } catch (e) {
+        console.error('保存失败', e);
+        if (e.status === 401 || e.status === 403) {
+          App.ui.updateSyncUI('error', '登录失效');
+          forceLogout('登录已失效，请重新登录');
+        } else if (e.status === 409) {
+          App.ui.updateSyncUI('pending', '冲突重试中...');
+          App.data._pendingRetry = true;
+        } else {
+          App.ui.updateSyncUI('error', e.message || '保存失败');
+        }
+      } finally {
+        App.data._saving = false;
+        if (App.data._pendingRetry) {
+          App.data._pendingRetry = false;
+          setTimeout(function() { App.data._queueSave(); }, 800);
+        }
+      }
+    };
+
+    App.data.load = function() {};
+
+    App.settings.initSettings();
+    App.calendar.render();
+    App.clock.renderDetail();
+    refreshCalculatorDefaults();
+
+    document.getElementById('profileName').textContent = currentUser || '工时记录助手';
+    document.getElementById('profileSub').textContent = '已连接 Worker · 自动同步';
+    App.ui.updateSyncUI('synced', '已连接');
+
+    setTimeout(function() {
+      try {
+        App.holiday.getHoliday('2025-01-01');
+        var now = new Date();
+        for (var offset = -1; offset <= 1; offset += 2) {
+          var py = now.getFullYear();
+          var pm = now.getMonth() + offset;
+          var daysInPre = new Date(py, pm + 1, 0).getDate();
+          for (var day = 1; day <= daysInPre; day++) {
+            App.lunar.getLunarDay(new Date(py, pm, day));
+          }
+        }
+        App.lunar.flush();
+      } catch (e) {}
+    }, 400);
+
+    console.log('⏱ 工时记录助手（Worker 版）v4.6.1 已启动');
+  } catch (e) {
+    console.error('initMainApp 失败', e);
+    App.ui.updateSyncUI('error', '初始化失败');
+    document.getElementById('profileName').textContent = currentUser || '工时记录助手';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1626,17 +1635,14 @@ App.data = {
     }
     if (!confirm('⚠️ 确定清空所有数据？\n\n打卡记录、薪资设置、五险一金、专项附加扣除、目标工时将全部恢复默认。\n\n此操作会同步到云端，不可恢复。')) return;
 
-    // 1. 清空记录 + 重置所有设置为默认
     this.records = {};
     Object.assign(this.settings, defaults.settings);
     Object.assign(this.deductions, defaults.deductions);
     Object.assign(this.insurance, defaults.insurance);
     this.goal = defaults.goal;
 
-    // 2. 上传到云端（saveData 成功后会自动更新本地缓存）
     this.save();
 
-    // 3. 重置计算器页面输入框
     var taxInput = document.getElementById('taxIncome');
     if (taxInput) taxInput.value = 0;
     var salaryRate = document.getElementById('salaryRate');
@@ -1646,7 +1652,6 @@ App.data = {
     var salaryDays = document.getElementById('salaryDays');
     if (salaryDays) salaryDays.value = 21.75;
 
-    // 4. 刷新所有 UI
     App.ui.refreshAll();
     App.settings.initSettings();
     App.settings.applyCalcModeUI();
@@ -1668,7 +1673,7 @@ App.data = {
       goal: this.goal,
       deductions: this.deductions,
       insurance: this.insurance,
-      version: '4.6.0',
+      version: '4.6.1',
       exportedAt: new Date().toISOString(),
       app: '工时记录助手'
     };
@@ -2019,7 +2024,6 @@ App.holiday = {
           this._workdays = parsed.workdays;
           return { holidays: this._holidays, workdays: this._workdays };
         }
-        // v1 数据不完整（缺 workdays），丢弃并重新生成 v2
       }
     } catch (e) {}
     return null;
@@ -3009,7 +3013,7 @@ App.settings = {
   },
 
   calcSalaryRates: function(skipSave) {
-    // 非月薪制时跳过：DOM 隐藏字段值不可信，避免污染设置
+    // 非月薪制时跳过，避免污染设置
     if (App.data.settings.mode !== 'salary') {
       var _hide0 = App.ui.isIncomeHidden();
       var fmt0 = _hide0 ? '****' : '¥0/H';
@@ -3073,9 +3077,12 @@ App.settings = {
   },
 
   setRule: function(rule) {
-    App.data.settings.rule = rule;
-    document.getElementById('ruleFixed').classList.toggle('active', rule === 'fixed');
-    document.getElementById('ruleMonthly').classList.toggle('active', rule === 'monthly');
+    // 新版月薪制已移除"固定时薪/每月计算"开关，仅保留字段兼容老数据
+    App.data.settings.rule = rule || 'fixed';
+    var rf = document.getElementById('ruleFixed');
+    var rm = document.getElementById('ruleMonthly');
+    if (rf) rf.classList.toggle('active', rule === 'fixed');
+    if (rm) rm.classList.toggle('active', rule === 'monthly');
   },
 
   updateRatePreview: function() {},
