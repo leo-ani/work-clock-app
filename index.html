@@ -736,34 +736,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
         <div id="salaryForm" style="display:none">
           <div class="input-card">
             <div class="input-row">
-              <div class="input-label">底薪工资</div>
-              <div class="input-value"><span class="input-placeholder" id="baseSalaryPlaceholder">设置底薪</span><input type="number" id="inBaseSalary" value="" style="display:none" onchange="App.settings.calcSalaryRates()" step="100" min="0" max="1000000"></div>
+              <div class="input-label">底薪工资（月薪）</div>
+              <div class="input-value" style="color:var(--primary)">
+                ¥ <input type="number" id="inBaseSalary" value="" placeholder="0" onchange="App.settings.calcSalaryRates()" step="100" min="0" max="1000000" style="width:110px">
+                <span class="unit">元/月</span>
+              </div>
             </div>
             <div class="input-row">
-              <div class="input-label">正班时薪 / H</div>
-              <div class="input-value" style="color:var(--primary)">¥ <input type="number" id="inSalaryNormal" value="0" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></div>
+              <div class="input-label">月计薪天数</div>
+              <div class="input-value">
+                <input type="number" id="inSalaryDays" value="21.75" onchange="App.settings.calcSalaryRates()" step=".25" min="1" max="31">
+                <span class="unit">天</span>
+              </div>
             </div>
             <div class="input-row">
-              <div class="input-label">加班时薪 / H</div>
-              <div class="input-value"><span class="multiple">1.5 倍</span><span style="color:var(--success)">¥ <input type="number" id="inSalaryOt" value="0" style="color:var(--success)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
-            </div>
-            <div class="input-row">
-              <div class="input-label">周末时薪 / H</div>
-              <div class="input-value"><span class="multiple weekend">2 倍</span><span style="color:var(--accent)">¥ <input type="number" id="inSalaryWeekend" value="0" style="color:var(--accent)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
-            </div>
-            <div class="input-row">
-              <div class="input-label">节假时薪 / H</div>
-              <div class="input-value"><span class="multiple holiday">3 倍</span><span style="color:var(--danger)">¥ <input type="number" id="inSalaryHoliday" value="0" style="color:var(--danger)" onchange="App.settings.calcSalaryRates()" step=".5" min="0" max="10000"></span></div>
-            </div>
-            <div class="input-row">
-              <div class="input-label">正班时薪规则</div>
-              <div class="rule-row">
-                <div class="rule-btn active" id="ruleFixed" onclick="App.settings.setRule('fixed')">固定时薪</div>
-                <div class="rule-btn" id="ruleMonthly" onclick="App.settings.setRule('monthly')">每月计算</div>
+              <div class="input-label">每日工时</div>
+              <div class="input-value">
+                <input type="number" id="inSalaryHours" value="8" onchange="App.settings.calcSalaryRates()" step=".5" min="1" max="24">
+                <span class="unit">H</span>
               </div>
             </div>
           </div>
-          <div class="hint-text">💡 时薪计算：底薪 ÷ 21.75 ÷ 8，可手动修改倍数和时薪</div>
+
+          <div class="input-card" style="margin-top:14px">
+            <div style="padding:14px 0 6px;font-size:13px;color:var(--text-secondary);font-weight:600">💰 时薪倍数</div>
+            <div class="input-row">
+              <div class="input-label">正班</div>
+              <div class="input-value">
+                <input type="number" id="inRateNormal" value="1" onchange="App.settings.calcSalaryRates()" step=".1" min="0" max="5" style="width:56px">
+                <span class="unit">倍</span>
+                <span id="previewNormal" style="color:var(--primary);font-weight:800;margin-left:10px;min-width:80px;text-align:right;font-size:16px">¥0/H</span>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-label">加班</div>
+              <div class="input-value">
+                <input type="number" id="inRateOt" value="1.5" onchange="App.settings.calcSalaryRates()" step=".1" min="0" max="5" style="width:56px">
+                <span class="unit">倍</span>
+                <span id="previewOt" style="color:var(--success);font-weight:800;margin-left:10px;min-width:80px;text-align:right;font-size:16px">¥0/H</span>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-label">周末</div>
+              <div class="input-value">
+                <input type="number" id="inRateWeekend" value="2" onchange="App.settings.calcSalaryRates()" step=".1" min="0" max="5" style="width:56px">
+                <span class="unit">倍</span>
+                <span id="previewWeekend" style="color:var(--accent);font-weight:800;margin-left:10px;min-width:80px;text-align:right;font-size:16px">¥0/H</span>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-label">节假</div>
+              <div class="input-value">
+                <input type="number" id="inRateHoliday" value="3" onchange="App.settings.calcSalaryRates()" step=".1" min="0" max="5" style="width:56px">
+                <span class="unit">倍</span>
+                <span id="previewHoliday" style="color:var(--danger);font-weight:800;margin-left:10px;min-width:80px;text-align:right;font-size:16px">¥0/H</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint-text">💡 基础时薪 = 底薪 ÷ 月计薪天数 ÷ 日工时，各时薪 = 基础时薪 × 对应倍数</div>
         </div>
         <div class="goal-card">
           <div class="goal-header">
@@ -819,7 +850,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
           </div>
           <div class="menu-item">
             <div class="menu-left"><span>📱</span><span>版本</span></div>
-            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.5.0</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:600">v4.6.0</div>
           </div>
         </div>
         <div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:11px;font-weight:500;line-height:1.8">
@@ -984,6 +1015,12 @@ function defaultUserData() {
       normalRate: 43,
       holidayRate: 43,
       baseSalary: 0,
+      salaryDays: 21.75,
+      salaryHours: 8,
+      salaryRateNormal: 1,
+      salaryRateOt: 1.5,
+      salaryRateWeekend: 2,
+      salaryRateHoliday: 3,
       salaryNormal: 0,
       salaryOt: 0,
       salaryWeekend: 0,
@@ -1176,11 +1213,27 @@ async function loadData() {
     fund:         Number.isFinite(Number(loadedIns.fund))         ? Number(loadedIns.fund)         : defIns.fund
   };
 
+  var loadedSettings = { ...defaultUserData().settings, ...(data.settings || {}) };
+
+  // 迁移：老版月薪制 → 新版（反推底薪，保持月薪总额不变）
+  if (loadedSettings.salaryRateNormal == null && loadedSettings.salaryNormal > 0) {
+    var oldDays = loadedSettings.salaryDays || 21.75;
+    var oldHours = loadedSettings.salaryHours || 8;
+    var oldRateN = loadedSettings.salaryNormal;
+    loadedSettings.salaryDays = oldDays;
+    loadedSettings.salaryHours = oldHours;
+    loadedSettings.salaryRateNormal = 1;
+    loadedSettings.salaryRateOt = 1.5;
+    loadedSettings.salaryRateWeekend = 2;
+    loadedSettings.salaryRateHoliday = 3;
+    loadedSettings.baseSalary = Math.round(oldRateN * oldDays * oldHours);
+  }
+
   userData = {
     ...defaultUserData(),
     ...data,
     records: data.records || {},
-    settings: { ...defaultUserData().settings, ...(data.settings || {}) },
+    settings: loadedSettings,
     goal: Number.isFinite(Number(data.goal)) ? Number(data.goal) : 160,
     deductions: mergedDed,
     insurance: mergedIns
@@ -1247,6 +1300,8 @@ function refreshCalculatorDefaults() {
   App.calculator.syncInsuranceUI();
   App.calculator.calcTax();
   App.calculator.calcSalary();
+  App.settings.applyCalcModeUI();
+  App.settings.calcSalaryRates(true);
 }
 
 async function initMainApp() {
@@ -1315,7 +1370,6 @@ async function initMainApp() {
   };
 
   App.data._queueSave = async function() {
-    // 已有请求在进行 → 标记，等它结束后再发一次
     if (App.data._saving) {
       App.data._pendingRetry = true;
       return;
@@ -1331,11 +1385,9 @@ async function initMainApp() {
         App.ui.updateSyncUI('error', '登录失效');
         forceLogout('登录已失效，请重新登录');
       } else if (e.status === 409) {
-        // GitHub 写入冲突：等下一轮重试，会读到新 sha
         App.ui.updateSyncUI('pending', '冲突重试中...');
         App.data._pendingRetry = true;
       } else {
-        // 其他错误显示详细信息，方便定位
         App.ui.updateSyncUI('error', e.message || '保存失败');
       }
     } finally {
@@ -1346,7 +1398,7 @@ async function initMainApp() {
       }
     }
   };
-  
+
   App.data.load = function() {};
 
   App.settings.initSettings();
@@ -1374,7 +1426,7 @@ async function initMainApp() {
     } catch (e) {}
   }, 400);
 
-  console.log('⏱ 工时记录助手（Worker 版）v4.5.0 已启动');
+  console.log('⏱ 工时记录助手（Worker 版）v4.6.0 已启动');
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1436,6 +1488,12 @@ App.data = {
     normalRate: 43,
     holidayRate: 43,
     baseSalary: 0,
+    salaryDays: 21.75,
+    salaryHours: 8,
+    salaryRateNormal: 1,
+    salaryRateOt: 1.5,
+    salaryRateWeekend: 2,
+    salaryRateHoliday: 3,
     salaryNormal: 0,
     salaryOt: 0,
     salaryWeekend: 0,
@@ -1460,10 +1518,14 @@ App.data = {
     fund: 5
   },
   _saveTimer: null,
+  _saving: false,
+  _pendingRetry: false,
 
   save: function() {},
 
   load: function() {},
+
+  _queueSave: async function() {},
 
   validateImport: function(data) {
     if (!data || typeof data !== 'object') return false;
@@ -1521,7 +1583,7 @@ App.data = {
 
     if (strategy === 'overwrite') {
       this.records = data.records || {};
-      if (data.settings) this.settings = Object.assign({}, data.settings);
+      if (data.settings) this.settings = Object.assign({}, defaultUserData().settings, data.settings);
       if (data.goal) {
         var g = Number(data.goal);
         if (Number.isFinite(g) && g >= 0) this.goal = Math.min(g, 1000);
@@ -1551,19 +1613,52 @@ App.data = {
   },
 
   clearAll: function() {
-    if (Object.keys(this.records).length === 0) {
+    var defaults = defaultUserData();
+    var hasRecords = Object.keys(this.records).length > 0;
+    var hasSettings = JSON.stringify(this.settings) !== JSON.stringify(defaults.settings);
+    var hasDeductions = JSON.stringify(this.deductions) !== JSON.stringify(defaults.deductions);
+    var hasInsurance = JSON.stringify(this.insurance) !== JSON.stringify(defaults.insurance);
+    var hasGoal = (this.goal !== defaults.goal);
+
+    if (!hasRecords && !hasSettings && !hasDeductions && !hasInsurance && !hasGoal) {
       App.ui.showToast('数据已空', 'info');
       return;
     }
-    if (!confirm('⚠️ 确定清空所有数据？此操作将同步到云端，不可恢复。')) return;
+    if (!confirm('⚠️ 确定清空所有数据？\n\n打卡记录、薪资设置、五险一金、专项附加扣除、目标工时将全部恢复默认。\n\n此操作会同步到云端，不可恢复。')) return;
+
+    // 1. 清空记录 + 重置所有设置为默认
     this.records = {};
-    clearCachedUserData();
+    Object.assign(this.settings, defaults.settings);
+    Object.assign(this.deductions, defaults.deductions);
+    Object.assign(this.insurance, defaults.insurance);
+    this.goal = defaults.goal;
+
+    // 2. 上传到云端（saveData 成功后会自动更新本地缓存）
     this.save();
+
+    // 3. 重置计算器页面输入框
+    var taxInput = document.getElementById('taxIncome');
+    if (taxInput) taxInput.value = 0;
+    var salaryRate = document.getElementById('salaryRate');
+    if (salaryRate) salaryRate.value = 43;
+    var salaryHours = document.getElementById('salaryHours');
+    if (salaryHours) salaryHours.value = 8;
+    var salaryDays = document.getElementById('salaryDays');
+    if (salaryDays) salaryDays.value = 21.75;
+
+    // 4. 刷新所有 UI
     App.ui.refreshAll();
+    App.settings.initSettings();
+    App.settings.applyCalcModeUI();
+    App.settings.calcSalaryRates(true);
+    App.calculator.syncInsuranceUI();
+    App.calculator.syncDeductionUI();
+    App.calculator.calcTax();
+    App.calculator.calcSalary();
     App.calendar.updateMonthStats();
-    App.settings.updateGoalUI();
     App.clock.updateQuickPunchBtn();
-    App.ui.showToast('🗑️ 数据已清空', 'success');
+
+    App.ui.showToast('🗑️ 已清空并恢复默认设置', 'success');
   },
 
   exportData: function() {
@@ -1573,7 +1668,7 @@ App.data = {
       goal: this.goal,
       deductions: this.deductions,
       insurance: this.insurance,
-      version: '4.5.0',
+      version: '4.6.0',
       exportedAt: new Date().toISOString(),
       app: '工时记录助手'
     };
@@ -1609,6 +1704,11 @@ App.ui = {
     App.clock.renderDetail();
     if (document.getElementById('pageStats').classList.contains('active')) {
       App.stats.render();
+    }
+    if (App.calculator) {
+      App.calculator.calcTax();
+      App.calculator.calcSalary();
+      App.settings.calcSalaryRates(true);
     }
 
     var label = document.getElementById('stMoneyLabel');
@@ -2209,13 +2309,15 @@ App.stats = {
     var avgIncome = validDays > 0 ? totalIncome / validDays : 0;
     var niceMax = this._niceCeil(maxIncome * 1.05);
     var ySteps = 4;
+    var _hideChart = App.ui.isIncomeHidden();
     var html = '<div class="chart-wrap-v2">';
 
     html += '<div class="chart-y-axis">';
     for (var i = ySteps; i >= 0; i--) {
       var v = niceMax * i / ySteps;
       var pct = (i / ySteps) * 100;
-      html += '<span style="bottom:' + pct + '%">' + (v === 0 ? '0' : '¥' + this._fmtShort(v)) + '</span>';
+      var yLabel = v === 0 ? '0' : (_hideChart ? '****' : '¥' + this._fmtShort(v));
+      html += '<span style="bottom:' + pct + '%">' + yLabel + '</span>';
     }
     html += '</div>';
 
@@ -2228,7 +2330,8 @@ App.stats = {
 
     if (avgIncome > 0) {
       var avgPct = Math.min(100, (avgIncome / niceMax) * 100);
-      html += '<div class="chart-avg-line" style="bottom:' + avgPct + '%"><span class="chart-avg-label">均 ¥' + this._fmtShort(avgIncome) + '</span></div>';
+      var avgLabel = _hideChart ? '均 ****' : '均 ¥' + this._fmtShort(avgIncome);
+      html += '<div class="chart-avg-line" style="bottom:' + avgPct + '%"><span class="chart-avg-label">' + avgLabel + '</span></div>';
     }
 
     html += '<div class="chart-bars">';
@@ -2241,7 +2344,9 @@ App.stats = {
         if (data.type === 'holiday') barClass = 'holiday';
         else if (data.type === 'weekend') barClass = 'weekend';
       }
-      var valueHtml = showBar ? '<span class="bar-value">' + d + '日 ¥' + App.util.formatMoney(data.income) + '</span>' : '';
+      var valueHtml = showBar
+        ? '<span class="bar-value">' + d + '日 ' + (_hideChart ? '****' : '¥' + App.util.formatMoney(data.income)) + '</span>'
+        : '';
       html += '<div class="chart-bar-new ' + barClass + '" style="height:' + heightPct + '%">' + valueHtml + '</div>';
     }
     html += '</div>';
@@ -2884,53 +2989,116 @@ App.clock = {
 };
 
 App.settings = {
+  applyCalcModeUI: function() {
+    var isSalary = App.data.settings.mode === 'salary';
+    document.getElementById('modeCard').className = 'mode-card ' + (isSalary ? 'salary' : 'hourly');
+    document.getElementById('modeTitle').textContent = isSalary ? '月薪制' : '小时计算';
+    document.getElementById('modeDesc').textContent = isSalary
+      ? '底薪自动折算时薪，区分正班/加班/周末/节假日倍数'
+      : '时薪固定，加班不加倍，节假可单独设薪';
+    document.getElementById('hourlyForm').style.display = isSalary ? 'none' : 'block';
+    document.getElementById('salaryForm').style.display = isSalary ? 'block' : 'none';
+  },
+
   toggleCalcMode: function() {
     var isHourly = App.data.settings.mode === 'hourly';
     App.data.settings.mode = isHourly ? 'salary' : 'hourly';
-    document.getElementById('modeCard').className = 'mode-card ' + App.data.settings.mode;
-    document.getElementById('modeTitle').textContent = isHourly ? '正班+加班' : '小时计算';
-    document.getElementById('modeDesc').textContent = isHourly ? '月薪制，区分正班/加班/周末/节假日倍数' : '时薪固定，加班不加倍，节假可单独设薪';
-    document.getElementById('hourlyForm').style.display = isHourly ? 'none' : 'block';
-    document.getElementById('salaryForm').style.display = isHourly ? 'block' : 'none';
-    if (isHourly) this.calcSalaryRates();
+    this.applyCalcModeUI();
+    if (!isHourly) this.calcSalaryRates();
+    if (App.data.save) App.data.save();
   },
 
-  calcSalaryRates: function() {
-    var base = parseFloat(document.getElementById('inBaseSalary').value) || 0;
-    var rule = App.data.settings.rule;
-    if (rule === 'monthly' && base > 0) {
-      var normal = +(base / 21.75 / 8).toFixed(2);
-      document.getElementById('inSalaryNormal').value = normal;
-      document.getElementById('inSalaryOt').value = +(normal * 1.5).toFixed(2);
-      document.getElementById('inSalaryWeekend').value = +(normal * 2).toFixed(2);
-      document.getElementById('inSalaryHoliday').value = +(normal * 3).toFixed(2);
+  calcSalaryRates: function(skipSave) {
+    // 非月薪制时跳过：DOM 隐藏字段值不可信，避免污染设置
+    if (App.data.settings.mode !== 'salary') {
+      var _hide0 = App.ui.isIncomeHidden();
+      var fmt0 = _hide0 ? '****' : '¥0/H';
+      var pN0 = document.getElementById('previewNormal');
+      if (pN0) pN0.textContent = fmt0;
+      var pO0 = document.getElementById('previewOt');
+      if (pO0) pO0.textContent = fmt0;
+      var pW0 = document.getElementById('previewWeekend');
+      if (pW0) pW0.textContent = fmt0;
+      var pH0 = document.getElementById('previewHoliday');
+      if (pH0) pH0.textContent = fmt0;
+      return;
     }
+
+    var base = parseFloat(document.getElementById('inBaseSalary').value) || 0;
+    var days = parseFloat(document.getElementById('inSalaryDays').value) || 21.75;
+    var hours = parseFloat(document.getElementById('inSalaryHours').value) || 8;
+    if (days <= 0) days = 21.75;
+    if (hours <= 0) hours = 8;
+
+    var rN = parseFloat(document.getElementById('inRateNormal').value);
+    var rO = parseFloat(document.getElementById('inRateOt').value);
+    var rW = parseFloat(document.getElementById('inRateWeekend').value);
+    var rH = parseFloat(document.getElementById('inRateHoliday').value);
+    if (!Number.isFinite(rN)) rN = 1;
+    if (!Number.isFinite(rO)) rO = 1.5;
+    if (!Number.isFinite(rW)) rW = 2;
+    if (!Number.isFinite(rH)) rH = 3;
+
+    var baseRate = base / days / hours;
+    var n = +(baseRate * rN).toFixed(2);
+    var o = +(baseRate * rO).toFixed(2);
+    var w = +(baseRate * rW).toFixed(2);
+    var h = +(baseRate * rH).toFixed(2);
+
+    var _hide = App.ui.isIncomeHidden();
+    var fmt = function(v) { return _hide ? '****' : '¥' + v + '/H'; };
+
+    var pN = document.getElementById('previewNormal');
+    var pO = document.getElementById('previewOt');
+    var pW = document.getElementById('previewWeekend');
+    var pH = document.getElementById('previewHoliday');
+    if (pN) pN.textContent = fmt(n);
+    if (pO) pO.textContent = fmt(o);
+    if (pW) pW.textContent = fmt(w);
+    if (pH) pH.textContent = fmt(h);
+
+    var s = App.data.settings;
+    s.salaryNormal = n;
+    s.salaryOt = o;
+    s.salaryWeekend = w;
+    s.salaryHoliday = h;
+    s.salaryDays = days;
+    s.salaryHours = hours;
+    s.salaryRateNormal = rN;
+    s.salaryRateOt = rO;
+    s.salaryRateWeekend = rW;
+    s.salaryRateHoliday = rH;
+
+    if (!skipSave && App.data.save) App.data.save();
   },
 
   setRule: function(rule) {
     App.data.settings.rule = rule;
     document.getElementById('ruleFixed').classList.toggle('active', rule === 'fixed');
     document.getElementById('ruleMonthly').classList.toggle('active', rule === 'monthly');
-    if (rule === 'monthly') this.calcSalaryRates();
   },
 
   updateRatePreview: function() {},
 
   saveSettings: function() {
     var s = App.data.settings;
-    var _clamp = function(v, min, max) {
-      v = parseFloat(v) || 0;
+    var _clamp = function(v, min, max, def) {
+      v = parseFloat(v);
+      if (!Number.isFinite(v)) return def;
       if (v < min) v = min;
       if (v > max) v = max;
       return v;
     };
-    s.normalRate = _clamp(document.getElementById('inNormal').value, 0, 10000);
-    s.holidayRate = _clamp(document.getElementById('inHoliday').value, 0, 10000);
-    s.baseSalary = _clamp(document.getElementById('inBaseSalary').value, 0, 1000000);
-    s.salaryNormal = _clamp(document.getElementById('inSalaryNormal').value, 0, 10000);
-    s.salaryOt = _clamp(document.getElementById('inSalaryOt').value, 0, 10000);
-    s.salaryWeekend = _clamp(document.getElementById('inSalaryWeekend').value, 0, 10000);
-    s.salaryHoliday = _clamp(document.getElementById('inSalaryHoliday').value, 0, 10000);
+    s.normalRate = _clamp(document.getElementById('inNormal').value, 0, 10000, 0);
+    s.holidayRate = _clamp(document.getElementById('inHoliday').value, 0, 10000, 0);
+    s.baseSalary = _clamp(document.getElementById('inBaseSalary').value, 0, 1000000, 0);
+    s.salaryDays = _clamp(document.getElementById('inSalaryDays').value, 1, 31, 21.75);
+    s.salaryHours = _clamp(document.getElementById('inSalaryHours').value, 1, 24, 8);
+    s.salaryRateNormal = _clamp(document.getElementById('inRateNormal').value, 0, 5, 1);
+    s.salaryRateOt = _clamp(document.getElementById('inRateOt').value, 0, 5, 1.5);
+    s.salaryRateWeekend = _clamp(document.getElementById('inRateWeekend').value, 0, 5, 2);
+    s.salaryRateHoliday = _clamp(document.getElementById('inRateHoliday').value, 0, 5, 3);
+    this.calcSalaryRates(true);
     App.data.save();
     App.ui.showToast('✅ 设置已保存', 'success');
     App.calendar.render();
@@ -2943,12 +3111,15 @@ App.settings = {
     document.getElementById('inNormal').value = s.normalRate;
     document.getElementById('inHoliday').value = s.holidayRate;
     document.getElementById('inBaseSalary').value = s.baseSalary || '';
-    document.getElementById('inSalaryNormal').value = s.salaryNormal;
-    document.getElementById('inSalaryOt').value = s.salaryOt;
-    document.getElementById('inSalaryWeekend').value = s.salaryWeekend;
-    document.getElementById('inSalaryHoliday').value = s.salaryHoliday;
+    document.getElementById('inSalaryDays').value = s.salaryDays || 21.75;
+    document.getElementById('inSalaryHours').value = s.salaryHours || 8;
+    document.getElementById('inRateNormal').value = (s.salaryRateNormal != null) ? s.salaryRateNormal : 1;
+    document.getElementById('inRateOt').value = (s.salaryRateOt != null) ? s.salaryRateOt : 1.5;
+    document.getElementById('inRateWeekend').value = (s.salaryRateWeekend != null) ? s.salaryRateWeekend : 2;
+    document.getElementById('inRateHoliday').value = (s.salaryRateHoliday != null) ? s.salaryRateHoliday : 3;
     this.setRule(s.rule);
-    if (s.mode === 'salary') this.toggleCalcMode();
+    this.applyCalcModeUI();
+    if (s.mode === 'salary') this.calcSalaryRates(true);
     this.updateGoalUI();
   },
 
@@ -3092,9 +3263,12 @@ App.importExport = {
       this.closeImportModal();
       App.ui.refreshAll();
       App.settings.initSettings();
+      App.settings.applyCalcModeUI();
+      App.settings.calcSalaryRates(true);
       App.calculator.syncDeductionUI();
       App.calculator.syncInsuranceUI();
       App.calculator.calcTax();
+      App.calculator.calcSalary();
     } else {
       App.ui.showToast('❌ 导入失败', 'error');
     }
@@ -3145,7 +3319,10 @@ App.calculator = {
       if (ov < 0) ov = 0;
       otherTotal = ov;
     }
-    document.getElementById('taxDeductionTotal').textContent = '¥' + deductionTotal.toFixed(0);
+
+    var _hide = App.ui.isIncomeHidden();
+    var _m = function(v) { return _hide ? '****' : '¥' + v; };
+    document.getElementById('taxDeductionTotal').textContent = _m(deductionTotal.toFixed(0));
 
     var insuranceRate = (pension + medical + unemployment + fund) / 100;
     var insurance = income * insuranceRate;
@@ -3179,23 +3356,23 @@ App.calculator = {
     tax = Math.max(0, tax);
     var net = income - insurance - tax;
 
-    document.getElementById('dtGross').textContent = '¥' + income.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    document.getElementById('dtInsurance').textContent = '¥' + insurance.toFixed(0);
-    document.getElementById('dtDeduction').textContent = '¥' + deductionTotal.toFixed(0);
-    document.getElementById('dtTaxable').textContent = '¥' + taxableBase.toFixed(0);
+    document.getElementById('dtGross').textContent = _m(income.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+    document.getElementById('dtInsurance').textContent = _m(insurance.toFixed(0));
+    document.getElementById('dtDeduction').textContent = _m(deductionTotal.toFixed(0));
+    document.getElementById('dtTaxable').textContent = _m(taxableBase.toFixed(0));
     document.getElementById('dtRate').textContent = (rate * 100).toFixed(0) + '%';
-    document.getElementById('dtQuickDeduction').textContent = '¥' + quick.toFixed(0);
-    document.getElementById('dtTax').textContent = '¥' + tax.toFixed(0);
-    document.getElementById('dtNet').textContent = '¥' + net.toFixed(0);
-    document.getElementById('netGrossInline').textContent = '¥' + income.toFixed(0);
-    document.getElementById('netInsInline').textContent = '¥' + insurance.toFixed(0);
-    document.getElementById('netTaxInline').textContent = '¥' + tax.toFixed(0);
+    document.getElementById('dtQuickDeduction').textContent = _m(quick.toFixed(0));
+    document.getElementById('dtTax').textContent = _m(tax.toFixed(0));
+    document.getElementById('dtNet').textContent = _m(net.toFixed(0));
+    document.getElementById('netGrossInline').textContent = _m(income.toFixed(0));
+    document.getElementById('netInsInline').textContent = _m(insurance.toFixed(0));
+    document.getElementById('netTaxInline').textContent = _m(tax.toFixed(0));
 
     var residual = net - deductionTotal - otherTotal;
-    document.getElementById('residualIncome').textContent = '¥' + residual.toFixed(0);
-    document.getElementById('residNetInline').textContent = '¥' + net.toFixed(0);
-    document.getElementById('residDeductInline').textContent = '¥' + deductionTotal.toFixed(0);
-    document.getElementById('residOtherInline').textContent = '¥' + otherTotal.toFixed(0);
+    document.getElementById('residualIncome').textContent = _m(residual.toFixed(0));
+    document.getElementById('residNetInline').textContent = _m(net.toFixed(0));
+    document.getElementById('residDeductInline').textContent = _m(deductionTotal.toFixed(0));
+    document.getElementById('residOtherInline').textContent = _m(otherTotal.toFixed(0));
   },
 
   toggleDeductionItem: function(el) {
@@ -3284,8 +3461,9 @@ App.calculator = {
     if (days < 0) days = 0;
     var daily = rate * hours;
     var monthly = daily * days;
-    document.getElementById('salaryDaily').textContent = '¥' + App.util.formatCompact(daily, 1);
-    document.getElementById('salaryMonthly').textContent = '¥' + App.util.formatCompact(monthly, 1);
+    var _hide = App.ui.isIncomeHidden();
+    document.getElementById('salaryDaily').textContent = _hide ? '****' : '¥' + App.util.formatCompact(daily, 1);
+    document.getElementById('salaryMonthly').textContent = _hide ? '****' : '¥' + App.util.formatCompact(monthly, 1);
   },
 
   calcTokens: [],
