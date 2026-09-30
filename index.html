@@ -205,9 +205,18 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .day-cell.other-month{color:var(--text-tertiary);opacity:.55}
 .day-cell.weekend{color:var(--danger)}
 .day-cell.has-record{color:var(--primary);font-weight:700}
-.day-cell.today{background:var(--primary-gradient);color:#fff;box-shadow:0 4px 14px rgba(63,110,93,.34);font-weight:800}
+/* 今天：深色渐变实心。
+ * 之所以显式写 background-image:none，是因为 .day-cell.selected 也设了 background，
+ * 两者叠加时 shorthand/longhand 优先级会出现"深绿+浅绿两块颜色压在一起"的观感。 */
+.day-cell.today{background-image:none;background:var(--primary-gradient);color:#fff;font-weight:800}
 .day-cell.today .day-sub{color:rgba(255,255,255,.92)}
-.day-cell.selected{border-color:var(--primary);background:var(--primary-soft);box-shadow:var(--shadow-sm)}
+/* 选中：浅色高亮环；若同时是今天，则改为白描边，避免与深色渐变打架 */
+.day-cell.selected{border-color:var(--primary);background-image:none;background:var(--primary-soft);box-shadow:var(--shadow-sm)}
+.day-cell.today.selected{
+  border-color:rgba(255,255,255,.92);
+  background-image:none;background:var(--primary-gradient);
+  box-shadow:0 0 0 3px var(--primary-soft);
+}
 .day-cell.workday-makeup{color:var(--primary)}
 .day-sub{font-size:10px;line-height:1.1;color:var(--text-secondary);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .day-sub.is-holiday{color:var(--danger);font-weight:700}
@@ -591,19 +600,37 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .warn-box.show{display:block}
 .error-list{margin:var(--sp-2) 0 0;padding-left:18px;font-size:12px;color:var(--text-secondary);line-height:1.8;max-height:120px;overflow-y:auto}
 
-/* ============================ Toast ============================ */
-.toast-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + var(--safe-bottom));width:calc(100% - 32px);max-width:398px;z-index:300;pointer-events:none;display:flex;flex-direction:column;gap:var(--sp-2)}
+/* ============================ Toast ============================
+ * 位置：屏幕上方居中（原来在底部，会被"一键打卡"按钮遮住，容易被忽略）。
+ * 醒目度：实色底 + 白字 + 描边 + 强阴影；文字与图标都居中。
+ * 宽度：收窄到 300px 并居中，视觉上更像"提示条"而不是占满整行的横幅。
+ * z-index 高于弹窗(100/300)，保证在任何界面状态下都可见。 */
+.toast-wrap{
+  position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));
+  display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
+  z-index:400;pointer-events:none;padding:0 var(--sp-4);
+}
 .toast{
-  display:flex;align-items:center;gap:var(--sp-2);padding:12px 16px;border-radius:var(--radius-md);
-  font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);pointer-events:auto;
-  background:var(--text);color:var(--surface);animation:toastIn var(--dur-slow) var(--ease-spring);
+  display:flex;align-items:center;justify-content:center;gap:var(--sp-2);
+  width:auto;max-width:300px;min-width:150px;
+  padding:12px 20px;border-radius:var(--radius-md);
+  font-size:14px;font-weight:700;text-align:center;line-height:1.45;
+  color:#fff;background:var(--text);
+  box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.14) inset;
+  pointer-events:auto;
+  animation:toastIn var(--dur-slow) var(--ease-spring);
+}
+.toast .toast-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;min-width:18px;border-radius:50%;
+  background:rgba(255,255,255,.24);font-size:11px;font-weight:800;line-height:1;
 }
 .toast.hiding{animation:toastOut var(--dur-base) var(--ease-out) forwards}
-.toast.success{background:var(--success);color:#fff}
-.toast.error{background:var(--danger);color:#fff}
-.toast.info{background:var(--info);color:#fff}
-@keyframes toastIn{from{transform:translateY(18px) scale(.96);opacity:0}to{transform:none;opacity:1}}
-@keyframes toastOut{from{transform:none;opacity:1}to{transform:translateY(-10px) scale(.98);opacity:0}}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--info)}
+@keyframes toastIn{from{transform:translateY(-16px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{from{transform:none;opacity:1}to{transform:translateY(-10px) scale(.97);opacity:0}}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}}
 
 /* ============================ 认证页 ============================ */
@@ -2156,6 +2183,56 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
   };
 
+  /**
+   * 删除墓碑（tombstone）。
+   * 背景：记录被删除后，如果只是从本地 records 里去掉，下一次同步时服务端那份旧记录
+   * 会被 reconcile 当成"服务端较新"而原样保留回来 —— 表现就是"清空工时保存后，过几秒记录又回来了"。
+   * 做法：删除时写入 deleted[日期] = 时间戳，随 setData 一起上行；服务端在同一时间戳比较下
+   * 真正删除该记录，并在响应里回传 deleted，客户端据此清理自己的墓碑。
+   * 墓碑保留 30 天（防止长期离线设备带着旧记录复活已删除的数据）。
+   */
+  const TOMBSTONE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+  function pruneTombstones(deleted, now) {
+    const out = {};
+    for (const key in deleted || {}) {
+      if (!Object.prototype.hasOwnProperty.call(deleted, key)) continue;
+      if (now - num(deleted[key]) < TOMBSTONE_TTL_MS) out[key] = num(deleted[key]);
+    }
+    return out;
+  }
+
+  /**
+   * 客户端记录合并（用于 reconcile / 导入）。
+   * 顺序很重要：先处理删除墓碑，再按 updatedAt 合并，最后清掉被墓碑覆盖的记录。
+   * @param {object} localRecords 本地记录
+   * @param {object} serverRecords 服务端记录
+   * @param {object} deleted 本地墓碑（dateKey -> 删除时间戳）
+   */
+  function mergeRecordSetsWithTombstones(localRecords, serverRecords, deleted) {
+    const out = Object.assign({}, serverRecords);
+    let keptLocal = 0;
+
+    for (const key in localRecords) {
+      if (!Object.prototype.hasOwnProperty.call(localRecords, key)) continue;
+      const local = localRecords[key];
+      const server = out[key];
+      if (!server) { out[key] = local; keptLocal += 1; continue; }
+      if (num(local.updatedAt) > num(server.updatedAt)) { out[key] = local; keptLocal += 1; }
+    }
+
+    for (const key in deleted || {}) {
+      if (!Object.prototype.hasOwnProperty.call(deleted, key)) continue;
+      const delAt = num(deleted[key]);
+      const server = out[key];
+      if (!server) continue;                       // 服务端已无此记录，视为删除已生效
+      if (delAt >= num(server.updatedAt)) delete out[key];   // 删除发生在服务端版本之后 → 真删
+      // 否则说明该日期在删除后又被重新记录过，保留记录（后写优先）
+    }
+
+    return { records: out, keptLocal };
+  }
+
   /* ==========================================================================
    * 第 5 层：Store（唯一数据真相 + 可靠的防抖保存）
    * ======================================================================== */
@@ -2166,6 +2243,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     lastError: null,
     settingsDirty: false,
     lastSyncedAt: 0,
+    deleted: {},
     listeners: new Set(),
 
     subscribe(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); },
@@ -2173,6 +2251,16 @@ input:focus-visible,textarea:focus-visible{outline:none}
       for (const fn of this.listeners) {
         try { fn(reason); } catch (e) { console.error('[store] listener', e); }
       }
+    },
+
+    /** 记录某日期已被删除（写入墓碑，随下次同步上行） */
+    markDeleted(key, at) {
+      this.deleted[key] = at === undefined ? Date.now() : at;
+    },
+
+    /** 持久化/恢复时携带墓碑，避免刷新后删除意图丢失 */
+    pruneDeleted(now) {
+      this.deleted = pruneTombstones(this.deleted, now === undefined ? Date.now() : now);
     },
 
     mutate(fn, reason) {
@@ -2196,18 +2284,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const next = normalizeUserData(remote);
       const localRecords = this.state.records;
 
-      // 记录级：本地更新的保留本地，其余采用服务端
-      const merged = { ...next.records };
-      let keptLocal = 0;
-      for (const key in localRecords) {
-        if (!Object.prototype.hasOwnProperty.call(localRecords, key)) continue;
-        const local = localRecords[key];
-        const server = merged[key];
-        if (!server) { merged[key] = local; keptLocal += 1; continue; }
-        if (num(local.updatedAt) > num(server.updatedAt)) { merged[key] = local; keptLocal += 1; }
-      }
+      // 记录级：本地更新的保留本地；被墓碑标记的日期真正删除（不再被旧记录复活）
+      const merged = mergeRecordSetsWithTombstones(localRecords, next.records, this.deleted);
 
-      next.records = merged;
+      next.records = merged.records;
+      // 服务端已确认删除的日期 → 清理本地墓碑，避免无限上行
+      const serverDeleted = (remote && remote.deleted) || {};
+      const remaining = {};
+      for (const key in this.deleted) {
+        if (!Object.prototype.hasOwnProperty.call(this.deleted, key)) continue;
+        const ackAt = num(serverDeleted[key]);
+        if (ackAt >= num(this.deleted[key])) continue;   // 已被服务端确认
+        if (!merged.records[key] && !next.records[key]) continue;  // 记录已不存在，墓碑无意义
+        remaining[key] = this.deleted[key];
+      }
+      this.deleted = pruneTombstones(remaining, Date.now());
+      next.deleted = Object.assign({}, serverDeleted, this.deleted);
       // 偏好字段：本地刚改过则以本地为准（服务端也接受本地值，这里避免抖动）
       if (opts.prefsDirty) {
         next.settings = this.state.settings;
@@ -2221,7 +2313,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.lastSyncedAt = Date.now();
       this.persistCache();
       this.emit('remote');
-      return keptLocal;
+      return merged.keptLocal;
     },
 
     replace(next) {
@@ -2235,14 +2327,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     persistCache() {
       if (!Session.username) return;
-      safeSet(this.cacheKey(), JSON.stringify(this.state));
+      // 墓碑随缓存一起持久化：否则刷新页面会丢掉"删除意图"，旧记录又被云端带回来
+      safeSet(this.cacheKey(), JSON.stringify({
+        __state: this.state,
+        __deleted: this.deleted,
+      }));
     },
 
     loadCache() {
       if (!Session.username) return false;
       const parsed = safeJson(this.cacheKey());
       if (!parsed || typeof parsed !== 'object') return false;
-      this.state = normalizeUserData(parsed);
+      // 兼容两种格式：带墓碑的新格式 {__state,__deleted} 与早期直接存 state 的格式
+      const payload = parsed.__state ? parsed.__state : parsed;
+      this.state = normalizeUserData(payload);
+      this.deleted = pruneTombstones(parsed.__deleted || {}, Date.now());
       this.rev += 1;
       return true;
     },
@@ -2261,7 +2360,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.setStatus('pending');
     },
 
-    /** 只上传自上次同步后被修改的记录（服务端会做记录级合并） */
+    /** 只上传自上次同步后被修改的记录 + 所有未确认的删除墓碑 */
     buildPayload() {
       const records = {};
       const since = this.lastSyncedAt;
@@ -2272,6 +2371,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }
       return {
         records,
+        deleted: Object.assign({}, this.deleted),
         settings: this.state.settings,
         goal: this.state.goal,
         deductions: this.state.deductions,
@@ -2420,6 +2520,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
 
       const icon = document.createElement('span');
+      icon.className = 'toast-icon';
+      icon.setAttribute('aria-hidden', 'true');
       icon.textContent = ICONS[kind] || ICONS.info;
       const text = document.createElement('span');
       text.textContent = String(message === null || message === undefined ? '' : message);
@@ -3430,10 +3532,18 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const isEmpty = this.draft.isEmpty();
         const record = this.draft.toRecord();
 
-        Store.mutate((state) => {
-          if (isEmpty) delete state.records[key];
-          else state.records[key] = record;
-        }, 'clock');
+        if (isEmpty) {
+          // 清空工时 → 删除记录，并写入墓碑防止被云端旧数据复活
+          Store.mutate((state) => {
+            delete state.records[key];
+            Store.markDeleted(key, record.updatedAt);
+          }, 'clock');
+        } else {
+          Store.mutate((state) => {
+            state.records[key] = record;
+            delete Store.deleted[key];   // 重新记录同一天 → 撤销旧墓碑
+          }, 'clock');
+        }
 
         UI.toast(isEmpty ? '🗑️ 记录已删除' : '✅ 已保存 ' + key.slice(5) + ' 的记录', isEmpty ? 'info' : 'success');
         UI.closeModal('clockModal');
@@ -4743,11 +4853,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
         el.classList.remove('swiping');
         el.style.transition = 'transform ' + (SWIPE_ANIM_MS / 1000) + 's cubic-bezier(.22,1,.36,1)';
         reset();
+        // 关键：无论是否切换月份，都必须把位移归零。
+        // 原来只在"未达阈值"分支里重置，切月后 translateX 会残留，
+        // 表现为"滑动切换月份后日历整体偏移"。
+        el.style.transform = 'translateX(0)';
         if (horizontal && Math.abs(deltaX) > threshold) {
           if (deltaX > 0) Calendar.changeMonth(-1);
           else Calendar.changeMonth(1);
-        } else {
-          el.style.transform = 'translateX(0)';
         }
         active = false;
         horizontal = false;
