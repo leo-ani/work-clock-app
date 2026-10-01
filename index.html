@@ -2948,8 +2948,39 @@ input:focus-visible,textarea:focus-visible{outline:none}
         const el = byId(id);
         if (!el) continue;
         el.addEventListener('input', () => sanitizeNumericInput(el));
-        if (id !== 'goalInput') el.addEventListener('change', () => this.calcRates());
+        // 关键修复：input 事件就实时写入 Store，不再只依赖 change
+        if (id === 'goalInput') {
+          el.addEventListener('change', () => this.saveGoal());
+        } else {
+          el.addEventListener('input', () => this.writeToStore(id));
+          el.addEventListener('change', () => this.calcRates());
+        }
       }
+    },
+
+    /** 将单个输入框的值实时写回 Store（不触发同步风暴，由 mutate 的 debounce 处理） */
+    writeToStore(id) {
+      const map = {
+        inNormal: ['normalRate', 0, 10000],
+        inHoliday: ['holidayRate', 0, 10000],
+        inBaseSalary: ['baseSalary', 0, 1000000],
+        inPerformance: ['performance', 0, 1000000],
+        inBonus: ['bonus', 0, 1000000],
+        inAllowance: ['allowance', 0, 1000000],
+        inSalaryDays: ['salaryDays', 1, 31],
+        inSalaryHours: ['salaryHours', 1, 24],
+        inRateNormal: ['salaryRateNormal', 0, 5],
+        inRateOt: ['salaryRateOt', 0, 5],
+        inRateWeekend: ['salaryRateWeekend', 0, 5],
+        inRateHoliday: ['salaryRateHoliday', 0, 5],
+      };
+      const entry = map[id];
+      if (!entry) return;
+      const [key, lo, hi] = entry;
+      const val = clamp(byId(id).value, lo, hi, Store.state.settings[key]);
+      if (Number(Store.state.settings[key]) === Number(val)) return;
+      Store.mutate((state) => { state.settings[key] = val; }, 'settings');
+      Store.settingsDirty = true;
     },
 
     applyModeUI() {
@@ -2991,6 +3022,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.calcRates();
     },
 
+    /**
+     * 修复核心：
+     *   1. 小时工模式也把输入值写回 Store（原代码直接 return，是 ¥0 的根因）
+     *   2. 月薪制实时换算各倍数时薪并写回
+     */
     calcRates() {
       const hidden = UI.incomeHidden;
       const isSalary = Store.state.settings.mode === 'salary';
@@ -2998,10 +3034,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
         previewNormal: byId('previewNormal'), previewOt: byId('previewOt'),
         previewWeekend: byId('previewWeekend'), previewHoliday: byId('previewHoliday'),
       };
+
+      // ---------- 小时工模式 ----------
       if (!isSalary) {
+        const normal = clamp(byId('inNormal').value, 0, 10000, 0);
+        const holiday = clamp(byId('inHoliday').value, 0, 10000, 0);
+        Store.mutate((state) => {
+          state.settings.normalRate = normal;
+          state.settings.holidayRate = holiday;
+        }, 'rates');
+        Store.settingsDirty = true;
         for (const el of Object.values(previews)) el.textContent = hidden ? MASK : '¥0/H';
         return;
       }
+
+      // ---------- 月薪制模式 ----------
       const base = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
       const perf = clamp(byId('inPerformance').value, 0, 1000000, 0);
       const bonus = clamp(byId('inBonus').value, 0, 1000000, 0);
@@ -3012,10 +3059,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const rO = clamp(byId('inRateOt').value, 0, 5, 1.5);
       const rW = clamp(byId('inRateWeekend').value, 0, 5, 2);
       const rH = clamp(byId('inRateHoliday').value, 0, 5, 3);
-      
+
       const totalFixed = base + perf + bonus + allow;
       const baseRate = totalFixed / days / hours;
-      
+
       const values = {
         previewNormal: baseRate * rN, previewOt: baseRate * rO,
         previewWeekend: baseRate * rW, previewHoliday: baseRate * rH,
@@ -3038,6 +3085,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
 
     save() {
+      // 全量保存：不管是小时工还是月薪制，都显式写入并标记待同步
       Store.mutate((state) => {
         const s = state.settings;
         s.normalRate = clamp(byId('inNormal').value, 0, 10000, 0);
@@ -3054,9 +3102,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         s.salaryRateHoliday = clamp(byId('inRateHoliday').value, 0, 5, 3);
       }, 'settings');
       Store.settingsDirty = true;
-      if (Store.state.settings.mode === 'salary') this.calcRates();
-      this.loadInputs();
-      UI.toast('设置已保存', 'success');
+      // 强制触发一次立即上传，让服务器立刻拿到最新 settings
+      Store.flush();
+      this.calcRates();
+      UI.toast('设置已保存并同步', 'success');
     },
 
     renderGoal(summary) {
@@ -3075,7 +3124,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       UI.toast('目标已更新为 ' + value + ' 小时', 'success');
     },
   };
-
+  
   /* ---------------------------- Calculator ---------------------------- */
   const Calculator = {
     _hide: false,
