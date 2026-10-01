@@ -307,7 +307,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .menu-right{color:var(--text-secondary);font-size:12px;display:flex;align-items:center;gap:6px;font-weight:500;white-space:nowrap}
 .menu-right.is-danger{color:var(--danger);font-weight:600}
 .profile-footer{text-align:center;padding:var(--sp-5);color:var(--text-secondary);font-size:11px;line-height:1.9}
-/* 修复：弹窗 z-index 提升至 1100，确保在登录页显示 */
 .modal-overlay{position:absolute;inset:0;background:rgba(24,24,22,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1100}
 .modal-overlay.show{display:flex}
 .modal-overlay[aria-hidden="true"]{pointer-events:none}
@@ -481,7 +480,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       <label for="password">密码</label>
       <input type="password" id="password" name="password" placeholder="请输入密码" autocomplete="current-password" required aria-describedby="passwordError">
       <div class="field-error" id="passwordError"></div>
-      <!-- 忘记密码提示 -->
       <div style="text-align: right; margin-top: 6px;">
         <span style="font-size: 12px; color: var(--text-secondary); cursor: pointer;" onclick="alert('由于数据采用端到端加密保存在您的私有仓库中，我们无法帮您找回密码。\n\n建议：使用之前导出的 JSON 备份文件，注册新账号后导入数据。')">忘记密码？</span>
       </div>
@@ -630,7 +628,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         <p class="calc-note">基于 2025 年综合所得税率表（起征点 5000 元/月）<br>专项附加扣除标准：子女教育/婴幼儿照护 2000 元/孩·月</p>
       </div>
       <div class="calc-panel" id="calcSalary" role="tabpanel">
-        <div class="calc-group"><label for="salaryRate">时薪（元/小时）</label><div class="calc-input-wrap"><span class="prefix">¥</span><input type="number" id="salaryRate" value="43" step=".5" min="0" max="10000" inputmode="decimal"></div></div>
+        <div class="calc-group"><label for="salaryRate">时薪（元/小时）</label><div class="calc-input-wrap"><span class="prefix">¥</span><input type="number" id="salaryRate" value="0" step=".5" min="0" max="10000" inputmode="decimal"></div></div>
         <div class="calc-group"><label for="salaryHours">每日工时（小时）</label><div class="calc-input-wrap"><input type="number" id="salaryHours" value="8" step=".5" min="0" max="24" inputmode="decimal"><span class="suffix">h</span></div></div>
         <div class="calc-group"><label for="salaryDays">每月工作天数</label><div class="calc-input-wrap"><input type="number" id="salaryDays" value="21.75" step=".5" min="0" max="31" inputmode="decimal"><span class="suffix">天</span></div></div>
         <div class="result-box"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div class="result-label">日薪</div><div class="result-value" id="salaryDaily">¥0</div></div><div><div class="result-label">月薪</div><div class="result-value" id="salaryMonthly">¥0</div></div></div></div>
@@ -686,7 +684,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
         </div>
         <div id="salaryForm" class="hidden">
           <div class="input-card">
-            <div class="input-row"><label class="input-label" for="inBaseSalary">底薪（月薪）</label><div class="input-value" style="color:var(--primary)">¥<input type="number" id="inBaseSalary" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
+            <div class="input-row"><label class="input-label" for="inBaseSalary">基本工资（底薪）</label><div class="input-value" style="color:var(--primary)">¥<input type="number" id="inBaseSalary" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
+            <div class="input-row"><label class="input-label" for="inPerformance">绩效工资</label><div class="input-value" style="color:var(--success)">¥<input type="number" id="inPerformance" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
+            <div class="input-row"><label class="input-label" for="inBonus">奖金</label><div class="input-value" style="color:var(--accent)">¥<input type="number" id="inBonus" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
+            <div class="input-row"><label class="input-label" for="inAllowance">津贴/补贴</label><div class="input-value" style="color:var(--info)">¥<input type="number" id="inAllowance" step="100" min="0" max="1000000" inputmode="decimal" style="width:110px"><span class="unit">元/月</span></div></div>
             <div class="input-row"><label class="input-label" for="inSalaryDays">月计薪天数</label><div class="input-value"><input type="number" id="inSalaryDays" step=".25" min="1" max="31" inputmode="decimal"><span class="unit">天</span></div></div>
             <div class="input-row"><label class="input-label" for="inSalaryHours">每日工时</label><div class="input-value"><input type="number" id="inSalaryHours" step=".5" min="1" max="24" inputmode="decimal"><span class="unit">H</span></div></div>
           </div>
@@ -697,7 +698,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
             <div class="input-row"><label class="input-label" for="inRateWeekend">周末</label><div class="input-value"><input type="number" id="inRateWeekend" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewWeekend" style="color:var(--accent)">¥0/H</span></div></div>
             <div class="input-row"><label class="input-label" for="inRateHoliday">节假</label><div class="input-value"><input type="number" id="inRateHoliday" step=".1" min="0" max="5" inputmode="decimal" style="width:56px"><span class="unit">倍</span><span class="rate-preview" id="previewHoliday" style="color:var(--danger)">¥0/H</span></div></div>
           </div>
-          <p class="hint-text">💡 基础时薪 = 底薪 ÷ 月计薪天数 ÷ 日工时；各时薪 = 基础时薪 × 对应倍数</p>
+          <p class="hint-text">💡 基础时薪 = (底薪+绩效+奖金+津贴) ÷ 月计薪天数 ÷ 日工时；各时薪 = 基础时薪 × 对应倍数</p>
         </div>
         <div class="goal-card">
           <div class="goal-header"><span class="goal-title">🎯 月度工时目标</span><span class="goal-value" id="goalDisplay">0 / 0 h</span></div>
@@ -729,7 +730,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           <button class="menu-item" type="button" id="clearAllBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🗑️</span>清空数据</span><span class="menu-right is-danger">⚠️ 危险 ▶</span></button>
           <button class="menu-item" type="button" id="deleteAccountBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">☠️</span>注销账号</span><span class="menu-right is-danger">永久删除 ▶</span></button>
           <button class="menu-item" type="button" id="logoutBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🚪</span>退出登录</span><span class="menu-right is-danger">退出 ▶</span></button>
-          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.1.0</span></div>
+          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.2.1</span></div>
         </div>
         <p class="profile-footer">数据保存到你的私有仓库，登录后自动同步<br>多设备共享 · 冲突时按修改时间保留较新记录<br><span style="color:var(--primary);font-weight:600">建议定期导出备份</span></p>
       </div>
@@ -744,8 +745,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     <button class="nav-item" type="button" role="tab" aria-selected="false" id="navProfile" data-page="pageProfile"><span class="nav-icon" aria-hidden="true">👤</span><span class="nav-label">我的</span></button>
   </nav>
 </div>
-
-<!-- 弹窗组件移至 #app 外部，解决登录/注册时无法显示的问题 -->
 
 <div class="modal-overlay" id="clockModal" role="dialog" aria-modal="true" aria-labelledby="clockModalTitle" aria-hidden="true">
   <div class="modal-content" id="clockModalContent">
@@ -839,16 +838,16 @@ input:focus-visible,textarea:focus-visible{outline:none}
 <script>
 "use strict";
 /* =============================================================================
- * 工时记录助手 v5.1.0
+ * 工时记录助手 v5.2.1
  *
- * 修复与优化：
- *   - 修复注册卡死：弹窗移出 #app，z-index 提升至 1100
- *   - 优化登录体验：密码错误 5 次锁定 60 秒倒计时；增加“忘记密码”提示
- *   - 数据完整性：保留 P0-B 水位线快照，P1-C 先合并服务端墓碑，P3-I Emoji 剥离，P3-L 清空墓碑
+ * 本次修复：
+ *   - 严重漏洞：修复 clearAll 清空数据无法同步到云端的问题（墓碑机制）
+ *   - 数据默认值：新注册账号所有金额相关字段默认 0
+ *   - 全面兼容：旧版备份导入正常，缺失字段自动补 0
  * ========================================================================== */
 (function () {
   /* ---------------------------- 常量 ---------------------------- */
-  const APP_VERSION = '5.1.0';
+  const APP_VERSION = '5.2.1';
   const SCHEMA_VERSION = 3;
   const API_BASE = 'https://api.leoani.dpdns.org/';
   const USERNAME_RE = /^[A-Za-z0-9_-]{3,32}$/;
@@ -858,7 +857,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const CACHE_PREFIX = 'wc_cache_';
   const HOLIDAY_KEY = 'wc_holidays_v2';
   const LUNAR_KEY = 'wc_lunar_v2';
-  const LOCK_KEY = 'wc_lock_state'; // 新增：持久化锁定状态
+  const LOCK_KEY = 'wc_lock_state';
 
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const SHIFTS = ['day', 'early', 'mid', 'night'];
@@ -899,10 +898,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
   const ICONS = { success: '✓', error: '✕', info: 'ℹ' };
   const MASK = '****';
 
-  /**
-   * P3-I 收紧：只剥离真正的 emoji 与变体选择符。
-   * 不误伤 ①、←、✓、✗、ℹ 这类普通符号（旧版会把 ① 也吞掉）。
-   */
   function stripLeadingIcon(message) {
     return String(message || '')
       .replace(/^[\s\uFE0F\u200D\u20E3]+/u, '')
@@ -1211,10 +1206,15 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const normal = num(rec.normal);
       const ot = num(rec.ot);
       const bucket = bucketOf(rec, date);
+      
       if (mode === 'hourly') return (normal + ot) * rateOf(bucket === 'holiday' ? 'holiday' : 'normal');
-      if (bucket === 'holiday') return (normal + ot) * rateOf('holiday');
-      if (bucket === 'weekend') return (normal + ot) * rateOf('weekend');
-      return normal * rateOf('normal') + ot * rateOf('ot');
+      
+      const totalFixed = num(settings.baseSalary) + num(settings.performance) + num(settings.bonus) + num(settings.allowance);
+      const dailyFixed = totalFixed / Math.max(1, num(settings.salaryDays));
+      
+      if (bucket === 'holiday') return dailyFixed + (normal + ot) * rateOf('holiday');
+      if (bucket === 'weekend') return dailyFixed + (normal + ot) * rateOf('weekend');
+      return dailyFixed + normal * rateOf('normal') + ot * rateOf('ot');
     }
     return { mode, bucketOf, rateOf, of };
   }
@@ -1325,6 +1325,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
     return {
       mode: 'hourly', normalRate: 0, holidayRate: 0,
       baseSalary: 0, salaryDays: 21.75, salaryHours: 8,
+      performance: 0, bonus: 0, allowance: 0,
       salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
       salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0, rule: 'fixed',
     };
@@ -1351,6 +1352,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
     out.baseSalary = clamp(raw.baseSalary, 0, 1000000, out.baseSalary);
     out.salaryDays = clamp(raw.salaryDays, 1, 31, out.salaryDays);
     out.salaryHours = clamp(raw.salaryHours, 1, 24, out.salaryHours);
+    out.performance = clamp(raw.performance, 0, 1000000, out.performance);
+    out.bonus = clamp(raw.bonus, 0, 1000000, out.bonus);
+    out.allowance = clamp(raw.allowance, 0, 1000000, out.allowance);
     out.salaryRateNormal = clamp(raw.salaryRateNormal, 0, 5, out.salaryRateNormal);
     out.salaryRateOt = clamp(raw.salaryRateOt, 0, 5, out.salaryRateOt);
     out.salaryRateWeekend = clamp(raw.salaryRateWeekend, 0, 5, out.salaryRateWeekend);
@@ -1590,6 +1594,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       if (!res.ok) {
         const message = data.detail || data.error || ('请求失败 (' + res.status + ')');
+        if (res.status === 404 || data.code === 'USER_NOT_FOUND') {
+          throw ApiError(message, 'USER_NOT_FOUND', 404, message);
+        }
         if (res.status === 401 || res.status === 403) throw ApiError('登录已失效，请重新登录', 'UNAUTHORIZED', res.status, message);
         if (res.status === 409) throw ApiError('数据版本冲突，正在重试…', 'CONFLICT', res.status, message);
         if (res.status === 429 || res.status >= 500) throw ApiError(message, 'RETRYABLE', res.status);
@@ -1626,11 +1633,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return this.call('register', { username, hash, salt, kdf, iterations });
     },
 
-    /**
-     * 登录：支持 KDF 惰性迁移。
-     * 若服务端仍为旧 KDF，客户端同时提交 newHash + newSalt，
-     * 校验通过后由 Worker 一次性原子替换。401 改写为 BAD_CREDENTIALS。
-     */
     async login(username, hash, upgrade) {
       const payload = { username, hash };
       if (upgrade && upgrade.newHash && upgrade.newSalt) {
@@ -1640,6 +1642,12 @@ input:focus-visible,textarea:focus-visible{outline:none}
       try {
         return await this.call('login', payload);
       } catch (e) {
+        if (e && e.code === 'USER_NOT_FOUND') {
+          const err = new Error('该用户名未注册，请先注册账号');
+          err.code = 'USER_NOT_FOUND';
+          err.status = 404;
+          throw err;
+        }
         if (e && e.code === 'UNAUTHORIZED') {
           const err = new Error('用户名或密码错误');
           err.code = 'BAD_CREDENTIALS';
@@ -1725,11 +1733,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       return true;
     },
 
-    /**
-     * 服务器合并结果回执。
-     * P1-C：先合并"服务端墓碑"，再合并记录。
-     * 否则：设备 A 删某天，设备 B 从旧缓存打开仍持有该记录 → 本地复活并被再次上行。
-     */
     reconcile(remote, options) {
       const opts = options || {};
       const next = normalizeUserData(remote);
@@ -1827,12 +1830,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       };
     },
 
-    /**
-     * P0-B：水位线取"请求发起时刻"的快照。
-     * 旧版用响应返回时的 Date.now()，会把请求进行中用户新产生的改动
-     * 一并算作"已同步" → buildPayload 用 updatedAt > lastSyncedAt 过滤时，
-     * 那批新改动永远传不上去（静默丢数据）。
-     */
     async flush(options) {
       const opts = options || {};
       clearTimeout(this.saveTimer);
@@ -2946,6 +2943,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('saveSettingsBtn').addEventListener('click', () => this.save());
       byId('goalSaveBtn').addEventListener('click', () => this.saveGoal());
       for (const id of ['inNormal', 'inHoliday', 'inBaseSalary', 'inSalaryDays', 'inSalaryHours',
+        'inPerformance', 'inBonus', 'inAllowance',
         'inRateNormal', 'inRateOt', 'inRateWeekend', 'inRateHoliday', 'goalInput']) {
         const el = byId(id);
         if (!el) continue;
@@ -2959,7 +2957,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('modeCard').className = 'mode-card ' + (isSalary ? 'salary' : 'hourly');
       byId('modeTitle').textContent = isSalary ? '月薪制' : '小时计算';
       byId('modeDesc').textContent = isSalary
-        ? '底薪自动折算时薪，区分正班 / 加班 / 周末 / 节假日倍数'
+        ? '底薪+绩效+奖金+津贴折算时薪，区分正班 / 加班 / 周末 / 节假日倍数'
         : '时薪固定，加班不加倍，节假可单独设薪';
       byId('hourlyForm').classList.toggle('hidden', isSalary);
       byId('salaryForm').classList.toggle('hidden', !isSalary);
@@ -2980,6 +2978,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('inNormal').value = s.normalRate;
       byId('inHoliday').value = s.holidayRate;
       byId('inBaseSalary').value = s.baseSalary || '';
+      byId('inPerformance').value = s.performance || '';
+      byId('inBonus').value = s.bonus || '';
+      byId('inAllowance').value = s.allowance || '';
       byId('inSalaryDays').value = s.salaryDays;
       byId('inSalaryHours').value = s.salaryHours;
       byId('inRateNormal').value = s.salaryRateNormal;
@@ -3002,13 +3003,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
         return;
       }
       const base = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
+      const perf = clamp(byId('inPerformance').value, 0, 1000000, 0);
+      const bonus = clamp(byId('inBonus').value, 0, 1000000, 0);
+      const allow = clamp(byId('inAllowance').value, 0, 1000000, 0);
       const days = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
       const hours = clamp(byId('inSalaryHours').value, 1, 24, 8);
       const rN = clamp(byId('inRateNormal').value, 0, 5, 1);
       const rO = clamp(byId('inRateOt').value, 0, 5, 1.5);
       const rW = clamp(byId('inRateWeekend').value, 0, 5, 2);
       const rH = clamp(byId('inRateHoliday').value, 0, 5, 3);
-      const baseRate = base / days / hours;
+      
+      const totalFixed = base + perf + bonus + allow;
+      const baseRate = totalFixed / days / hours;
+      
       const values = {
         previewNormal: baseRate * rN, previewOt: baseRate * rO,
         previewWeekend: baseRate * rW, previewHoliday: baseRate * rH,
@@ -3025,6 +3032,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         s.salaryDays = days; s.salaryHours = hours;
         s.salaryRateNormal = rN; s.salaryRateOt = rO;
         s.salaryRateWeekend = rW; s.salaryRateHoliday = rH;
+        s.baseSalary = base; s.performance = perf; s.bonus = bonus; s.allowance = allow;
       }, 'rates');
       Store.settingsDirty = true;
     },
@@ -3035,6 +3043,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
         s.normalRate = clamp(byId('inNormal').value, 0, 10000, 0);
         s.holidayRate = clamp(byId('inHoliday').value, 0, 10000, 0);
         s.baseSalary = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
+        s.performance = clamp(byId('inPerformance').value, 0, 1000000, 0);
+        s.bonus = clamp(byId('inBonus').value, 0, 1000000, 0);
+        s.allowance = clamp(byId('inAllowance').value, 0, 1000000, 0);
         s.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
         s.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
         s.salaryRateNormal = clamp(byId('inRateNormal').value, 0, 5, 1);
@@ -3527,7 +3538,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           + '并同步到云端。建议先导出备份。';
         warn.classList.add('show');
       } else {
-        warn.textContent = '✅ 智能合并：保留双方记录，同一天按修改时间取较新的一条。';
+        warn.textContent = '✅ 智能合并：保留双方记录，同一天按修改时间取较新的一条，并恢复薪资设置。';
         warn.classList.add('show');
       }
     },
@@ -3567,7 +3578,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           state.goal = incoming.goal;
           state.deductions = incoming.deductions;
           state.insurance = incoming.insurance;
-          state.settings = Object.assign({}, incoming.settings, state.settings);
+          state.settings = Object.assign({}, state.settings, incoming.settings);
         }
       }, 'import');
       Store.settingsDirty = true;
@@ -3815,10 +3826,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.forceLogout('');
     },
 
-    /**
-     * 注销账号：删除云端 GitHub 目录 + 清本地缓存 + 清会话。
-     * 与 forceLogout 不同：注销后云端数据被永久删除。
-     */
     async deleteAccount() {
       if (!Session.username || !Session.token) return;
       const ok = await UI.confirmDangerous({
@@ -3866,7 +3873,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
 
     forceLogout(message) {
-      // 顺序：先清缓存（缓存 key 依赖 Session.username），再清会话
       Store.clearCache();
       Session.clear();
       Api.token = null;
@@ -3897,6 +3903,17 @@ input:focus-visible,textarea:focus-visible{outline:none}
         backupLabel: '① 先导出备份（推荐）',
       });
       if (!ok) return;
+      
+      // 修复：将所有现存记录标记为删除，确保同步到云端
+      const now = Date.now();
+      const deleted = {};
+      for (const key in Store.state.records) {
+        if (Object.prototype.hasOwnProperty.call(Store.state.records, key)) {
+          deleted[key] = now;
+        }
+      }
+      Store.deleted = Object.assign({}, Store.deleted, deleted);
+
       Store.mutate((state) => {
         const fresh = defaultUserData();
         state.records = fresh.records;
@@ -3905,9 +3922,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
         state.deductions = fresh.deductions;
         state.insurance = fresh.insurance;
       }, 'clearAll');
-      Store.deleted = {};   // P3-L：清空全部数据时同步清墓碑
       Store.settingsDirty = true;
-      Store.lastSyncedAt = 0;
+      Store.lastSyncedAt = 0; // 强制发送全量
       Settings.loadInputs();
       Calculator.syncInputs();
       byId('taxIncome').value = 0;
@@ -3926,7 +3942,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
     init() {
       const username = safeGet('wc_last_user');
       if (username) byId('username').value = username;
-      // 恢复锁定状态
       const lockState = safeJson(LOCK_KEY);
       if (lockState && lockState.lockUntil > Date.now()) {
         this.failCount = lockState.failCount || 0;
@@ -4067,11 +4082,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       };
     },
 
-    /**
-     * 登录：兼容旧 KDF。
-     * 若服务端仍为 SHA256-LEGACY，客户端同时计算"旧校验 hash + 新 KDF 迁移材料"，
-     * 校验通过后由 Worker 一次性原子替换。
-     */
     async doLogin(username, password) {
       const saltInfo = await Api.getSalt(username);
       if (!saltInfo || typeof saltInfo.salt !== 'string') {
@@ -4090,7 +4100,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       safeSet('wc_last_user', username);
       byId('password').value = '';
       this.setMessage('', '');
-      // 登录成功，清除锁定状态
       this.failCount = 0;
       this.lockUntil = 0;
       safeRemove(LOCK_KEY);
@@ -4122,6 +4131,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         TIMEOUT: '请求超时，请检查网络后重试',
         RATE_LIMITED: '尝试过于频繁，请稍后再试',
         USER_EXISTS: '该用户名已被注册，请直接登录',
+        USER_NOT_FOUND: '该用户名未注册，请先注册账号',
         BAD_CREDENTIALS: '用户名或密码错误',
         MISSING_SESSION_SECRET: '服务端未完成配置（SESSION_SECRET）',
         MISSING_GITHUB_TOKEN: '服务端未完成配置（GITHUB_TOKEN）',
@@ -4133,17 +4143,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const isWarn = code === 'RATE_LIMITED';
       let text = messages[code] || (err && err.message) || '操作失败，请稍后重试';
 
-      // 处理密码错误逻辑
+      if (code === 'USER_NOT_FOUND') {
+        this.setMessage(text, 'error');
+        byId('password').value = '';
+        byId('password').focus({ preventScroll: true });
+        return;
+      }
+
       if (code === 'BAD_CREDENTIALS') {
         this.failCount++;
         if (this.failCount >= 5) {
-          this.lockUntil = Date.now() + 60000; // 锁定 60 秒
+          this.lockUntil = Date.now() + 60000;
           safeSet(LOCK_KEY, JSON.stringify({ lockUntil: this.lockUntil, failCount: this.failCount }));
           this.startLockoutCountdown();
         } else {
           text = `用户名或密码错误，还可以尝试 ${5 - this.failCount} 次`;
           this.setMessage(text, 'error');
-          // 增加忘记密码提示
           const forgotHint = document.createElement('div');
           forgotHint.style.cssText = 'font-size:12px;margin-top:8px;color:var(--text-secondary);text-align:center';
           forgotHint.innerHTML = '忘记密码？由于数据加密存储，无法找回密码，请使用数据备份重置账号。';
