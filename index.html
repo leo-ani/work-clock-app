@@ -840,10 +840,20 @@ input:focus-visible,textarea:focus-visible{outline:none}
 /* =============================================================================
  * 工时记录助手 v5.2.1
  *
- * 本次修复：
- *   - 严重漏洞：修复 clearAll 清空数据无法同步到云端的问题（墓碑机制）
- *   - 数据默认值：新注册账号所有金额相关字段默认 0
- *   - 全面兼容：旧版备份导入正常，缺失字段自动补 0
+ * 已整合修复：
+ *   1. 弹窗移出 #app，z-index 1100（注册卡死修复）
+ *   2. 登录错误 5 次锁定 60 秒 + 忘记密码提示
+ *   3. 登录用户不存在返回 404 USER_NOT_FOUND
+ *   4. 新增薪资构成：performance/bonus/allowance
+ *   5. 新账号所有金额字段默认 0
+ *   6. Settings 输入实时写入 Store（修复打卡后填薪资不计算）
+ *   7. Settings.persistCache 移到 calcDerived 之后（避免中间态）
+ *   8. Settings.commit 不再重复 rev+1
+ *   9. Settings.save 三态提示（idle/pending/error）
+ *   10. Store.flush reconcile 保留本地未提交 settings
+ *   11. Store.replace 清理 settingsDirty
+ *   12. ImportExport 导入后 lastSyncedAt=0（强制全量上传）
+ *   13. App.manualSync 用 reconcile 保留本地未同步改动
  * ========================================================================== */
 (function () {
   /* ---------------------------- 常量 ---------------------------- */
@@ -1775,6 +1785,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     replace(next) {
       this.state = normalizeUserData(next);
+      this.settingsDirty = false;   // 防御性清理：整体替换后不再认为有未提交 settings
       this.rev += 1;
       this.persistCache();
       this.emit('replace');
@@ -1847,7 +1858,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
           const res = await Api.setData(Session.username, payload, settingsTouched, { keepalive: opts.keepalive === true });
           const dropped = num(res.droppedCount);
           if (res.data) {
-            Store.reconcile(res.data, { prefsDirty: false });
+            // 请求进行中用户又改了 settings → 保留本地，不被服务器旧值覆盖
+            Store.reconcile(res.data, { prefsDirty: Store.settingsDirty === true });
           }
           this.lastSyncedAt = snapshotTime;
           this.lastError = null;
@@ -2938,49 +2950,59 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
   /* ---------------------------- Settings ---------------------------- */
   const Settings = {
+    _fieldMap: {
+      inNormal: ['normalRate', 0, 10000],
+      inHoliday: ['holidayRate', 0, 10000],
+      inBaseSalary: ['baseSalary', 0, 1000000],
+      inPerformance: ['performance', 0, 1000000],
+      inBonus: ['bonus', 0, 1000000],
+      inAllowance: ['allowance', 0, 1000000],
+      inSalaryDays: ['salaryDays', 1, 31],
+      inSalaryHours: ['salaryHours', 1, 24],
+      inRateNormal: ['salaryRateNormal', 0, 5],
+      inRateOt: ['salaryRateOt', 0, 5],
+      inRateWeekend: ['salaryRateWeekend', 0, 5],
+      inRateHoliday: ['salaryRateHoliday', 0, 5],
+    },
+
     init() {
       byId('modeSwitch').addEventListener('click', () => this.toggleMode());
       byId('saveSettingsBtn').addEventListener('click', () => this.save());
       byId('goalSaveBtn').addEventListener('click', () => this.saveGoal());
-      for (const id of ['inNormal', 'inHoliday', 'inBaseSalary', 'inSalaryDays', 'inSalaryHours',
-        'inPerformance', 'inBonus', 'inAllowance',
-        'inRateNormal', 'inRateOt', 'inRateWeekend', 'inRateHoliday', 'goalInput']) {
+
+      for (const [id, [key, lo, hi]] of Object.entries(this._fieldMap)) {
         const el = byId(id);
         if (!el) continue;
-        el.addEventListener('input', () => sanitizeNumericInput(el));
-        // 关键修复：input 事件就实时写入 Store，不再只依赖 change
-        if (id === 'goalInput') {
-          el.addEventListener('change', () => this.saveGoal());
-        } else {
-          el.addEventListener('input', () => this.writeToStore(id));
-          el.addEventListener('change', () => this.calcRates());
-        }
+        el.addEventListener('input', () => {
+          sanitizeNumericInput(el);
+          this.applyField(key, el, lo, hi);
+        });
+        el.addEventListener('change', () => this.commit());
+      }
+
+      const goalInput = byId('goalInput');
+      if (goalInput) {
+        goalInput.addEventListener('input', () => sanitizeNumericInput(goalInput));
+        goalInput.addEventListener('change', () => this.saveGoal());
       }
     },
 
-    /** 将单个输入框的值实时写回 Store（不触发同步风暴，由 mutate 的 debounce 处理） */
-    writeToStore(id) {
-      const map = {
-        inNormal: ['normalRate', 0, 10000],
-        inHoliday: ['holidayRate', 0, 10000],
-        inBaseSalary: ['baseSalary', 0, 1000000],
-        inPerformance: ['performance', 0, 1000000],
-        inBonus: ['bonus', 0, 1000000],
-        inAllowance: ['allowance', 0, 1000000],
-        inSalaryDays: ['salaryDays', 1, 31],
-        inSalaryHours: ['salaryHours', 1, 24],
-        inRateNormal: ['salaryRateNormal', 0, 5],
-        inRateOt: ['salaryRateOt', 0, 5],
-        inRateWeekend: ['salaryRateWeekend', 0, 5],
-        inRateHoliday: ['salaryRateHoliday', 0, 5],
-      };
-      const entry = map[id];
-      if (!entry) return;
-      const [key, lo, hi] = entry;
-      const val = clamp(byId(id).value, lo, hi, Store.state.settings[key]);
+    applyField(key, el, lo, hi) {
+      const val = clamp(el.value, lo, hi, Store.state.settings[key]);
       if (Number(Store.state.settings[key]) === Number(val)) return;
-      Store.mutate((state) => { state.settings[key] = val; }, 'settings');
+      Store.state.settings[key] = val;
       Store.settingsDirty = true;
+      Store.rev += 1;
+      if (Store.state.settings.mode === 'salary') this.calcDerived();
+      Store.persistCache();
+      Render.now();
+    },
+
+    commit() {
+      this.calcDerived();
+      Store.persistCache();
+      Store.scheduleSave();
+      Render.now();
     },
 
     applyModeUI() {
@@ -3000,7 +3022,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       }, 'mode');
       Store.settingsDirty = true;
       this.loadInputs();
-      this.calcRates();
       this.applyModeUI();
     },
 
@@ -3019,93 +3040,68 @@ input:focus-visible,textarea:focus-visible{outline:none}
       byId('inRateWeekend').value = s.salaryRateWeekend;
       byId('inRateHoliday').value = s.salaryRateHoliday;
       this.applyModeUI();
-      this.calcRates();
+      this.calcDerived();
     },
 
-    /**
-     * 修复核心：
-     *   1. 小时工模式也把输入值写回 Store（原代码直接 return，是 ¥0 的根因）
-     *   2. 月薪制实时换算各倍数时薪并写回
-     */
-    calcRates() {
-      const hidden = UI.incomeHidden;
+    calcDerived() {
       const isSalary = Store.state.settings.mode === 'salary';
       const previews = {
         previewNormal: byId('previewNormal'), previewOt: byId('previewOt'),
         previewWeekend: byId('previewWeekend'), previewHoliday: byId('previewHoliday'),
       };
-
-      // ---------- 小时工模式 ----------
       if (!isSalary) {
-        const normal = clamp(byId('inNormal').value, 0, 10000, 0);
-        const holiday = clamp(byId('inHoliday').value, 0, 10000, 0);
-        Store.mutate((state) => {
-          state.settings.normalRate = normal;
-          state.settings.holidayRate = holiday;
-        }, 'rates');
-        Store.settingsDirty = true;
-        for (const el of Object.values(previews)) el.textContent = hidden ? MASK : '¥0/H';
+        for (const el of Object.values(previews)) el.textContent = UI.incomeHidden ? MASK : '¥0/H';
         return;
       }
-
-      // ---------- 月薪制模式 ----------
-      const base = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
-      const perf = clamp(byId('inPerformance').value, 0, 1000000, 0);
-      const bonus = clamp(byId('inBonus').value, 0, 1000000, 0);
-      const allow = clamp(byId('inAllowance').value, 0, 1000000, 0);
-      const days = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
-      const hours = clamp(byId('inSalaryHours').value, 1, 24, 8);
-      const rN = clamp(byId('inRateNormal').value, 0, 5, 1);
-      const rO = clamp(byId('inRateOt').value, 0, 5, 1.5);
-      const rW = clamp(byId('inRateWeekend').value, 0, 5, 2);
-      const rH = clamp(byId('inRateHoliday').value, 0, 5, 3);
-
-      const totalFixed = base + perf + bonus + allow;
-      const baseRate = totalFixed / days / hours;
-
-      const values = {
-        previewNormal: baseRate * rN, previewOt: baseRate * rO,
-        previewWeekend: baseRate * rW, previewHoliday: baseRate * rH,
+      const s = Store.state.settings;
+      const totalFixed = num(s.baseSalary) + num(s.performance) + num(s.bonus) + num(s.allowance);
+      const baseRate = totalFixed / Math.max(1, num(s.salaryDays)) / Math.max(1, num(s.salaryHours));
+      const rates = {
+        previewNormal: baseRate * num(s.salaryRateNormal),
+        previewOt: baseRate * num(s.salaryRateOt),
+        previewWeekend: baseRate * num(s.salaryRateWeekend),
+        previewHoliday: baseRate * num(s.salaryRateHoliday),
       };
-      for (const [id, value] of Object.entries(values)) {
-        previews[id].textContent = hidden ? MASK : '¥' + value.toFixed(2) + '/H';
+      for (const [id, v] of Object.entries(rates)) {
+        previews[id].textContent = UI.incomeHidden ? MASK : '¥' + v.toFixed(2) + '/H';
       }
-      Store.mutate((state) => {
-        const s = state.settings;
-        s.salaryNormal = Number((baseRate * rN).toFixed(2));
-        s.salaryOt = Number((baseRate * rO).toFixed(2));
-        s.salaryWeekend = Number((baseRate * rW).toFixed(2));
-        s.salaryHoliday = Number((baseRate * rH).toFixed(2));
-        s.salaryDays = days; s.salaryHours = hours;
-        s.salaryRateNormal = rN; s.salaryRateOt = rO;
-        s.salaryRateWeekend = rW; s.salaryRateHoliday = rH;
-        s.baseSalary = base; s.performance = perf; s.bonus = bonus; s.allowance = allow;
-      }, 'rates');
-      Store.settingsDirty = true;
+      s.salaryNormal = Number(rates.previewNormal.toFixed(2));
+      s.salaryOt = Number(rates.previewOt.toFixed(2));
+      s.salaryWeekend = Number(rates.previewWeekend.toFixed(2));
+      s.salaryHoliday = Number(rates.previewHoliday.toFixed(2));
     },
 
-    save() {
-      // 全量保存：不管是小时工还是月薪制，都显式写入并标记待同步
+    calcRates() { this.calcDerived(); },
+
+    async save() {
+      const grab = (id, lo, hi, fb) => clamp(byId(id).value, lo, hi, fb);
       Store.mutate((state) => {
-        const s = state.settings;
-        s.normalRate = clamp(byId('inNormal').value, 0, 10000, 0);
-        s.holidayRate = clamp(byId('inHoliday').value, 0, 10000, 0);
-        s.baseSalary = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
-        s.performance = clamp(byId('inPerformance').value, 0, 1000000, 0);
-        s.bonus = clamp(byId('inBonus').value, 0, 1000000, 0);
-        s.allowance = clamp(byId('inAllowance').value, 0, 1000000, 0);
-        s.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
-        s.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
-        s.salaryRateNormal = clamp(byId('inRateNormal').value, 0, 5, 1);
-        s.salaryRateOt = clamp(byId('inRateOt').value, 0, 5, 1.5);
-        s.salaryRateWeekend = clamp(byId('inRateWeekend').value, 0, 5, 2);
-        s.salaryRateHoliday = clamp(byId('inRateHoliday').value, 0, 5, 3);
+        state.settings.normalRate = grab('inNormal', 0, 10000, 0);
+        state.settings.holidayRate = grab('inHoliday', 0, 10000, 0);
+        state.settings.baseSalary = grab('inBaseSalary', 0, 1000000, 0);
+        state.settings.performance = grab('inPerformance', 0, 1000000, 0);
+        state.settings.bonus = grab('inBonus', 0, 1000000, 0);
+        state.settings.allowance = grab('inAllowance', 0, 1000000, 0);
+        state.settings.salaryDays = grab('inSalaryDays', 1, 31, 21.75);
+        state.settings.salaryHours = grab('inSalaryHours', 1, 24, 8);
+        state.settings.salaryRateNormal = grab('inRateNormal', 0, 5, 1);
+        state.settings.salaryRateOt = grab('inRateOt', 0, 5, 1.5);
+        state.settings.salaryRateWeekend = grab('inRateWeekend', 0, 5, 2);
+        state.settings.salaryRateHoliday = grab('inRateHoliday', 0, 5, 3);
       }, 'settings');
       Store.settingsDirty = true;
-      // 强制触发一次立即上传，让服务器立刻拿到最新 settings
-      Store.flush();
-      this.calcRates();
-      UI.toast('设置已保存并同步', 'success');
+      this.calcDerived();
+      Store.persistCache();
+
+      try { await Store.flush(); } catch (e) { /* Store 内部已处理 */ }
+
+      if (Store.syncStatus === 'error') {
+        UI.toast('本地已保存，云端同步失败，稍后自动重试', 'error');
+      } else if (Store.syncStatus === 'pending') {
+        UI.toast('设置已保存，正在同步…', 'info');
+      } else {
+        UI.toast('设置已保存并同步', 'success');
+      }
     },
 
     renderGoal(summary) {
@@ -3124,7 +3120,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       UI.toast('目标已更新为 ' + value + ' 小时', 'success');
     },
   };
-  
+
   /* ---------------------------- Calculator ---------------------------- */
   const Calculator = {
     _hide: false,
@@ -3630,6 +3626,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           state.settings = Object.assign({}, state.settings, incoming.settings);
         }
       }, 'import');
+      Store.lastSyncedAt = 0;      // 强制下次 flush 全量上传
       Store.settingsDirty = true;
       Settings.loadInputs();
       Calculator.syncInputs();
@@ -3853,7 +3850,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
         await Store.flush();
         const remote = await Api.getData(Session.username);
         Store.lastSyncedAt = Date.now();
-        Store.replace(remote);
+        // 用 reconcile 保留本地未提交的改动（打卡/设置）
+        Store.reconcile(remote, { prefsDirty: Store.settingsDirty === true });
         Render.all();
         if (remote._degraded) UI.syncBadge('pending', '离线数据');
         else { UI.syncBadge('synced', '已同步'); UI.toast('同步完成', 'success'); }
@@ -3953,7 +3951,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       });
       if (!ok) return;
       
-      // 修复：将所有现存记录标记为删除，确保同步到云端
+      // 将所有现存记录标记为删除，确保同步到云端
       const now = Date.now();
       const deleted = {};
       for (const key in Store.state.records) {
@@ -3972,7 +3970,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         state.insurance = fresh.insurance;
       }, 'clearAll');
       Store.settingsDirty = true;
-      Store.lastSyncedAt = 0; // 强制发送全量
+      Store.lastSyncedAt = 0;
       Settings.loadInputs();
       Calculator.syncInputs();
       byId('taxIncome').value = 0;
