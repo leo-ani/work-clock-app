@@ -730,7 +730,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           <button class="menu-item" type="button" id="clearAllBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🗑️</span>清空数据</span><span class="menu-right is-danger">⚠️ 危险 ▶</span></button>
           <button class="menu-item" type="button" id="deleteAccountBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">☠️</span>注销账号</span><span class="menu-right is-danger">永久删除 ▶</span></button>
           <button class="menu-item" type="button" id="logoutBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🚪</span>退出登录</span><span class="menu-right is-danger">退出 ▶</span></button>
-          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.2.1</span></div>
+          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.2.2</span></div>
         </div>
         <p class="profile-footer">数据保存到你的私有仓库，登录后自动同步<br>多设备共享 · 冲突时按修改时间保留较新记录<br><span style="color:var(--primary);font-weight:600">建议定期导出备份</span></p>
       </div>
@@ -838,26 +838,23 @@ input:focus-visible,textarea:focus-visible{outline:none}
 <script>
 "use strict";
 /* =============================================================================
- * 工时记录助手 v5.2.1
+ * 工时记录助手 v5.2.2
  *
- * 已整合修复：
- *   1. 弹窗移出 #app，z-index 1100（注册卡死修复）
- *   2. 登录错误 5 次锁定 60 秒 + 忘记密码提示
- *   3. 登录用户不存在返回 404 USER_NOT_FOUND
- *   4. 新增薪资构成：performance/bonus/allowance
- *   5. 新账号所有金额字段默认 0
- *   6. Settings 输入实时写入 Store（修复打卡后填薪资不计算）
- *   7. Settings.persistCache 移到 calcDerived 之后（避免中间态）
- *   8. Settings.commit 不再重复 rev+1
- *   9. Settings.save 三态提示（idle/pending/error）
- *   10. Store.flush reconcile 保留本地未提交 settings
- *   11. Store.replace 清理 settingsDirty
- *   12. ImportExport 导入后 lastSyncedAt=0（强制全量上传）
- *   13. App.manualSync 用 reconcile 保留本地未同步改动
+ * v5.2.2 修复：
+ *   - 导入数据被清零：导入时刷新记录 updatedAt 为当前时间，并清空本地墓碑，
+ *     避免服务器/本地旧墓碑时间戳更晚导致记录被误删
+ *
+ * 已保留 v5.2.1 及之前所有修复：
+ *   弹窗移出 #app；登录错误锁定 60 秒；用户名未注册 404；
+ *   新增 performance/bonus/allowance；默认值 0；
+ *   Settings 输入实时写入 Store；persistCache 时序；
+ *   commit 不重复 rev+1；save 三态提示；
+ *   flush reconcile 保留本地 settings；replace 清 settingsDirty；
+ *   导入 lastSyncedAt=0；manualSync 用 reconcile 保留本地改动
  * ========================================================================== */
 (function () {
   /* ---------------------------- 常量 ---------------------------- */
-  const APP_VERSION = '5.2.1';
+  const APP_VERSION = '5.2.2';
   const SCHEMA_VERSION = 3;
   const API_BASE = 'https://api.leoani.dpdns.org/';
   const USERNAME_RE = /^[A-Za-z0-9_-]{3,32}$/;
@@ -1785,7 +1782,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     replace(next) {
       this.state = normalizeUserData(next);
-      this.settingsDirty = false;   // 防御性清理：整体替换后不再认为有未提交 settings
+      this.settingsDirty = false;
       this.rev += 1;
       this.persistCache();
       this.emit('replace');
@@ -1858,7 +1855,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
           const res = await Api.setData(Session.username, payload, settingsTouched, { keepalive: opts.keepalive === true });
           const dropped = num(res.droppedCount);
           if (res.data) {
-            // 请求进行中用户又改了 settings → 保留本地，不被服务器旧值覆盖
             Store.reconcile(res.data, { prefsDirty: Store.settingsDirty === true });
           }
           this.lastSyncedAt = snapshotTime;
@@ -3610,15 +3606,27 @@ input:focus-visible,textarea:focus-visible{outline:none}
         });
         if (!ok) return;
       }
+
+      // v5.2.2 关键修复：刷新所有导入记录的 updatedAt 为当前时间，
+      // 避免服务器/本地旧墓碑时间戳更晚导致记录被误删
+      const baseTs = Date.now();
+      let offset = 0;
+      const refreshed = {};
+      for (const key in incoming.records) {
+        if (Object.prototype.hasOwnProperty.call(incoming.records, key)) {
+          refreshed[key] = Object.assign({}, incoming.records[key], { updatedAt: baseTs + (offset++) });
+        }
+      }
+
       Store.mutate((state) => {
         if (this.strategy === 'overwrite') {
-          state.records = incoming.records;
+          state.records = refreshed;
           state.settings = incoming.settings;
           state.goal = incoming.goal;
           state.deductions = incoming.deductions;
           state.insurance = incoming.insurance;
         } else {
-          const merged = mergeRecordSets(state.records, incoming.records);
+          const merged = mergeRecordSets(state.records, refreshed);
           state.records = merged.records;
           state.goal = incoming.goal;
           state.deductions = incoming.deductions;
@@ -3626,6 +3634,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
           state.settings = Object.assign({}, state.settings, incoming.settings);
         }
       }, 'import');
+
+      // 清空本地墓碑，避免旧删除标记在同步时影响导入的记录
+      Store.deleted = {};
+
       Store.lastSyncedAt = 0;      // 强制下次 flush 全量上传
       Store.settingsDirty = true;
       Settings.loadInputs();
@@ -3850,7 +3862,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         await Store.flush();
         const remote = await Api.getData(Session.username);
         Store.lastSyncedAt = Date.now();
-        // 用 reconcile 保留本地未提交的改动（打卡/设置）
         Store.reconcile(remote, { prefsDirty: Store.settingsDirty === true });
         Render.all();
         if (remote._degraded) UI.syncBadge('pending', '离线数据');
@@ -3951,7 +3962,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
       });
       if (!ok) return;
       
-      // 将所有现存记录标记为删除，确保同步到云端
       const now = Date.now();
       const deleted = {};
       for (const key in Store.state.records) {
