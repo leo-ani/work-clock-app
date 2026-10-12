@@ -730,7 +730,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           <button class="menu-item" type="button" id="clearAllBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🗑️</span>清空数据</span><span class="menu-right is-danger">⚠️ 危险 ▶</span></button>
           <button class="menu-item" type="button" id="deleteAccountBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">☠️</span>注销账号</span><span class="menu-right is-danger">永久删除 ▶</span></button>
           <button class="menu-item" type="button" id="logoutBtn"><span class="menu-left"><span class="menu-icon" aria-hidden="true">🚪</span>退出登录</span><span class="menu-right is-danger">退出 ▶</span></button>
-          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.2.2</span></div>
+          <div class="menu-item" style="cursor:default"><span class="menu-left"><span class="menu-icon" aria-hidden="true">📱</span>版本</span><span class="menu-right" id="versionText">v5.2.4</span></div>
         </div>
         <p class="profile-footer">数据保存到你的私有仓库，登录后自动同步<br>多设备共享 · 冲突时按修改时间保留较新记录<br><span style="color:var(--primary);font-weight:600">建议定期导出备份</span></p>
       </div>
@@ -838,23 +838,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
 <script>
 "use strict";
 /* =============================================================================
- * 工时记录助手 v5.2.2
+ * 工时记录助手 v5.2.4
  *
- * v5.2.2 修复：
- *   - 导入数据被清零：导入时刷新记录 updatedAt 为当前时间，并清空本地墓碑，
- *     避免服务器/本地旧墓碑时间戳更晚导致记录被误删
+ * v5.2.4 修复（按优先级）：
+ *   🔴 Store.flush 响应污染新账号：请求前快照用户名，响应后校验
+ *   🔴 滑动续期 token 写入错误账号：请求前快照账号与 token，响应后校验
+ *   🟡 Auth.init 锁定期后未重置计数：锁定期已过时清空 failCount
+ *   🟡 多 Tab 登录状态不同步：监听 storage 事件，检测到其他 Tab 切换账号时同步
  *
- * 已保留 v5.2.1 及之前所有修复：
- *   弹窗移出 #app；登录错误锁定 60 秒；用户名未注册 404；
- *   新增 performance/bonus/allowance；默认值 0；
- *   Settings 输入实时写入 Store；persistCache 时序；
- *   commit 不重复 rev+1；save 三态提示；
- *   flush reconcile 保留本地 settings；replace 清 settingsDirty；
- *   导入 lastSyncedAt=0；manualSync 用 reconcile 保留本地改动
+ * v5.2.3 已含修复：
+ *   manualSync 竞态、Settings.loadInputs 覆盖输入、
+ *   Calculator.incomeTouched 状态污染、anon 缓存残留、failCount 未持久化、
+ *   aggregateCache 缓存污染
  * ========================================================================== */
 (function () {
-  /* ---------------------------- 常量 ---------------------------- */
-  const APP_VERSION = '5.2.2';
+  const APP_VERSION = '5.2.4';
   const SCHEMA_VERSION = 3;
   const API_BASE = 'https://api.leoani.dpdns.org/';
   const USERNAME_RE = /^[A-Za-z0-9_-]{3,32}$/;
@@ -1258,7 +1256,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
   const aggregateCache = new Map();
   function aggregateMonth(year, month, records, settings, holiday, rev, goal) {
-    const cacheKey = year + '-' + month + '|' + rev;
+    const cacheKey = (Session.username || 'anon') + '|' + year + '-' + month + '|' + rev;
     const hit = aggregateCache.get(cacheKey);
     if (hit) return hit;
     const income = createIncomeEngine(settings, holiday);
@@ -1570,7 +1568,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
       throw lastError;
     },
 
+    // 🔴 v5.2.4 修复：请求前快照账号和 token，防止滑动续期写入错误账号
     async _once(action, payload, opts) {
+      const usernameAtRequest = Session.username;
+      const tokenAtRequest = this.token;
       const controller = typeof AbortController === 'function' ? new AbortController() : null;
       let timedOut = false;
       const timeoutMs = action === 'register' ? REQUEST_TIMEOUT_REGISTER_MS : REQUEST_TIMEOUT_MS;
@@ -1593,6 +1594,19 @@ input:focus-visible,textarea:focus-visible{outline:none}
         throw ApiError('无法连接服务器，请检查网络后重试', 'NETWORK', 0);
       } finally {
         if (timer) clearTimeout(timer);
+      }
+
+      // 滑动续期：仅在账号和 token 都未变化时才写入，避免污染新账号
+      const refreshToken = res.headers.get('X-Refresh-Token');
+      if (refreshToken
+          && Session.username === usernameAtRequest
+          && this.token === tokenAtRequest
+          && refreshToken !== tokenAtRequest) {
+        try {
+          Session.set(Session.username, refreshToken);
+        } catch (e) {
+          console.warn('[auth] refresh failed', e);
+        }
       }
 
       const text = await res.text();
@@ -1776,6 +1790,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.state = next;
       this.rev += 1;
       this.persistCache();
+      aggregateCache.clear();
       this.emit('remote');
       return merged.keptLocal;
     },
@@ -1785,6 +1800,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.settingsDirty = false;
       this.rev += 1;
       this.persistCache();
+      aggregateCache.clear();
       this.emit('replace');
     },
 
@@ -1838,6 +1854,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       };
     },
 
+    // 🔴 v5.2.4 修复：请求前快照用户名，响应后校验，防止污染新账号
     async flush(options) {
       const opts = options || {};
       clearTimeout(this.saveTimer);
@@ -1845,6 +1862,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       if (!Session.token) return null;
 
       const snapshotTime = Date.now();
+      const usernameAtFlush = Session.username;
       const payload = this.buildPayload();
       const settingsTouched = this.settingsDirty;
       this.settingsDirty = false;
@@ -1852,7 +1870,13 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.setStatus('saving');
       this.inflight = (async () => {
         try {
-          const res = await Api.setData(Session.username, payload, settingsTouched, { keepalive: opts.keepalive === true });
+          const res = await Api.setData(usernameAtFlush, payload, settingsTouched, { keepalive: opts.keepalive === true });
+
+          // 账号已切换时丢弃响应，避免污染新账号
+          if (Session.username !== usernameAtFlush) {
+            return null;
+          }
+
           const dropped = num(res.droppedCount);
           if (res.data) {
             Store.reconcile(res.data, { prefsDirty: Store.settingsDirty === true });
@@ -1869,6 +1893,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
           this.setStatus('idle');
           return res;
         } catch (err) {
+          if (Session.username !== usernameAtFlush) return null;
           this.lastError = err;
           if (err && err.code === 'UNAUTHORIZED') {
             this.setStatus('error');
@@ -3023,18 +3048,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     loadInputs() {
       const s = Store.state.settings;
-      byId('inNormal').value = s.normalRate;
-      byId('inHoliday').value = s.holidayRate;
-      byId('inBaseSalary').value = s.baseSalary || '';
-      byId('inPerformance').value = s.performance || '';
-      byId('inBonus').value = s.bonus || '';
-      byId('inAllowance').value = s.allowance || '';
-      byId('inSalaryDays').value = s.salaryDays;
-      byId('inSalaryHours').value = s.salaryHours;
-      byId('inRateNormal').value = s.salaryRateNormal;
-      byId('inRateOt').value = s.salaryRateOt;
-      byId('inRateWeekend').value = s.salaryRateWeekend;
-      byId('inRateHoliday').value = s.salaryRateHoliday;
+      const setValue = (id, val) => {
+        const el = byId(id);
+        if (el && document.activeElement !== el) el.value = val;
+      };
+      setValue('inNormal', s.normalRate);
+      setValue('inHoliday', s.holidayRate);
+      setValue('inBaseSalary', s.baseSalary || '');
+      setValue('inPerformance', s.performance || '');
+      setValue('inBonus', s.bonus || '');
+      setValue('inAllowance', s.allowance || '');
+      setValue('inSalaryDays', s.salaryDays);
+      setValue('inSalaryHours', s.salaryHours);
+      setValue('inRateNormal', s.salaryRateNormal);
+      setValue('inRateOt', s.salaryRateOt);
+      setValue('inRateWeekend', s.salaryRateWeekend);
+      setValue('inRateHoliday', s.salaryRateHoliday);
       this.applyModeUI();
       this.calcDerived();
     },
@@ -3120,6 +3149,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
   /* ---------------------------- Calculator ---------------------------- */
   const Calculator = {
     _hide: false,
+    incomeTouched: false,
     init() {
       document.querySelectorAll('.calc-tab').forEach((tab) => {
         tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
@@ -3607,8 +3637,6 @@ input:focus-visible,textarea:focus-visible{outline:none}
         if (!ok) return;
       }
 
-      // v5.2.2 关键修复：刷新所有导入记录的 updatedAt 为当前时间，
-      // 避免服务器/本地旧墓碑时间戳更晚导致记录被误删
       const baseTs = Date.now();
       let offset = 0;
       const refreshed = {};
@@ -3635,10 +3663,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
         }
       }, 'import');
 
-      // 清空本地墓碑，避免旧删除标记在同步时影响导入的记录
       Store.deleted = {};
-
-      Store.lastSyncedAt = 0;      // 强制下次 flush 全量上传
+      Store.lastSyncedAt = 0;
       Store.settingsDirty = true;
       Settings.loadInputs();
       Calculator.syncInputs();
@@ -3723,6 +3749,39 @@ input:focus-visible,textarea:focus-visible{outline:none}
       });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden' && Session.token) Store.flush({ keepalive: true });
+      });
+
+      // 🟡 v5.2.4 修复：多 Tab 场景下同步登录状态
+      window.addEventListener('storage', (e) => {
+        if (e.key !== SESSION_KEY && e.key !== USER_KEY) return;
+        const newUser = safeGet(USER_KEY);
+        const newToken = safeGet(SESSION_KEY);
+        // 状态未变，忽略（storage 事件也会因为同值写入触发）
+        if (newUser === Session.username && newToken === Session.token) return;
+
+        if (newToken && newUser) {
+          // 其他 Tab 登录了新账号：重置本地状态并重新加载
+          Session.set(newUser, newToken);
+          UI.toast('检测到其他标签页登录了新账号，正在切换…', 'info');
+          Store.clearCache();
+          Store.state = defaultUserData();
+          Store.rev = 0;
+          Store.deleted = {};
+          Store.lastSyncedAt = 0;
+          Store.settingsDirty = false;
+          Store.syncStatus = 'idle';
+          Store.retryIndex = 0;
+          Store.dirtyAgain = false;
+          Store.inflight = null;
+          clearTimeout(Store.saveTimer);
+          Calculator.incomeTouched = false;
+          aggregateCache.clear();
+          App.start();
+        } else {
+          // 其他 Tab 登出了：本 Tab 也登出
+          UI.toast('其他标签页已退出登录', 'info');
+          App.forceLogout('');
+        }
       });
 
       ModalRig.init();
@@ -3858,15 +3917,18 @@ input:focus-visible,textarea:focus-visible{outline:none}
     async manualSync() {
       if (!Session.token) return;
       if (!navigator.onLine) { UI.toast('当前处于离线状态', 'info'); return; }
+      const usernameAtCall = Session.username;
       try {
         await Store.flush();
-        const remote = await Api.getData(Session.username);
+        const remote = await Api.getData(usernameAtCall);
+        if (Session.username !== usernameAtCall) return;
         Store.lastSyncedAt = Date.now();
         Store.reconcile(remote, { prefsDirty: Store.settingsDirty === true });
         Render.all();
         if (remote._degraded) UI.syncBadge('pending', '离线数据');
         else { UI.syncBadge('synced', '已同步'); UI.toast('同步完成', 'success'); }
       } catch (err) {
+        if (Session.username !== usernameAtCall) return;
         if (err && err.code === 'UNAUTHORIZED') { this.forceLogout('登录已失效，请重新登录'); return; }
         UI.syncBadge('error', '同步失败');
         UI.toast('同步失败：' + ((err && err.message) || '未知错误'), 'error');
@@ -3911,6 +3973,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
         return;
       }
       Store.clearCache();
+      safeRemove(CACHE_PREFIX + 'anon');
       Session.clear();
       Api.token = null;
       Store.state = defaultUserData();
@@ -3923,6 +3986,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       Store.dirtyAgain = false;
       Store.inflight = null;
       clearTimeout(Store.saveTimer);
+      Calculator.incomeTouched = false;
+      aggregateCache.clear();
       byId('password').value = '';
       byId('confirmPassword').value = '';
       this.showAuth();
@@ -3932,6 +3997,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
     forceLogout(message) {
       Store.clearCache();
+      safeRemove(CACHE_PREFIX + 'anon');
       Session.clear();
       Api.token = null;
       Store.state = defaultUserData();
@@ -3944,6 +4010,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
       Store.dirtyAgain = false;
       Store.inflight = null;
       clearTimeout(Store.saveTimer);
+      Calculator.incomeTouched = false;
+      aggregateCache.clear();
       byId('password').value = '';
       byId('confirmPassword').value = '';
       this.showAuth();
@@ -3996,14 +4064,21 @@ input:focus-visible,textarea:focus-visible{outline:none}
     lockUntil: 0,
     lockTimer: null,
 
+    // 🟡 v5.2.4 修复：锁定期结束后重置 failCount
     init() {
       const username = safeGet('wc_last_user');
       if (username) byId('username').value = username;
       const lockState = safeJson(LOCK_KEY);
       if (lockState && lockState.lockUntil > Date.now()) {
+        // 锁定期未结束：恢复状态并启动倒计时
         this.failCount = lockState.failCount || 0;
         this.lockUntil = lockState.lockUntil;
         this.startLockoutCountdown();
+      } else if (lockState) {
+        // 锁定期已过：重置计数，用户重新获得完整 5 次机会
+        this.failCount = 0;
+        this.lockUntil = 0;
+        safeRemove(LOCK_KEY);
       }
     },
 
@@ -4160,6 +4235,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
       this.failCount = 0;
       this.lockUntil = 0;
       safeRemove(LOCK_KEY);
+      Calculator.incomeTouched = false;
       App.currentUsernameAtBoot = username;
       await App.start();
     },
@@ -4209,6 +4285,9 @@ input:focus-visible,textarea:focus-visible{outline:none}
 
       if (code === 'BAD_CREDENTIALS') {
         this.failCount++;
+        // 每次失败都持久化，防止刷新绕过计数
+        safeSet(LOCK_KEY, JSON.stringify({ lockUntil: this.lockUntil, failCount: this.failCount }));
+        
         if (this.failCount >= 5) {
           this.lockUntil = Date.now() + 60000;
           safeSet(LOCK_KEY, JSON.stringify({ lockUntil: this.lockUntil, failCount: this.failCount }));
