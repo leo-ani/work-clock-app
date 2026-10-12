@@ -3004,7 +3004,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
       const goalInput = byId('goalInput');
       if (goalInput) {
         goalInput.addEventListener('input', () => sanitizeNumericInput(goalInput));
-        goalInput.addEventListener('change', () => this.saveGoal());
+        // 改为监听回车键，避免点击按钮时重复触发
+        goalInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            this.saveGoal();
+            goalInput.blur();
+          }
+        });
       }
     },
 
@@ -3138,8 +3145,14 @@ input:focus-visible,textarea:focus-visible{outline:none}
     },
 
     saveGoal() {
-      const value = clamp(byId('goalInput').value, 0, 1000, NaN);
+      const input = byId('goalInput');
+      const value = clamp(input.value, 0, 1000, NaN);
       if (!Number.isFinite(value)) { UI.toast('请输入有效数字', 'error'); return; }
+      // 如果目标值没变化，直接忽略，防止重复触发
+      if (Number(Store.state.goal) === Number(value)) {
+        input.blur();
+        return;
+      }
       Store.mutate((state) => { state.goal = value; }, 'goal');
       Store.settingsDirty = true;
       UI.toast('目标已更新为 ' + value + ' 小时', 'success');
