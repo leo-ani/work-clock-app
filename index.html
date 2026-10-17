@@ -14,7 +14,7 @@
   --sys-border:rgba(60,60,67,0.12); --brand:#2E7D4F; --brand-soft:#E8F3EE; --brand-graphic:#34C759;
   --radius-l:20px; --radius-m:14px; --radius-s:8px;
   --safe-top:env(safe-area-inset-top,44px); --safe-bottom:env(safe-area-inset-bottom,20px);
-  --ease-spring:cubic-bezier(0.34,1.56,0.64,1); --ease-out:cubic-bezier(0.22,1,0.36,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
 }
 @media (prefers-color-scheme:dark){
   :root{
@@ -29,7 +29,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 button,input,select,textarea{font:inherit;color:inherit;}
 button{background:none;border:none;cursor:pointer;}
 .hidden{display:none!important;}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 #app{max-width:430px;margin:0 auto;width:100%;height:100dvh;display:none;flex-direction:column;overflow:hidden;background:var(--sys-bg);position:relative;}
 
 /* 滚动区与页面 */
@@ -95,7 +94,6 @@ button{background:none;border:none;cursor:pointer;}
 .btn-primary:active{opacity:0.7;}
 .btn-secondary{flex:1;background:var(--brand-soft);color:var(--brand);border-radius:var(--radius-m);padding:14px;font-size:15px;font-weight:700;display:flex;justify-content:center;align-items:center;gap:6px;cursor:pointer;}
 .btn-secondary:active{opacity:0.7;}
-.btn-danger{background:var(--sys-red);color:#fff;}
 
 /* 详情 */
 .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
@@ -151,7 +149,7 @@ button{background:none;border:none;cursor:pointer;}
 
 /* 计算器 */
 .calc-tabs{display:flex;background:var(--sys-surface);padding:0 16px;gap:8px;position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--sys-border);}
-.calc-tab{flex:1;padding:12px 0;font-size:14px;font-weight:600;color:var(--sys-text-sec);border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;cursor:pointer;}
+.calc-tab{flex:1;padding:12px 0;font-size:14px;font-weight:600;color:var(--sys-text-sec);border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;cursor:pointer;text-align:center;}
 .calc-tab.active{color:var(--sys-blue);border-bottom-color:var(--sys-blue);}
 .calc-panel{display:none;padding:16px;}
 .calc-panel.active{display:block;}
@@ -159,7 +157,7 @@ button{background:none;border:none;cursor:pointer;}
 .calc-expr{font-size:13px;font-weight:500;color:var(--sys-text-sec);}
 .calc-result{font-size:28px;font-weight:800;color:var(--sys-text);}
 .calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.calc-key{min-height:52px;border-radius:var(--radius-m);border:0.5px solid var(--sys-border);background:var(--sys-surface);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+.calc-key{min-height:52px;border-radius:var(--radius-m);border:0.5px solid var(--sys-border);background:var(--sys-surface);font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .calc-key:active{background:var(--sys-gray);}
 .calc-key.op{color:var(--sys-blue);background:var(--brand-soft);border:none;}
 .calc-key.eq{background:var(--sys-blue);color:#fff;border:none;}
@@ -186,7 +184,7 @@ button{background:none;border:none;cursor:pointer;}
 
 /* Auth */
 .auth-page{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#4A7D6A 0%,#2F5445 100%);padding:24px;}
-.auth-box{background:var(--sys-surface);color:var(--sys-text);border-radius:var(--radius-l);padding:34px 26px;width:100%;max-width:380px;box-shadow:var(--shadow-lg);}
+.auth-box{background:var(--sys-surface);color:var(--sys-text);border-radius:var(--radius-l);padding:34px 26px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,0.2);}
 .auth-title{text-align:center;margin-bottom:6px;color:var(--brand);font-size:23px;font-weight:800;}
 .auth-subtitle{text-align:center;color:var(--sys-text-sec);font-size:13px;margin-bottom:16px;}
 .auth-btn{width:100%;padding:14px;border-radius:var(--radius-m);font-size:16px;font-weight:700;background:var(--brand);color:#fff;position:relative;cursor:pointer;}
@@ -432,8 +430,8 @@ button{background:none;border:none;cursor:pointer;}
     <div class="segmented-control" id="shiftRow">
       <button data-shift="day" class="active">白班</button>
       <button data-shift="early">早班</button>
-      <button data-shift="mid" class="hidden">中班</button>
-      <button data-shift="night" class="hidden">晚班</button>
+      <button data-shift="mid">中班</button>
+      <button data-shift="night">晚班</button>
     </div>
     <div class="hours-control">
       <span style="font-weight:600;">正班工时</span>
@@ -514,9 +512,7 @@ const API_BASE = 'https://api.leoani.dpdns.org/';
 const SESSION_KEY = 'wc_session';
 const USER_KEY = 'wc_username';
 const CACHE_PREFIX = 'wc_cache_';
-const HIDE_INCOME_KEY = 'wc_hide_income';
 const HOLIDAY_KEY = 'wc_holidays_v2';
-const LUNAR_KEY = 'wc_lunar_v2';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SHIFTS = ['day', 'early', 'mid', 'night'];
@@ -525,7 +521,6 @@ const COMPENSATIONS = ['pay', 'timeoff'];
 const HOUR_PRESET = { day: 8, early: 6, mid: 7, night: 7 };
 const MAX_DAY_HOURS = 24;
 const MAX_NOTE_LEN = 500;
-const THRESHOLD = 5000;
 
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 const clamp = (v, lo, hi, fb) => { const n = Number(v); if (!Number.isFinite(n)) return fb === undefined ? lo : fb; return Math.min(hi, Math.max(lo, n)); };
@@ -545,8 +540,7 @@ function safeJson(k){const r=safeGet(k);if(!r)return null;try{return JSON.parse(
 
 const fmt = {
   compact(v,o){o=o||{};if(o.hidden)return '****';const n=num(v),abs=Math.abs(n),d=o.digits===undefined?1:o.digits;if(abs>=1e8)return '¥'+(n/1e8).toFixed(2).replace(/\.?0+$/,'')+'亿';if(abs>=1e4)return '¥'+(n/1e4).toFixed(d).replace(/\.0+$/,'')+'万';return '¥'+(Number.isInteger(n)?n:n.toFixed(d));},
-  money(v,o){o=o||{};return o.hidden?'****':'¥'+num(v).toFixed(2);},
-  group(v){return num(v).toFixed(1).replace(/\.0$/,'');}
+  money(v,o){o=o||{};return o.hidden?'****':'¥'+num(v).toFixed(2);}
 };
 
 function sanitizeNumericInput(el) {
@@ -559,7 +553,7 @@ function sanitizeNumericInput(el) {
   if (out !== el.value) { el.value = out; if (typeof el.setSelectionRange === 'function') { try { el.setSelectionRange(out.length, out.length); } catch (e) {} } }
 }
 
-/* ---------------- 农历 & 节假日 ---------------- */
+/* 农历推算引擎 */
 const LUNAR_INFO = [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,0x14b60];
 const LUNAR_MONTHS = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
 const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
@@ -634,7 +628,7 @@ const Holiday = {
   name(key) { this.ensure(); return this.holidays[key] || null; }
 };
 
-/* ---------------- 业务引擎 ---------------- */
+/* 业务引擎 */
 function createIncomeEngine(settings) {
   const mode = settings.mode === 'salary' ? 'salary' : 'hourly';
   const totalFixed = num(settings.baseSalary) + num(settings.performance);
@@ -687,7 +681,7 @@ function normalizeUserData(raw) {
   return { schemaVersion: SCHEMA_VERSION, records, settings: Object.assign(defaultSettings(), src.settings), goal: clamp(src.goal, 0, 1000, 0), deleted: src.deleted && typeof src.deleted === 'object' ? src.deleted : {} };
 }
 
-/* ---------------- 网络与加密 API ---------------- */
+/* 网络与加密 */
 function ApiError(msg, code, status) { const err = new Error(msg); err.code = code; err.status = status; return err; }
 const Api = {
   token: null,
@@ -743,17 +737,11 @@ const Api = {
   setData(username, data, settingsTouched) { return this.call('setData', { username, data, settingsTouched }); },
   deleteUser(username) { return this.call('deleteUser', { username }); }
 };
-</script>
 
-
-<script>
-/* ---------------- 核心 Store ---------------- */
+/* Store */
 const Store = {
   state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null,
-  mutate(fn) {
-    if (fn(this.state) === false) return;
-    this.rev++; this.persist(); renderAll(); this.scheduleSave();
-  },
+  mutate(fn) { if (fn(this.state) === false) return; this.rev++; this.persist(); renderAll(); this.scheduleSave(); },
   reconcile(remote, opts = {}) {
     const next = normalizeUserData(remote);
     const serverDeleted = remote.deleted || {};
@@ -780,11 +768,7 @@ const Store = {
     if (parsed && parsed.state) { this.state = normalizeUserData(parsed.state); this.deleted = parsed.deleted || {}; this.rev++; return true; }
     return false;
   },
-  scheduleSave() {
-    clearTimeout(this.saveTimer);
-    this.saveTimer = setTimeout(() => this.flush(), 800);
-    this.syncStatus = 'pending'; updateSyncUI();
-  },
+  scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 800); this.syncStatus = 'pending'; updateSyncUI(); },
   async flush() {
     if (!Session.token || this.inflight) return;
     this.syncStatus = 'saving'; updateSyncUI();
@@ -803,9 +787,7 @@ const Store = {
       if (e.code === 'UNAUTHORIZED') return forceLogout();
       this.syncStatus = e.code === 'TIMEOUT' || e.code === 'NETWORK' ? 'pending' : 'error';
       if (this.syncStatus === 'pending') this.scheduleSave();
-    } finally {
-      this.inflight = null; updateSyncUI();
-    }
+    } finally { this.inflight = null; updateSyncUI(); }
   }
 };
 
@@ -823,7 +805,7 @@ function updateSyncUI() {
   txt.textContent = { idle: '已同步', synced: '已同步', saving: '同步中', pending: '待上传', error: '失败' }[Store.syncStatus] || '已连接';
 }
 
-/* ---------------- UI 渲染与日历 ---------------- */
+/* UI 渲染 */
 let currentDate = new Date();
 let selectedDate = formatDateKey(new Date());
 let draft = {};
@@ -941,7 +923,7 @@ function renderAll() {
   }
 }
 
-/* ---------------- 页面 Tab 导航 ---------------- */
+/* 页面 Tab 导航 */
 document.querySelectorAll('.tab-item').forEach(el => {
   el.onclick = () => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -956,7 +938,7 @@ document.querySelectorAll('.tab-item').forEach(el => {
 byId('prevMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderAll(); };
 byId('nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderAll(); };
 
-/* ---------------- 打卡弹窗与输入 ---------------- */
+/* 打卡弹窗 */
 byId('addRecordBtn').onclick = () => {
   const rec = Store.state.records[selectedDate];
   draft = rec ? { ...rec } : { shift: 'day', normal: 8, ot: 0, leave: 'none', compensation: 'pay', note: '' };
@@ -1000,7 +982,7 @@ byId('shiftRow').onclick = e => { if(e.target.dataset.shift) { draft.shift = e.t
 byId('compensationRow').onclick = e => { if(e.target.dataset.comp) { draft.compensation = e.target.dataset.comp; syncClockUI(); } };
 byId('leaveRow').onclick = e => { if(e.target.dataset.leave) { draft.leave = e.target.dataset.leave; syncClockUI(); } };
 
-/* ---------------- 设置项同步 ---------------- */
+/* 设置项 */
 function syncSettingsUI() {
   const s = Store.state.settings;
   document.querySelectorAll('#modeSwitch button').forEach(b => b.classList.toggle('active', b.dataset.mode === s.mode));
@@ -1037,7 +1019,7 @@ byId('saveSettingsBtn').onclick = () => {
   toast('设置已保存');
 };
 
-/* ---------------- 计算器模块 ---------------- */
+/* 计算器 */
 document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
   document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
@@ -1111,7 +1093,7 @@ byId('calcKeys').onclick = e => {
 };
 calcTax(); calcSalary();
 
-/* ---------------- 导入导出模块 ---------------- */
+/* 导入导出 */
 byId('openExportBtn').onclick = () => byId('exportModal').classList.add('show');
 byId('openImportBtn').onclick = () => byId('importModal').classList.add('show');
 
@@ -1161,7 +1143,7 @@ byId('deleteAccountBtn').onclick = async () => {
   try { await Api.deleteUser(Session.username); forceLogout(); toast('账号已注销'); } catch(e) { toast('注销失败：' + e.message); }
 };
 
-/* ---------------- Toast 与鉴权生命周期 ---------------- */
+/* Toast 与鉴权 */
 function toast(msg) {
   const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
   byId('toastWrap').appendChild(el);
