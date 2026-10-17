@@ -138,7 +138,7 @@ button{background:none;border:none;cursor:pointer;}
 .hours-donut-total{font-size:28px;font-weight:800;}
 .hours-donut-label{font-size:11px;color:var(--sys-text-sec);font-weight:600;margin-top:4px;}
 
-.hours-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-top:12px;}
+.hours-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;margin-top:12px;}
 .hours-list-row{display:flex;flex-direction:column;align-items:center;padding:12px 8px;background:var(--sys-surface);border-radius:var(--radius-m);border:1px solid var(--sys-border);gap:4px;}
 .hours-list-name{font-size:12px;color:var(--sys-text-sec);font-weight:600;display:flex;align-items:center;gap:4px;}
 .lg-dot{width:6px;height:6px;border-radius:50%;}
@@ -300,7 +300,8 @@ button{background:none;border:none;cursor:pointer;}
         <div class="stat-box"><div class="stat-box-num" id="boxHours">0</div><div class="stat-box-lbl">总工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxNormal">0</div><div class="stat-box-lbl">正班工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxOt">0</div><div class="stat-box-lbl">加班工时</div></div>
-        <div class="stat-box" style="grid-column:1/-1;"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额(本月)</div></div>
+        <!-- 调休余额框，时薪制时会被 JS 隐藏 -->
+        <div class="stat-box" id="timeoffBox" style="grid-column:1/-1;"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额(本月)</div></div>
       </div>
       <div class="card">
         <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;">工时分布</h2>
@@ -318,6 +319,9 @@ button{background:none;border:none;cursor:pointer;}
       
       <div class="calc-panel active" id="calcTax">
         <div class="form-group"><label>税前月收入 (元)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal"></div></div>
+        
+        <div class="form-group"><label>专项附加扣除 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxSpecial" value="0" step="100" min="0" max="100000" inputmode="decimal"></div></div>
+
         <div class="form-group"><label>五险一金比例 (%)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div class="input-wrap"><span class="prefix">养老</span><input type="number" id="taxPension" value="0" max="20" style="text-align:right"><span class="suffix">%</span></div>
@@ -329,6 +333,7 @@ button{background:none;border:none;cursor:pointer;}
         <div class="card" style="margin:0 0 16px;padding:16px;background:var(--sys-bg);box-shadow:none;border:0.5px solid var(--sys-border);">
           <div class="detail-row"><span class="detail-label">税前收入</span><span class="detail-value" id="dtGross">¥0</span></div>
           <div class="detail-row"><span class="detail-label">五险一金</span><span class="detail-value" id="dtInsurance">¥0</span></div>
+          <div class="detail-row"><span class="detail-label">起征点 + 专项扣除</span><span class="detail-value" id="dtSpecial">¥5000</span></div>
           <div class="detail-row"><span class="detail-label">应纳税所得额</span><span class="detail-value" id="dtTaxable">¥0</span></div>
           <div class="detail-row"><span class="detail-label">适用税率</span><span class="detail-value" id="dtRate">3%</span></div>
           <div class="detail-row"><span class="detail-label">应缴个税</span><span class="detail-value" id="dtTax" style="color:var(--sys-red)">¥0</span></div>
@@ -904,7 +909,7 @@ function getAutoType(key) {
 
 function aggregateMonth(year, month, records, settings) {
   let totalDays = 0, totalHours = 0, totalIncome = 0, timeoffEarned = 0, timeoffUsed = 0;
-  const cat = { normal: 0, ot: 0, weekend: 0 };
+  const cat = { normal: 0, ot: 0 };
   const engine = createIncomeEngine(settings);
 
   for (const key in records) {
@@ -920,8 +925,13 @@ function aggregateMonth(year, month, records, settings) {
     totalIncome += engine.of(rec, d);
 
     const makeup = Holiday.isWorkday(key);
-    if ((isWeekend(d) && !makeup) || rec.type === 'weekend' || Holiday.isHoliday(key)) cat.weekend += num(rec.normal) + num(rec.ot);
-    else { cat.normal += num(rec.normal); cat.ot += num(rec.ot); }
+    // 统一归类：所有周末、节假日、补班之外产生的非正班工时，统统算作加班
+    if ((isWeekend(d) && !makeup) || rec.type === 'weekend' || Holiday.isHoliday(key) || rec.type === 'holiday') {
+      cat.ot += num(rec.normal) + num(rec.ot);
+    } else {
+      cat.normal += num(rec.normal);
+      cat.ot += num(rec.ot);
+    }
   }
   if (settings.mode === 'salary' && settings.salaryFixedMode === 'monthly' && totalDays > 0) totalIncome += num(settings.baseSalary) + num(settings.performance);
   return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarned - timeoffUsed };
@@ -1009,32 +1019,31 @@ function renderAll() {
     byId('boxHours').textContent = round1(sum.totalHours);
     byId('boxNormal').textContent = round1(sum.cat.normal);
     byId('boxOt').textContent = round1(sum.cat.ot);
+    
+    // 月薪制才显示调休余额
+    const isSalaryMode = s.settings.mode === 'salary';
+    byId('timeoffBox').style.display = isSalaryMode ? 'block' : 'none';
     byId('boxTimeoff').textContent = round1(sum.timeoffBalance);
     
-    const totH = sum.cat.normal + sum.cat.ot + sum.cat.weekend;
+    const totH = sum.cat.normal + sum.cat.ot;
     if (totH > 0) {
-      const p1 = (sum.cat.normal/totH)*100, p2 = p1 + (sum.cat.ot/totH)*100;
-      
-      const buildRow = (name, hours, percent, color) => {
-        if (hours === 0) return '';
-        return `
-          <div class="hours-list-row">
-            <div class="hours-list-name"><div class="lg-dot" style="background:${color}"></div>${name}</div>
-            <div class="hours-list-hours">${round1(hours)}<span>H</span></div>
-            <div class="hours-list-pct">${percent.toFixed(1)}%</div>
-          </div>
-        `;
-      };
-
+      const p1 = (sum.cat.normal/totH)*100;
       byId('hoursPie').innerHTML = `
         <div class="hours-dist">
-          <div class="hours-donut" style="background:conic-gradient(var(--brand) 0% ${p1}%, var(--sys-orange) ${p1}% ${p2}%, var(--sys-blue) ${p2}% 100%);">
+          <div class="hours-donut" style="background:conic-gradient(var(--brand) 0% ${p1}%, var(--sys-orange) ${p1}% 100%);">
             <div class="hours-donut-center"><div class="hours-donut-total">${round1(sum.totalHours)}</div><div class="hours-donut-label">HOURS</div></div>
           </div>
           <div class="hours-list">
-            ${buildRow('正班', sum.cat.normal, (sum.cat.normal/totH)*100, 'var(--brand)')}
-            ${buildRow('加班', sum.cat.ot, (sum.cat.ot/totH)*100, 'var(--sys-orange)')}
-            ${buildRow('周末', sum.cat.weekend, (sum.cat.weekend/totH)*100, 'var(--sys-blue)')}
+            <div class="hours-list-row">
+              <div class="hours-list-name"><div class="lg-dot" style="background:var(--brand)"></div>正班</div>
+              <div class="hours-list-hours">${round1(sum.cat.normal)}<span>H</span></div>
+              <div class="hours-list-pct">${p1.toFixed(1)}%</div>
+            </div>
+            <div class="hours-list-row">
+              <div class="hours-list-name"><div class="lg-dot" style="background:var(--sys-orange)"></div>加班</div>
+              <div class="hours-list-hours">${round1(sum.cat.ot)}<span>H</span></div>
+              <div class="hours-list-pct">${(100-p1).toFixed(1)}%</div>
+            </div>
           </div>
         </div>`;
     } else byId('hoursPie').innerHTML = `<div style="text-align:center;padding:40px;color:var(--sys-text-sec)">暂无工时</div>`;
@@ -1205,7 +1214,7 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
   tab.classList.add('active');
   byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
 });
-['taxIncome','taxPension','taxMedical','taxUnemployment','taxFund'].forEach(id => {
+['taxIncome','taxSpecial','taxPension','taxMedical','taxUnemployment','taxFund'].forEach(id => {
   byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcTax(); });
 });
 ['salaryRate','salaryHours','salaryDays'].forEach(id => {
@@ -1214,9 +1223,12 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
 
 function calcTax() {
   const gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
+  const special = clamp(byId('taxSpecial').value, 0, 100000, 0);
   const insRate = (clamp(byId('taxPension').value, 0, 20, 0) + clamp(byId('taxMedical').value, 0, 10, 0) + clamp(byId('taxUnemployment').value, 0, 5, 0) + clamp(byId('taxFund').value, 0, 12, 0)) / 100;
   const insTotal = gross * insRate;
-  const taxable = Math.max(0, gross - insTotal - 5000);
+  // 加入专项附加扣除
+  const taxable = Math.max(0, gross - insTotal - special - 5000);
+  
   let rate = 0.03, quick = 0;
   if (taxable > 80000) { rate = 0.45; quick = 15160; }
   else if (taxable > 55000) { rate = 0.35; quick = 7160; }
@@ -1225,8 +1237,10 @@ function calcTax() {
   else if (taxable > 12000) { rate = 0.20; quick = 1410; }
   else if (taxable > 3000) { rate = 0.10; quick = 210; }
   const tax = Math.max(0, taxable * rate - quick);
+  
   byId('dtGross').textContent = '¥' + gross.toFixed(2);
   byId('dtInsurance').textContent = '¥' + insTotal.toFixed(2);
+  byId('dtSpecial').textContent = '¥' + (5000 + special).toFixed(2);
   byId('dtTaxable').textContent = '¥' + taxable.toFixed(2);
   byId('dtRate').textContent = (rate * 100).toFixed(0) + '%';
   byId('dtTax').textContent = '¥' + tax.toFixed(2);
