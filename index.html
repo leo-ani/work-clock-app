@@ -12,59 +12,33 @@
    🟢 极简 HIG 视觉系统
    ==================================================== */
 :root {
-  --bg: #F4F5F6;
-  --surface: #FFFFFF;
-  --surface-hover: #F8F9FA;
-  --text: #000000;
-  --text-secondary: #6B7280;
-  --text-tertiary: #9CA3AF;
-  --primary: #52796F;
-  --primary-soft: #E6EEEA;
-  --color-ot: #D4A373;
-  --color-weekend: #7B95A6;
-  --color-holiday: #EF4444;
-  --border: #E5E7EB;
-  --border-strong: #D1D5DB;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 999px;
-  --safe-bottom: env(safe-area-inset-bottom, 20px);
-  --safe-top: env(safe-area-inset-top, 20px);
+  --bg: #F4F5F6; --surface: #FFFFFF; --surface-hover: #F8F9FA;
+  --text: #000000; --text-secondary: #6B7280; --text-tertiary: #9CA3AF;
+  --primary: #52796F; --primary-soft: #E6EEEA;
+  --color-ot: #D4A373; --color-weekend: #7B95A6; --color-holiday: #EF4444;
+  --border: #E5E7EB; --border-strong: #D1D5DB;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --radius-md: 12px; --radius-lg: 16px; --radius-full: 999px;
+  --safe-bottom: env(safe-area-inset-bottom, 20px); --safe-top: env(safe-area-inset-top, 20px);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0F172A;
-    --surface: #1E293B;
-    --surface-hover: #334155;
-    --text: #FFFFFF;
-    --text-secondary: #94A3B8;
-    --text-tertiary: #64748B;
-    --primary: #7BA99A;
-    --primary-soft: #1E3A34;
-    --color-ot: #E5C07B;
-    --color-weekend: #93B4C6;
-    --border: #334155;
-    --border-strong: #475569;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.3);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+    --bg: #0F172A; --surface: #1E293B; --surface-hover: #334155;
+    --text: #FFFFFF; --text-secondary: #94A3B8; --text-tertiary: #64748B;
+    --primary: #7BA99A; --primary-soft: #1E3A34; --color-ot: #E5C07B; --color-weekend: #93B4C6;
+    --border: #334155; --border-strong: #475569;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2); --shadow-md: 0 8px 24px rgba(0,0,0,0.3); --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
   }
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
-  background: var(--bg); color: var(--text); line-height: 1.5;
-  font-feature-settings: "tnum"; -webkit-font-smoothing: antialiased;
-  overflow: hidden; height: 100dvh;
-}
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; font-feature-settings: "tnum"; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100dvh; }
 button { background: none; border: none; cursor: pointer; color: inherit; font: inherit; }
 button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .hidden { display: none !important; }
 
 #app { max-width: 480px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column; padding-top: var(--safe-top); background: var(--bg); }
+
+/* Header & 折叠逻辑 */
 .header { padding: 16px; background: transparent; transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); overflow: hidden; flex-shrink: 0; }
 .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; transition: margin 0.3s; }
 .app-name { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
@@ -97,19 +71,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 #app.collapse-header .stats-bar,
 #app.collapse-header .progress-wrap { max-height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none; overflow: hidden; }
 
+/* 页面框架 */
 .page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
 .page.active { display: flex; }
 .page-scroll { flex: 1; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 16px; overscroll-behavior: contain; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
 
+/* 日历 */
 .weekdays { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: 12px; color: var(--text-tertiary); margin-bottom: 12px; font-weight: 600;}
 .weekdays span:first-child, .weekdays span:last-child { color: #EF4444; }
 .days-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-.day-cell { 
-  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-  border-radius: var(--radius-md); font-size: 16px; font-weight: 600; color: var(--text); 
-  cursor: pointer; position: relative; transition: all 0.2s; border: 1.5px solid transparent;
-}
+.day-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; position: relative; transition: all 0.2s; border: 1.5px solid transparent; }
 .day-cell.has-record:not(.today):not(.selected) { background: var(--primary-soft); }
 .day-cell.has-record:not(.today):not(.selected):hover { background: #d8e8e2; }
 .day-cell.today { background: var(--primary); color: #FFFFFF; }
@@ -126,6 +98,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .empty-desc { font-size: 13px; }
 
+/* 按钮 */
 .btns-group { display: flex; flex-direction: column; gap: 12px; }
 .btn { height: 52px; border-radius: var(--radius-md); border: none; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
 .btn:active { transform: scale(0.98); }
@@ -133,6 +106,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .btn-secondary { background: var(--surface); color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-danger { background: #EF4444; color: #fff; }
 
+/* 统计 */
 .card-num { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin: 8px 0; color: var(--text); }
 .card-sub { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
 .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -157,20 +131,30 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .row-weekend .hours-list-name::before { background: var(--color-weekend); }
 .row-holiday .hours-list-name::before { background: var(--color-holiday); }
 
+/* 调休 */
 .ledger-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .ledger-balance { font-size: 30px; font-weight: 900; letter-spacing: -0.5px; color: var(--text); }
 .ledger-stat { text-align: right; font-size: 12px; color: var(--text-secondary); line-height: 1.6; font-weight: 500; }
-.ledger-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
-.ledger-item:last-child { border-bottom: none; padding-bottom: 0; }
 .ledger-val.earn { color: #10B981; font-weight: 900; }
 .ledger-val.use { color: #F87171; font-weight: 900; }
 
+/* 底部导航 */
 .bottom-nav { display: flex; border-top: 1px solid var(--border); background: var(--surface); padding: 8px 0 var(--safe-bottom); flex-shrink: 0; }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-tertiary); cursor: pointer; }
 .nav-item.active { color: var(--primary); }
 .nav-icon { font-size: 20px; font-weight: 500;}
 .nav-label { font-size: 11px; font-weight: 800; }
 
+/* 设置列表 */
+.list-group { background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 500; cursor: pointer; background: transparent; width: 100%; text-align: left; }
+.list-item:last-child { border-bottom: none; }
+.list-item:active { background: var(--surface-hover); }
+.list-item.danger { color: #EF4444; font-weight: 600; }
+.list-item .arrow { color: var(--text-tertiary); font-size: 14px; }
+.list-header { padding: 16px 20px 8px; font-size: 13px; color: var(--text-secondary); font-weight: 600; margin: 0; }
+
+/* 弹窗 */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; align-items: flex-end; z-index: 100; }
 .modal-overlay.show { display: flex; }
 .modal-content { background: var(--surface); width: 100%; max-width: 480px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 24px 20px calc(20px + var(--safe-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1); max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
@@ -179,24 +163,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .modal-title { font-size: 18px; font-weight: 900; }
 .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
 
+/* 表单与选项 */
 .field-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
 .option-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
 .option-grid.cols-2 { grid-template-columns: repeat(2,1fr); }
 .option-btn { padding: 10px 4px; border: 1.5px solid transparent; border-radius: var(--radius-md); background: var(--bg); text-align: center; font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s; min-height: 52px; }
 .option-btn.active { background: var(--surface); border-color: var(--primary); color: var(--primary); }
-.quick-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-.quick-tag { padding: 8px 14px; background: var(--bg); border-radius: var(--radius-full); font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-.quick-tag.danger { color: #EF4444; background: #FEF2F2; }
 .hours-box { background: var(--bg); border-radius: var(--radius-md); padding: 0 16px; margin-bottom: 20px; }
 .hours-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); }
 .hours-row:last-child { border-bottom: none; }
 .hours-control { display: flex; align-items: center; gap: 12px; }
 .hours-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); font-size: 14px; font-weight: 600; }
 .hours-value { min-width: 60px; text-align: center; font-size: 20px; font-weight: 900; }
-.hours-input { width: 70px; text-align: center; font-size: 20px; font-weight: 900; border: 1.5px solid var(--primary); border-radius: var(--radius-md); padding: 4px; }
 .note-area textarea { width: 100%; height: 80px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); resize: none; color: var(--text); font-size: 14px; }
-.note-area textarea:focus { border-color: var(--primary); }
 
+/* 计算器 */
 .calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
 .calc-tab { flex: 1; height: 44px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--border); font-weight: 600; font-size: 15px; }
 .calc-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -210,12 +191,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .calc-key.op { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
 .calc-key.eq { background: var(--text); color: var(--bg); border-color: transparent; }
 
+/* Toast & Auth */
 .toast-wrap { position: fixed; top: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; z-index: 1000; pointer-events: none; }
-.toast { background: rgba(30,32,38,0.9); color: #fff; padding: 10px 20px; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; margin-bottom: 8px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s cubic-bezier(0.2,0.8,0.2,1); backdrop-filter: blur(8px); }
+.toast { background: rgba(30,32,38,0.9); color: #fff; padding: 10px 20px; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; margin-bottom: 8px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s; backdrop-filter: blur(8px); }
 .toast.success { color: #10B981; }
 .toast.error { color: #EF4444; }
 @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
 .auth-page { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 .auth-box { width: 100%; max-width: 360px; background: var(--surface); padding: 32px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
 .auth-title { font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 8px; }
@@ -273,10 +254,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-value" id="stDays">0天</div><div class="stat-label">出勤</div></div>
       <div class="stat-item"><div class="stat-value" id="stHours">0H</div><div class="stat-label">工时</div></div>
-      <button class="stat-item" type="button" id="incomeStatItem">
-        <div class="stat-value" id="stMoney">¥0</div>
-        <div class="stat-label" id="stMoneyLabel">收入</div>
-      </button>
+      <div class="stat-item"><div class="stat-value" id="stMoney">¥0</div><div class="stat-label">收入</div></div>
     </div>
     <div class="progress-wrap">
       <div class="progress-bg"><div class="progress-fill" id="monthProgress"></div></div>
@@ -407,14 +385,39 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   </section>
 
   <section class="page" id="pageProfile">
-    <div class="page-scroll">
-      <div class="card">
-        <h2 class="chart-title" id="profileName">当前用户</h2>
-        <button class="btn btn-primary" type="button" onclick="window.App.syncFromCloud(false)" style="margin-bottom:12px;">同步最新数据</button>
-        <button class="btn btn-secondary" type="button" onclick="window.App.importExport.exportJson()">导出 JSON 备份</button>
-        <button class="btn btn-secondary" type="button" onclick="window.App.importExport.importJson()" style="margin-top:12px;">导入 JSON 恢复</button>
-        <button class="btn btn-secondary" type="button" onclick="window.App.clearAll()" style="margin-top:12px;">清空当前数据</button>
-        <button class="btn btn-danger" type="button" onclick="window.App.forceLogout()" style="margin-top:12px;">退出登录</button>
+    <div class="page-scroll" style="padding-top: 16px;">
+      <div class="list-header">账户信息</div>
+      <div class="list-group">
+        <div class="list-item" style="cursor:default;">
+          <span>当前用户</span><span id="profileName" style="color:var(--text-secondary);">未登录</span>
+        </div>
+      </div>
+      <div class="list-header">数据同步</div>
+      <div class="list-group">
+        <button class="list-item" type="button" onclick="window.App.syncFromCloud(false)">
+          <span>从云端拉取最新数据</span><span class="arrow">↻</span>
+        </button>
+      </div>
+      <div class="list-header">备份与恢复</div>
+      <div class="list-group">
+        <button class="list-item" type="button" onclick="window.App.importExport.exportJson()">
+          <span>导出 JSON 备份</span><span class="arrow">↗</span>
+        </button>
+        <button class="list-item" type="button" onclick="window.App.importExport.importJson()">
+          <span>导入 JSON 恢复</span><span class="arrow">↘</span>
+        </button>
+      </div>
+      <div class="list-header">危险操作</div>
+      <div class="list-group">
+        <button class="list-item danger" type="button" onclick="window.App.clearAll()">
+          <span>清空当前所有数据</span>
+        </button>
+        <button class="list-item danger" type="button" onclick="window.App.forceLogout()">
+          <span>退出登录</span>
+        </button>
+      </div>
+      <div style="text-align: center; font-size: 12px; color: var(--text-tertiary); margin-top: 24px; padding-bottom: 24px;">
+        工时记录助手 v6.0.0
       </div>
     </div>
   </section>
@@ -461,8 +464,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
         <span class="hours-label">正常上班</span>
         <div class="hours-control">
           <button class="hours-btn" type="button" data-adjust="normal" data-delta="-0.5">−0.5</button>
-          <button class="hours-value" type="button" id="valNormal" data-edit="normal">8.0 H</button>
-          <input class="hours-input hidden" type="number" id="inputNormal" step=".5">
+          <button class="hours-value" type="button" id="valNormal">8.0 H</button>
           <button class="hours-btn" type="button" data-adjust="normal" data-delta="0.5">+0.5</button>
         </div>
       </div>
@@ -470,8 +472,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
         <span class="hours-label">正常加班</span>
         <div class="hours-control">
           <button class="hours-btn" type="button" data-adjust="ot" data-delta="-0.5">−0.5</button>
-          <button class="hours-value" type="button" id="valOt" data-edit="ot">0.0 H</button>
-          <input class="hours-input hidden" type="number" id="inputOt" step=".5">
+          <button class="hours-value" type="button" id="valOt">0.0 H</button>
           <button class="hours-btn" type="button" data-adjust="ot" data-delta="0.5">+0.5</button>
         </div>
       </div>
@@ -521,30 +522,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   const SHIFTS = ['day', 'early', 'mid', 'night'];
   const TYPES = ['normal', 'weekend', 'holiday', 'daily'];
   const LEAVES = ['none', 'sick', 'personal', 'paid', 'timeoff'];
-  
-  const LIMITS = {
-    goal: { min: 0, max: 1000 },
-    hours: { min: 0, max: 24 },
-    hourlyRate: { min: 0, max: 5000 },
-    salaryBase: { min: 0, max: 1000000 },
-    salaryDays: { min: 1, max: 31 },
-    salaryHours: { min: 1, max: 24 },
-    salaryMultiplier: { min: 0, max: 5 },
-    taxGross: { min: 0, max: 10000000 },
-    deductionVal: { min: 0, max: 100000 },
-    insurance: { pension: 20, medical: 10, unemployment: 5, fund: 12 }
-  };
-  
-  const IIT_BRACKETS = [
-    { max: 3000, rate: 0.03, quick: 0 },
-    { max: 12000, rate: 0.10, quick: 210 },
-    { max: 25000, rate: 0.20, quick: 1410 },
-    { max: 35000, rate: 0.25, quick: 2660 },
-    { max: 55000, rate: 0.30, quick: 4410 },
-    { max: 80000, rate: 0.35, quick: 7160 },
-    { max: Infinity, rate: 0.45, quick: 15160 },
-  ];
-  const THRESHOLD = 5000;
   const HOUR_PRESET = { day: 8, early: 6, mid: 7, night: 7 };
   const MONTH_NAMES = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
   const WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -552,12 +529,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   const TYPE_NAMES = { normal: '正班', weekend: '周末', holiday: '节假', daily: '日结' };
   const LEAVE_NAMES = { none: '上班', sick: '病假', personal: '事假', paid: '薪假', timeoff: '调休' };
 
+  const IIT_BRACKETS = [
+    { max: 3000, rate: 0.03, quick: 0 }, { max: 12000, rate: 0.10, quick: 210 },
+    { max: 25000, rate: 0.20, quick: 1410 }, { max: 35000, rate: 0.25, quick: 2660 },
+    { max: 55000, rate: 0.30, quick: 4410 }, { max: 80000, rate: 0.35, quick: 7160 },
+    { max: Infinity, rate: 0.45, quick: 15160 },
+  ];
+
   const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
-  const clamp = (v, lo, hi, fb) => {
-    const n = Number(v);
-    if (!Number.isFinite(n)) return fb === undefined ? lo : fb;
-    return Math.min(hi, Math.max(lo, n));
-  };
+  const clamp = (v, lo, hi, fb) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : (fb === undefined ? lo : fb); };
   const round1 = (v) => Math.round(num(v) * 10) / 10;
   const pad2 = (n) => String(n).padStart(2, '0');
   const byId = (id) => document.getElementById(id);
@@ -567,8 +547,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     if (typeof key !== 'string' || !DATE_RE.test(key)) return null;
     const parts = key.split('-').map(Number);
     const dt = new Date(parts[0], parts[1] - 1, parts[2]);
-    if (dt.getFullYear() !== parts[0] || dt.getMonth() !== parts[1] - 1 || dt.getDate() !== parts[2]) return null;
-    return dt;
+    return (dt.getFullYear() === parts[0] && dt.getMonth() === parts[1] - 1 && dt.getDate() === parts[2]) ? dt : null;
   }
   const isWeekend = (date) => date.getDay() === 0 || date.getDay() === 6;
 
@@ -578,30 +557,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   function safeJson(key) { const raw = safeGet(key); if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
 
   const fmt = {
-    money(v, opts) {
-      const o = opts || {};
-      if (o.hidden) return '****';
-      return '¥' + num(v).toFixed(2);
-    },
-    compact(v, opts) {
-      const o = opts || {};
-      if (o.hidden) return '****';
-      const n = num(v);
-      const abs = Math.abs(n);
-      const digits = o.digits === undefined ? 1 : o.digits;
+    compact(v) {
+      const n = num(v); const abs = Math.abs(n);
       if (abs >= 1e8) return '¥' + (n / 1e8).toFixed(2).replace(/\.?0+$/, '') + '亿';
-      if (abs >= 1e4) return '¥' + (n / 1e4).toFixed(digits).replace(/\.0+$/, '') + '万';
-      return '¥' + (Number.isInteger(n) ? n : n.toFixed(digits));
-    },
-    group(v) { return num(v).toLocaleString('zh-CN'); }
+      if (abs >= 1e4) return '¥' + (n / 1e4).toFixed(1).replace(/\.0+$/, '') + '万';
+      return '¥' + (Number.isInteger(n) ? n : n.toFixed(1));
+    }
   };
 
-  // 简易节假日估算（兜底）
   const Holiday = {
     isHoliday(k) { return ['01-01','05-01','10-01','10-02','10-03'].some(s => k.endsWith(s)); },
     isWorkday(k) { return false; },
     name(k) { return k.endsWith('10-01') ? '国庆' : (k.endsWith('01-01') ? '元旦' : '节假'); }
   };
+
+  const defaultSettings = () => ({
+    mode: 'hourly', normalRate: 0, holidayRate: 0, baseSalary: 0, salaryDays: 21.75, salaryHours: 8,
+    performance: 0, bonus: 0, allowance: 0, salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
+    salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0
+  });
+  const defaultUserData = () => ({ records: {}, settings: defaultSettings(), goal: 0, deleted: {}, dataRev: 0 });
+  function ensureState() { if (!Store.state || typeof Store.state !== 'object') Store.state = defaultUserData(); if (!Store.state.records) Store.state.records = {}; if (!Store.state.settings) Store.state.settings = defaultSettings(); }
 
   function createIncomeEngine(settings, holiday) {
     const mode = settings.mode === 'salary' ? 'salary' : 'hourly';
@@ -614,22 +590,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     }
     function rateOf(kind) {
       if (mode === 'hourly') return kind === 'holiday' ? num(settings.holidayRate) : num(settings.normalRate);
-      const map = {
-        normal: num(settings.salaryNormal), ot: num(settings.salaryOt),
-        weekend: num(settings.salaryWeekend), holiday: num(settings.salaryHoliday),
-      };
-      return map[kind] || 0;
+      return { normal: num(settings.salaryNormal), ot: num(settings.salaryOt), weekend: num(settings.salaryWeekend), holiday: num(settings.salaryHoliday) }[kind] || 0;
     }
     function of(rec, date) {
-      if (rec.leave === 'timeoff') {
-        const bucket = bucketOf(rec, date);
-        return 8 * rateOf(bucket === 'holiday' ? 'holiday' : (bucket === 'weekend' ? 'weekend' : 'normal'));
-      }
+      if (rec.leave === 'timeoff') return 8 * rateOf(bucketOf(rec, date));
       if (!rec || (rec.leave && rec.leave !== 'none')) return 0; 
-      const normal = num(rec.normal);
-      const ot = num(rec.ot);
-      const bucket = bucketOf(rec, date);
-      const isOtTimeoff = rec.otType === 'timeoff';
+      const normal = num(rec.normal), ot = num(rec.ot);
+      const bucket = bucketOf(rec, date), isOtTimeoff = rec.otType === 'timeoff';
       if (mode === 'hourly') {
         if (bucket === 'holiday') return (normal + (isOtTimeoff ? 0 : ot)) * rateOf('holiday');
         if (bucket === 'weekend') return (normal + (isOtTimeoff ? 0 : ot)) * rateOf('weekend');
@@ -645,139 +612,92 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   function aggregateMonth(year, month, records, settings, holiday, rev, goal) {
     const cacheKey = (Session.username || 'anon') + '|' + year + '-' + month + '|' + rev;
     if (Store.cache.has(cacheKey)) return Store.cache.get(cacheKey);
-    
     const income = createIncomeEngine(settings, holiday);
     const cat = { normal: {h:0,d:0,i:0}, ot: {h:0,d:0,i:0}, weekend: {h:0,d:0,i:0}, holiday: {h:0,d:0,i:0} };
-    let totalDays = 0, totalHours = 0, totalIncome = 0;
-    let timeoffEarned = 0, timeoffUsed = 0;
+    let totalDays = 0, totalHours = 0, totalIncome = 0, timeoffEarned = 0, timeoffUsed = 0;
 
     for (const key in records) {
-      const rec = records[key];
-      const date = parseDateKey(key);
+      const rec = records[key], date = parseDateKey(key);
       if (!date || date.getFullYear() !== year || date.getMonth() !== month) continue;
-      
       if (rec.leave === 'timeoff') timeoffUsed += 8;
       else if (rec.otType === 'timeoff') timeoffEarned += num(rec.ot);
-
       if (rec.leave && rec.leave !== 'none' && rec.leave !== 'timeoff') continue;
       
-      const normal = rec.leave === 'timeoff' ? 0 : num(rec.normal);
-      const ot = rec.leave === 'timeoff' ? 0 : num(rec.ot);
-      
+      const normal = rec.leave === 'timeoff' ? 0 : num(rec.normal), ot = rec.leave === 'timeoff' ? 0 : num(rec.ot);
       const dayIncome = income.of(rec, date);
-      totalDays += 1;
-      totalHours += normal + ot;
-      totalIncome += dayIncome;
+      totalDays++; totalHours += normal + ot; totalIncome += dayIncome;
       
       const bucket = income.bucketOf(rec, date);
       if (bucket === 'weekend' || bucket === 'holiday') {
-        cat[bucket].h += normal + ot;
-        cat[bucket].d += 1;
-        cat[bucket].i += dayIncome;
+        cat[bucket].h += normal + ot; cat[bucket].d++; cat[bucket].i += dayIncome;
       } else {
-        if (normal > 0) { cat.normal.h += normal; cat.normal.d += 1; cat.normal.i += normal * income.rateOf('normal'); }
-        if (ot > 0) { cat.ot.h += ot; cat.ot.d += 1; cat.ot.i += (rec.otType === 'timeoff' ? 0 : ot * income.rateOf('ot')); }
+        if (normal > 0) { cat.normal.h += normal; cat.normal.d++; cat.normal.i += normal * income.rateOf('normal'); }
+        if (ot > 0) { cat.ot.h += ot; cat.ot.d++; cat.ot.i += (rec.otType === 'timeoff' ? 0 : ot * income.rateOf('ot')); }
       }
     }
-    
     const safeGoal = num(goal);
-    const summary = {
-      year, month, cat, totalDays, totalHours, totalIncome,
-      timeoffEarned, timeoffUsed,
-      avgDailyHours: totalDays ? totalHours / totalDays : 0,
-      avgDailyIncome: totalDays ? totalIncome / totalDays : 0,
-      maxDailyIncome: 0, 
-      goalPct: safeGoal > 0 ? Math.min(100, (totalHours / safeGoal) * 100) : 0,
-    };
-    
+    const summary = { year, month, cat, totalDays, totalHours, totalIncome, timeoffEarned, timeoffUsed, avgDailyHours: totalDays ? totalHours / totalDays : 0, avgDailyIncome: totalDays ? totalIncome / totalDays : 0, maxDailyIncome: 0, goalPct: safeGoal > 0 ? Math.min(100, (totalHours / safeGoal) * 100) : 0 };
     if (Store.cache.size > 24) Store.cache.delete(Store.cache.keys().next().value);
     Store.cache.set(cacheKey, summary);
     return summary;
   }
 
-  const defaultSettings = () => ({
-    mode: 'hourly', normalRate: 0, holidayRate: 0,
-    baseSalary: 0, salaryDays: 21.75, salaryHours: 8,
-    performance: 0, bonus: 0, allowance: 0,
-    salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
-    salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0
-  });
-
   const Store = {
-    state: { records: {}, settings: defaultSettings(), goal: 0, deleted: {}, dataRev: 0 },
-    rev: 0,
-    deleted: {},
-    cache: new Map(),
-    dirtyRecords: new Set(),
-    dirtyDeleted: new Set(),
-    settingsDirty: false,
-    inflight: null,
-    saveTimer: null,
-
+    state: defaultUserData(), rev: 0, deleted: {}, cache: new Map(), dirtyRecords: new Set(), dirtyDeleted: new Set(), settingsDirty: false, inflight: null, saveTimer: null,
     persistCache() {
       if (!Session.username) return;
       clearTimeout(this._cacheT);
       this._cacheT = setTimeout(() => {
-        safeSet('wc_cache_' + Session.username, JSON.stringify({ __state: this.state, __deleted: this.deleted }));
+        try { safeSet('wc_cache_' + Session.username, JSON.stringify({ __state: this.state, __deleted: this.deleted })); } catch(e) {}
       }, 300);
     },
-
     loadCache() {
       if (!Session.username) return false;
       const parsed = safeJson('wc_cache_' + Session.username);
       if (!parsed || !parsed.__state) return false;
-      this.state = parsed.__state;
+      this.state = parsed.__state || defaultUserData();
       this.deleted = parsed.__deleted || {};
+      ensureState();
       return true;
     },
-
     buildPayload() {
-      const records = {};
-      for (const k of this.dirtyRecords) { if (this.state.records[k]) records[k] = this.state.records[k]; }
-      const deleted = {};
-      for (const k of this.dirtyDeleted) { deleted[k] = this.deleted[k] || Date.now(); }
+      const records = {}; for (const k of this.dirtyRecords) { if (this.state.records[k]) records[k] = this.state.records[k]; }
+      const deleted = {}; for (const k of this.dirtyDeleted) { deleted[k] = this.deleted[k] || Date.now(); }
       return { records, deleted, settings: this.state.settings, goal: this.state.goal, dataRev: this.state.dataRev };
     },
-
     async flush() {
       clearTimeout(this.saveTimer);
       if (this.inflight) return this.inflight;
-      if (!Session.token) return null;
-      if (this.dirtyRecords.size === 0 && this.dirtyDeleted.size === 0 && !this.settingsDirty) return null;
-
-      const snapR = new Set(this.dirtyRecords);
-      const snapD = new Set(this.dirtyDeleted);
-      const payload = this.buildPayload();
-      const settingsTouched = this.settingsDirty;
-
+      if (!Session.token || (this.dirtyRecords.size === 0 && this.dirtyDeleted.size === 0 && !this.settingsDirty)) return null;
+      
+      const snapR = new Set(this.dirtyRecords), snapD = new Set(this.dirtyDeleted);
+      const payload = this.buildPayload(), settingsTouched = this.settingsDirty;
+      
       this.inflight = (async () => {
         try {
           const res = await Api.setData(Session.username, payload, settingsTouched);
           this.settingsDirty = false;
-          for (const k of snapR) this.dirtyRecords.delete(k);
-          for (const k of snapD) this.dirtyDeleted.delete(k);
+          // 并发竞态防误删
+          for (const k of snapR) if (this.state.records[k]?.updatedAt === payload.records[k]?.updatedAt) this.dirtyRecords.delete(k);
+          for (const k of snapD) if (!this.state.records[k]) this.dirtyDeleted.delete(k);
           
           if (res.data) {
             if (res.data.dataRev) this.state.dataRev = res.data.dataRev;
-            if (res.data.records) {
-              for (const k in res.data.records) { this.state.records[k] = res.data.records[k]; }
-            }
+            if (res.data.records) { for (const k in res.data.records) this.state.records[k] = res.data.records[k]; }
+            if (res.data.deleted) { for (const k in res.data.deleted) { if (res.data.deleted[k] >= (this.state.records[k]?.updatedAt || 0)) delete this.state.records[k]; } }
           }
           this.cache.clear();
           this.setStatus('idle');
         } catch (err) {
           this.setStatus(err.code === 'UNAUTHORIZED' ? 'error' : 'pending');
+          if (err.code !== 'UNAUTHORIZED') { clearTimeout(this._retryTimer); this._retryTimer = setTimeout(() => this.flush(), 3000); }
           throw err;
-        } finally {
-          this.inflight = null;
-        }
+        } finally { this.inflight = null; }
       })();
       return this.inflight;
     },
-
     setStatus(s) {
-      const el = byId('syncText');
-      const dot = byId('syncDot');
+      const el = byId('syncText'), dot = byId('syncDot');
       if (!el) return;
       if (s === 'saving') { dot.className = 'sync-dot syncing'; el.textContent = '同步中'; }
       else if (s === 'pending') { dot.className = 'sync-dot pending'; el.textContent = '待上传'; }
@@ -799,19 +719,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       const headers = { 'Content-Type': 'application/json' };
       if (this.token) headers.Authorization = 'Bearer ' + this.token;
       let res;
-      try {
-        res = await fetch(API_BASE, { method: 'POST', headers, body: JSON.stringify({ action, ...payload }) });
-      } catch (e) {
-        throw new Error('网络连接失败，请检查网络');
-      }
+      try { res = await fetch(API_BASE, { method: 'POST', headers, body: JSON.stringify({ action, ...payload }) }); } 
+      catch (e) { throw new Error('网络连接失败，请检查网络'); }
+      
       let data = {};
       try { data = await res.json(); } catch (e) { }
-      if (!res.ok) {
-        const err = new Error(data.error || `请求失败 (${res.status})`);
-        err.code = data.code;
-        err.status = res.status;
-        throw err;
-      }
+      if (!res.ok) { const err = new Error(data.error || `请求失败 (${res.status})`); err.code = data.code; err.status = res.status; throw err; }
       return data;
     },
     async deriveHash(password, salt, kdf, iterations) {
@@ -835,10 +748,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
       return Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2, '0')).join('');
     },
-    generateSalt() {
-      const b = new Uint8Array(24); crypto.getRandomValues(b);
-      return btoa(String.fromCharCode(...b));
-    },
+    generateSalt() { const b = new Uint8Array(24); crypto.getRandomValues(b); return btoa(String.fromCharCode(...b)); },
     getSalt(u) { return this.call('getSalt', { username: u }); },
     register(u, h, s, i) { return this.call('register', { username: u, hash: h, salt: s, kdf: 'PBKDF2-SHA256', iterations: i }); },
     login(u, h) { return this.call('login', { username: u, hash: h }); },
@@ -847,14 +757,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   };
 
   const UI = {
-    toast(msg, type='info') {
-      const wrap = byId('toastWrap');
-      const el = document.createElement('div');
-      el.className = 'toast ' + type;
-      el.textContent = msg;
-      wrap.appendChild(el);
-      setTimeout(() => el.remove(), 3000);
-    },
+    toast(msg, type='info') { const wrap = byId('toastWrap'), el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg; wrap.appendChild(el); setTimeout(() => el.remove(), 3000); },
     goPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === id));
@@ -863,82 +766,46 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     },
     confirmDangerous(title, body) {
       return new Promise(resolve => {
-        byId('confirmTitle').textContent = title;
-        byId('confirmBody').innerHTML = body;
-        byId('confirmModal').classList.add('show');
+        byId('confirmTitle').textContent = title; byId('confirmBody').innerHTML = body; byId('confirmModal').classList.add('show');
         const ok = byId('confirmOkBtn'), cancel = byId('confirmCancelBtn');
-        const close = (val) => {
-          byId('confirmModal').classList.remove('show');
-          ok.onclick = null; cancel.onclick = null;
-          resolve(val);
-        };
-        ok.onclick = () => close(true);
-        cancel.onclick = () => close(false);
+        const close = (val) => { byId('confirmModal').classList.remove('show'); ok.onclick = null; cancel.onclick = null; resolve(val); };
+        ok.onclick = () => close(true); cancel.onclick = () => close(false);
       });
     }
   };
 
   const Calendar = {
-    currentDate: new Date(),
-    selectedDate: null,
-    nodes: [],
+    currentDate: new Date(), selectedDate: null, nodes: [],
     init() {
       const grid = byId('calGrid');
-      for (let i = 0; i < 42; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        grid.appendChild(cell);
-      }
+      for (let i = 0; i < 42; i++) { const cell = document.createElement('div'); cell.className = 'day-cell'; grid.appendChild(cell); }
       this.nodes = Array.from(grid.children);
       byId('prevMonth').onclick = () => { this.currentDate.setMonth(this.currentDate.getMonth() - 1); Render.all(); };
       byId('nextMonth').onclick = () => { this.currentDate.setMonth(this.currentDate.getMonth() + 1); Render.all(); };
       byId('todayBtn').onclick = () => { this.currentDate = new Date(); this.selectedDate = formatDateKey(new Date()); Render.all(); };
-      grid.onclick = (e) => {
-        const cell = e.target.closest('.day-cell');
-        if (cell && cell.dataset.key) { this.selectedDate = cell.dataset.key; Render.all(); }
-      };
+      grid.onclick = (e) => { const cell = e.target.closest('.day-cell'); if (cell && cell.dataset.key) { this.selectedDate = cell.dataset.key; Render.all(); } };
     },
     render() {
-      const y = this.currentDate.getFullYear();
-      const m = this.currentDate.getMonth();
-      byId('headerYear').textContent = y + '年';
-      byId('headerMonth').textContent = MONTH_NAMES[m];
+      const y = this.currentDate.getFullYear(), m = this.currentDate.getMonth();
+      byId('headerYear').textContent = y + '年'; byId('headerMonth').textContent = MONTH_NAMES[m];
       byId('todayBtn').classList.toggle('hidden', y === new Date().getFullYear() && m === new Date().getMonth());
-      
-      const first = new Date(y, m, 1);
-      const lead = (first.getDay() + 6) % 7;
-      const days = new Date(y, m + 1, 0).getDate();
-      const prev = new Date(y, m, 0).getDate();
-      const todayKey = formatDateKey(new Date());
-      const recs = Store.state.records;
-
+      const first = new Date(y, m, 1), lead = (first.getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate(), prev = new Date(y, m, 0).getDate();
+      const todayKey = formatDateKey(new Date()), recs = Store.state.records || {};
       for (let i = 0; i < 42; i++) {
-        const cell = this.nodes[i];
-        const off = i - lead;
+        const cell = this.nodes[i], off = i - lead;
         let d, muted = false;
         if (off < 0) { d = new Date(y, m - 1, prev + off + 1); muted = true; }
         else if (off >= days) { d = new Date(y, m + 1, off - days + 1); muted = true; }
         else { d = new Date(y, m, off + 1); }
-        
-        const key = formatDateKey(d);
-        const rec = muted ? null : recs[key];
-        
-        cell.className = 'day-cell' + (muted ? ' other-month' : '') + 
-          (key === todayKey ? ' today' : '') + 
-          (key === this.selectedDate ? ' selected' : '') + 
-          (rec ? ' has-record' : '');
+        const key = formatDateKey(d), rec = muted ? null : recs[key];
+        cell.className = 'day-cell' + (muted ? ' other-month' : '') + (key === todayKey ? ' today' : '') + (key === this.selectedDate ? ' selected' : '') + (rec ? ' has-record' : '');
         cell.dataset.key = muted ? '' : key;
-        
         let html = `<span>${d.getDate()}</span>`;
         if (!muted && rec) {
           if (rec.leave && rec.leave !== 'none') html += `<span class="day-sub">${LEAVE_NAMES[rec.leave]}</span>`;
           else html += `<span class="day-sub">${round1(num(rec.normal)+num(rec.ot)).toFixed(1)}h</span>`;
-          
-          if (rec.note && rec.note.trim()) html += `<span class="star">★</span>`;
-          else html += `<span class="dot"></span>`;
-        } else if (!muted && Holiday.isHoliday(key)) {
-          html += `<span class="day-sub">${Holiday.name(key)}</span>`;
-        }
+          if (rec.note && rec.note.trim()) html += `<span class="star">★</span>`; else html += `<span class="dot"></span>`;
+        } else if (!muted && Holiday.isHoliday(key)) html += `<span class="day-sub">${Holiday.name(key)}</span>`;
         cell.innerHTML = html;
       }
     }
@@ -946,17 +813,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 
   const Detail = {
     render() {
-      const area = byId('detailArea');
-      const key = Calendar.selectedDate;
+      const area = byId('detailArea'), key = Calendar.selectedDate;
       if (!key) { area.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">选择日期</div></div>'; return; }
-      
-      const rec = Store.state.records[key];
-      if (!rec) { area.innerHTML = '<div class="empty-state"><div class="empty-icon">🗓</div><div class="empty-title">这一天没有记录</div><div class="empty-desc">点击上方按钮添加打卡</div></div>'; return; }
-      
-      const isLeave = rec.leave && rec.leave !== 'none';
-      const engine = createIncomeEngine(Store.state.settings, Holiday);
+      const rec = Store.state.records?.[key];
+      if (!rec) { area.innerHTML = '<div class="empty-state"><div class="empty-icon">🗓</div><div class="empty-title">这一天没有记录</div></div>'; return; }
+      const isLeave = rec.leave && rec.leave !== 'none', engine = createIncomeEngine(Store.state.settings, Holiday);
       const income = isLeave ? 0 : engine.of(rec, parseDateKey(key));
-      
       area.innerHTML = `
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -968,8 +830,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
             <span>${isLeave ? '休假中' : '正班 '+round1(rec.normal).toFixed(1)+'h'+(num(rec.ot)?' · 加班 '+round1(rec.ot).toFixed(1)+'h'+(rec.otType==='timeoff'?'(调休)':''):'')}</span>
           </div>
           ${rec.note ? `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:14px; color:var(--text-secondary);">备注：${rec.note}</div>` : ''}
-        </div>
-      `;
+        </div>`;
     }
   };
 
@@ -978,31 +839,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       byId('monthIncome').textContent = fmt.compact(summary.totalIncome);
       byId('avgDailyIncome').textContent = fmt.compact(summary.avgDailyIncome);
       byId('maxDailyIncome').textContent = fmt.compact(summary.maxDailyIncome || 0);
-      
       byId('boxDays').textContent = String(summary.totalDays);
       byId('boxHours').textContent = round1(summary.totalHours).toFixed(1);
       byId('boxNormal').textContent = round1(summary.cat.normal.h).toFixed(1);
       byId('boxOt').textContent = round1(summary.cat.ot.h + summary.cat.weekend.h + summary.cat.holiday.h).toFixed(1);
-      
-      this.renderPie(summary);
-      this.renderLedger(summary);
+      this.renderPie(summary); this.renderLedger(summary);
     },
     renderPie(s) {
-      const c = byId('hoursPie');
-      const total = s.cat.normal.h + s.cat.ot.h + s.cat.weekend.h + s.cat.holiday.h;
+      const c = byId('hoursPie'), total = s.cat.normal.h + s.cat.ot.h + s.cat.weekend.h + s.cat.holiday.h;
       if (total === 0) { c.innerHTML = '<div class="empty-state">暂无工时记录</div>'; return; }
-      
-      const p1 = (s.cat.normal.h / total) * 100;
-      const p2 = p1 + (s.cat.ot.h / total) * 100;
-      const p3 = p2 + (s.cat.weekend.h / total) * 100;
-      
+      const p1 = (s.cat.normal.h / total) * 100, p2 = p1 + (s.cat.ot.h / total) * 100, p3 = p2 + (s.cat.weekend.h / total) * 100;
       c.innerHTML = `
         <div class="hours-dist">
           <div class="hours-donut" style="background:conic-gradient(var(--primary) 0% ${p1}%, var(--color-ot) ${p1}% ${p2}%, var(--color-weekend) ${p2}% ${p3}%, var(--color-holiday) ${p3}% 100%);">
-            <div class="hours-donut-center">
-              <div class="hours-donut-total">${round1(total).toFixed(0)}</div>
-              <div class="hours-donut-label">HOURS</div>
-            </div>
+            <div class="hours-donut-center"><div class="hours-donut-total">${round1(total).toFixed(0)}</div><div class="hours-donut-label">HOURS</div></div>
           </div>
           <div class="hours-list">
             <div class="hours-list-row row-normal"><span class="hours-list-name">正班</span><span class="hours-list-money">${fmt.compact(s.cat.normal.i)}</span></div>
@@ -1010,80 +860,59 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
             <div class="hours-list-row row-weekend"><span class="hours-list-name">周末加班</span><span class="hours-list-money">${fmt.compact(s.cat.weekend.i)}</span></div>
             <div class="hours-list-row row-holiday"><span class="hours-list-name">节假日加班</span><span class="hours-list-money">${fmt.compact(s.cat.holiday.i)}</span></div>
           </div>
-        </div>
-      `;
+        </div>`;
     },
     renderLedger(s) {
-      const c = byId('hoursPie');
+      const c = byId('hoursPie'), old = c.querySelector('.ledger-card');
+      if (old) old.remove();
       if (s.timeoffEarned === 0 && s.timeoffUsed === 0) return;
-      
-      const balance = s.timeoffEarned - s.timeoffUsed;
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.marginTop = '16px';
+      const balance = s.timeoffEarned - s.timeoffUsed, div = document.createElement('div');
+      div.className = 'card ledger-card'; div.style.marginTop = '16px';
       div.innerHTML = `
         <div class="ledger-header">
-          <div>
-            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;font-weight:600;">本月调休变化</div>
-            <div class="ledger-balance" style="color:${balance<0?'#F87171':'var(--text)'}">${balance>0?'+':''}${balance.toFixed(1)} <span style="font-size:14px;font-weight:700;">小时</span></div>
-          </div>
-          <div class="ledger-stat">
-            <div>获取: <span class="ledger-val earn">+${s.timeoffEarned.toFixed(1)}h</span></div>
-            <div>消耗: <span class="ledger-val use">-${s.timeoffUsed.toFixed(1)}h</span></div>
-          </div>
-        </div>
-      `;
+          <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;font-weight:600;">本月调休变化</div>
+          <div class="ledger-balance" style="color:${balance<0?'#F87171':'var(--text)'}">${balance>0?'+':''}${balance.toFixed(1)} <span style="font-size:14px;font-weight:700;">小时</span></div></div>
+          <div class="ledger-stat"><div>获取: <span class="ledger-val earn">+${s.timeoffEarned.toFixed(1)}h</span></div><div>消耗: <span class="ledger-val use">-${s.timeoffUsed.toFixed(1)}h</span></div></div>
+        </div>`;
       c.appendChild(div);
     }
   };
 
   const Render = {
     all() {
+      ensureState();
       const summary = aggregateMonth(Calendar.currentDate.getFullYear(), Calendar.currentDate.getMonth(), Store.state.records, Store.state.settings, Holiday, Store.rev, Store.state.goal);
-      
-      byId('stDays').textContent = summary.totalDays + '天';
-      byId('stHours').textContent = round1(summary.totalHours).toFixed(1) + 'H';
-      byId('stMoney').textContent = fmt.compact(summary.totalIncome);
-      byId('monthProgress').style.width = summary.goalPct + '%';
+      byId('stDays').textContent = summary.totalDays + '天'; byId('stHours').textContent = round1(summary.totalHours).toFixed(1) + 'H';
+      byId('stMoney').textContent = fmt.compact(summary.totalIncome); byId('monthProgress').style.width = summary.goalPct + '%';
       byId('progressText').textContent = summary.goalPct.toFixed(0) + '%';
-      
-      Calendar.render();
-      Detail.render();
+      Calendar.render(); Detail.render();
       if (byId('pageStats').classList.contains('active')) Stats.render(summary);
     }
   };
 
   const Clock = {
-    draft: null,
-    targetKey: null,
+    draft: null, targetKey: null,
     init() {
-      byId('quickPunchBtn').onclick = () => {
+      byId('quickPunchBtn').onclick = async () => {
         const key = Calendar.selectedDate || formatDateKey(new Date());
-        const date = parseDateKey(key);
-        const type = isWeekend(date) ? 'weekend' : (Holiday.isHoliday(key) ? 'holiday' : 'normal');
+        const existingRec = Store.state.records[key];
+        if (existingRec) { const ok = await UI.confirmDangerous('覆盖记录？', '这一天已存在打卡记录，一键打卡将覆盖原有工时和备注，是否继续？'); if (!ok) return; }
+        const date = parseDateKey(key), type = isWeekend(date) ? 'weekend' : (Holiday.isHoliday(key) ? 'holiday' : 'normal');
         Store.state.records[key] = { shift: 'day', type, leave: 'none', normal: 8, ot: 0, otType: 'pay', note: '', updatedAt: Date.now() };
-        Store.dirtyRecords.add(key);
-        Store.rev++;
-        Render.all();
-        Store.flush();
-        UI.toast('打卡成功', 'success');
+        Store.dirtyRecords.add(key); Store.rev++; Render.all(); Store.flush(); UI.toast('打卡成功', 'success');
       };
 
       byId('addRecordBtn').onclick = () => {
         this.targetKey = Calendar.selectedDate || formatDateKey(new Date());
         const rec = Store.state.records[this.targetKey] || { shift: 'day', type: 'normal', leave: 'none', normal: 8, ot: 0, otType: 'pay', note: '' };
         this.draft = { ...rec };
-        byId('modalDate').textContent = this.targetKey.slice(5);
-        byId('noteInput').value = this.draft.note;
-        this.syncUI();
-        byId('clockModal').classList.add('show');
+        byId('modalDate').textContent = this.targetKey.slice(5); byId('noteInput').value = this.draft.note;
+        this.syncUI(); byId('clockModal').classList.add('show');
       };
 
-      const rows = ['shiftRow', 'typeRow', 'leaveRow'];
-      rows.forEach(id => {
+      ['shiftRow', 'typeRow', 'leaveRow'].forEach(id => {
         byId(id).onclick = (e) => {
-          const btn = e.target.closest('button');
-          if (!btn) return;
+          const btn = e.target.closest('button'); if (!btn) return;
           if (id === 'shiftRow') this.draft.shift = btn.dataset.shift;
           if (id === 'typeRow') this.draft.type = btn.dataset.type;
           if (id === 'leaveRow') this.draft.leave = btn.dataset.leave;
@@ -1092,46 +921,32 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       });
 
       document.querySelectorAll('[data-adjust]').forEach(btn => {
-        btn.onclick = () => {
-          const f = btn.dataset.adjust;
-          this.draft[f] = Math.max(0, round1(this.draft[f] + Number(btn.dataset.delta)));
-          this.syncUI();
-        };
+        btn.onclick = () => { const f = btn.dataset.adjust; this.draft[f] = Math.max(0, round1(this.draft[f] + Number(btn.dataset.delta))); this.syncUI(); };
       });
 
       byId('otTypeRow').onclick = (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        this.draft.otType = btn.dataset.ottype;
-        this.syncUI();
+        const btn = e.target.closest('button'); if (!btn) return;
+        this.draft.otType = btn.dataset.ottype; this.syncUI();
       };
 
-      byId('clockSaveBtn').onclick = () => {
+      byId('clockSaveBtn').onclick = async () => {
         this.draft.note = byId('noteInput').value.slice(0, 500);
         const isEmpty = this.draft.normal === 0 && this.draft.ot === 0 && this.draft.leave === 'none';
-        if (isEmpty) {
-          delete Store.state.records[this.targetKey];
-          Store.dirtyDeleted.add(this.targetKey);
-          Store.dirtyRecords.delete(this.targetKey);
-        } else {
-          this.draft.updatedAt = Date.now();
-          Store.state.records[this.targetKey] = { ...this.draft };
-          Store.dirtyRecords.add(this.targetKey);
-          Store.dirtyDeleted.delete(this.targetKey);
+        const prev = Store.state.records[this.targetKey];
+        if (isEmpty && prev && (prev.note || '').trim()) {
+          const ok = await UI.confirmDangerous('删除记录？', '清空工时将删除该记录及其备注，是否继续？');
+          if (!ok) return;
         }
-        Store.rev++;
-        byId('clockModal').classList.remove('show');
-        Render.all();
-        Store.flush();
-        UI.toast('保存成功', 'success');
+        if (isEmpty) { delete Store.state.records[this.targetKey]; Store.dirtyDeleted.add(this.targetKey); Store.dirtyRecords.delete(this.targetKey); } 
+        else { this.draft.updatedAt = Date.now(); Store.state.records[this.targetKey] = { ...this.draft }; Store.dirtyRecords.add(this.targetKey); Store.dirtyDeleted.delete(this.targetKey); }
+        Store.rev++; byId('clockModal').classList.remove('show'); Render.all(); Store.flush(); UI.toast('保存成功', 'success');
       };
     },
     syncUI() {
       document.querySelectorAll('#shiftRow button').forEach(b => b.classList.toggle('active', b.dataset.shift === this.draft.shift));
       document.querySelectorAll('#typeRow button').forEach(b => b.classList.toggle('active', b.dataset.type === this.draft.type));
       document.querySelectorAll('#leaveRow button').forEach(b => b.classList.toggle('active', b.dataset.leave === this.draft.leave));
-      byId('valNormal').textContent = round1(this.draft.normal).toFixed(1) + ' H';
-      byId('valOt').textContent = round1(this.draft.ot).toFixed(1) + ' H';
+      byId('valNormal').textContent = round1(this.draft.normal).toFixed(1) + ' H'; byId('valOt').textContent = round1(this.draft.ot).toFixed(1) + ' H';
       byId('otTypeRow').style.display = this.draft.ot > 0 ? 'flex' : 'none';
       document.querySelectorAll('#otTypeRow button').forEach(b => b.classList.toggle('active', b.dataset.ottype === this.draft.otType));
     }
@@ -1141,10 +956,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     init() {
       byId('modeSwitch').onclick = () => {
         Store.state.settings.mode = Store.state.settings.mode === 'salary' ? 'hourly' : 'salary';
-        this.load();
-        Store.settingsDirty = true;
-        Store.rev++;
-        Render.all();
+        this.load(); Store.settingsDirty = true; Store.rev++; Render.all();
       };
       byId('saveSettingsBtn').onclick = () => {
         if (Store.state.settings.mode === 'hourly') {
@@ -1155,35 +967,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
           Store.state.settings.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
           Store.state.settings.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
           const base = Store.state.settings.baseSalary / Store.state.settings.salaryDays / Store.state.settings.salaryHours;
-          Store.state.settings.salaryNormal = round1(base * 1);
-          Store.state.settings.salaryOt = round1(base * 1.5);
-          Store.state.settings.salaryWeekend = round1(base * 2);
-          Store.state.settings.salaryHoliday = round1(base * 3);
+          Store.state.settings.salaryNormal = round1(base * 1); Store.state.settings.salaryOt = round1(base * 1.5);
+          Store.state.settings.salaryWeekend = round1(base * 2); Store.state.settings.salaryHoliday = round1(base * 3);
         }
-        Store.settingsDirty = true;
-        Store.rev++;
-        Render.all();
-        Store.flush();
-        UI.toast('设置已保存', 'success');
+        Store.settingsDirty = true; Store.rev++; Render.all(); Store.flush(); UI.toast('设置已保存', 'success');
       };
       byId('goalSaveBtn').onclick = () => {
-        Store.state.goal = clamp(byId('goalInput').value, 0, 1000, 0);
-        Store.settingsDirty = true;
-        Store.rev++;
-        Render.all();
-        Store.flush();
-        UI.toast('目标已更新', 'success');
+        Store.state.goal = clamp(byId('goalInput').value, 0, 1000, 0); Store.settingsDirty = true; Store.rev++; Render.all(); Store.flush(); UI.toast('目标已更新', 'success');
       };
     },
     load() {
       const s = Store.state.settings;
-      byId('hourlyForm').classList.toggle('hidden', s.mode === 'salary');
-      byId('salaryForm').classList.toggle('hidden', s.mode === 'hourly');
-      byId('inNormal').value = s.normalRate;
-      byId('inHoliday').value = s.holidayRate;
-      byId('inBaseSalary').value = s.baseSalary;
-      byId('inSalaryDays').value = s.salaryDays;
-      byId('inSalaryHours').value = s.salaryHours;
+      byId('hourlyForm').classList.toggle('hidden', s.mode === 'salary'); byId('salaryForm').classList.toggle('hidden', s.mode === 'hourly');
+      byId('inNormal').value = s.normalRate; byId('inHoliday').value = s.holidayRate;
+      byId('inBaseSalary').value = s.baseSalary; byId('inSalaryDays').value = s.salaryDays; byId('inSalaryHours').value = s.salaryHours;
       byId('goalInput').value = Store.state.goal;
     }
   };
@@ -1194,64 +991,39 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
         tab.onclick = () => {
           document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
-          tab.classList.add('active');
-          byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+          tab.classList.add('active'); byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
         };
       });
-      
       const calcTax = () => {
         const gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
         const ins = gross * clamp(byId('taxInsuranceRate').value, 0, 100, 0) / 100;
         const taxable = Math.max(0, gross - ins - 5000);
-        let tax = 0;
-        for (const b of IIT_BRACKETS) {
-          if (taxable <= b.max) { tax = Math.max(0, taxable * b.rate - b.quick); break; }
-        }
-        byId('dtTaxable').textContent = '¥' + taxable.toFixed(2);
-        byId('dtTax').textContent = '¥' + tax.toFixed(2);
-        byId('dtNet').textContent = '¥' + (gross - ins - tax).toFixed(2);
+        let tax = 0; for (const b of IIT_BRACKETS) { if (taxable <= b.max) { tax = Math.max(0, taxable * b.rate - b.quick); break; } }
+        byId('dtTaxable').textContent = '¥' + taxable.toFixed(2); byId('dtTax').textContent = '¥' + tax.toFixed(2); byId('dtNet').textContent = '¥' + (gross - ins - tax).toFixed(2);
       };
-      byId('taxIncome').oninput = calcTax;
-      byId('taxInsuranceRate').oninput = calcTax;
-      
+      byId('taxIncome').oninput = calcTax; byId('taxInsuranceRate').oninput = calcTax;
       const calcSalary = () => {
-        const rate = clamp(byId('salaryRate').value, 0, 10000, 0);
-        const hours = clamp(byId('salaryHours').value, 0, 24, 0);
-        const days = clamp(byId('salaryDays').value, 0, 31, 0);
-        const daily = rate * hours;
-        const monthly = daily * days;
-        byId('salaryDaily').textContent = '¥' + daily.toFixed(2);
-        byId('salaryMonthly').textContent = '¥' + monthly.toFixed(2);
+        const rate = clamp(byId('salaryRate').value, 0, 10000, 0), hours = clamp(byId('salaryHours').value, 0, 24, 0), days = clamp(byId('salaryDays').value, 0, 31, 0);
+        byId('salaryDaily').textContent = '¥' + (rate * hours).toFixed(2); byId('salaryMonthly').textContent = '¥' + (rate * hours * days).toFixed(2);
       };
-      byId('salaryRate').oninput = calcSalary;
-      byId('salaryHours').oninput = calcSalary;
-      byId('salaryDays').oninput = calcSalary;
-
-      // 简易计算器
+      byId('salaryRate').oninput = calcSalary; byId('salaryHours').oninput = calcSalary; byId('salaryDays').oninput = calcSalary;
+      
       let tokens = [], current = '0', justEval = false;
-      const updateCalcUI = () => {
-        byId('calcExpr').textContent = tokens.join(' ') + (current ? ' ' + current : '');
-      };
+      const updateCalcUI = () => byId('calcExpr').textContent = tokens.join(' ') + (current ? ' ' + current : '');
       const computeCalc = (arr) => {
         const stk = arr.slice();
         for (let i = 1; i < stk.length - 1; i += 2) {
           if (stk[i] === '×' || stk[i] === '÷') {
             const l = parseFloat(stk[i-1])||0, r = parseFloat(stk[i+1])||0;
-            stk.splice(i-1, 3, String(stk[i] === '×' ? l*r : (r===0?NaN:l/r)));
-            i -= 2;
+            stk.splice(i-1, 3, String(stk[i] === '×' ? l*r : (r===0?NaN:l/r))); i -= 2;
           }
         }
         let res = parseFloat(stk[0]) || 0;
-        for (let i = 1; i < stk.length - 1; i += 2) {
-          const r = parseFloat(stk[i+1]) || 0;
-          if (stk[i] === '+') res += r;
-          if (stk[i] === '-') res -= r;
-        }
+        for (let i = 1; i < stk.length - 1; i += 2) { const r = parseFloat(stk[i+1]) || 0; if (stk[i] === '+') res += r; if (stk[i] === '-') res -= r; }
         return isFinite(res) ? String(parseFloat(res.toPrecision(12))) : 'Error';
       };
       byId('calcKeys').onclick = (e) => {
-        const k = e.target.closest('[data-key]');
-        if (!k) return;
+        const k = e.target.closest('[data-key]'); if (!k) return;
         const v = k.dataset.key;
         if (v === 'C') { tokens = []; current = '0'; justEval = false; }
         else if (v === '⌫') { current = current.length > 1 ? current.slice(0, -1) : '0'; }
@@ -1263,25 +1035,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
         } else if (v === '=') {
           if (current !== '0') tokens.push(current);
           while(tokens.length && '+-×÷'.includes(tokens[tokens.length-1])) tokens.pop();
-          if (tokens.length) {
-            const r = computeCalc(tokens);
-            byId('calcExpr').textContent = tokens.join(' ') + ' =';
-            current = r; tokens = []; justEval = true;
-            byId('calcResult').textContent = r;
-            return;
-          }
-        } else if (v === '.') {
-          if (!current.includes('.')) current += '.';
-        } else if (v === '±') {
-          current = current.startsWith('-') ? current.slice(1) : '-' + current;
-        } else if (v === '%') {
-          current = String(parseFloat(current) / 100);
-        } else {
-          if (justEval || current === '0') { current = v; justEval = false; }
-          else current += v;
-        }
-        updateCalcUI();
-        byId('calcResult').textContent = current;
+          if (tokens.length) { const r = computeCalc(tokens); byId('calcExpr').textContent = tokens.join(' ') + ' ='; current = r; tokens = []; justEval = true; byId('calcResult').textContent = r; return; }
+        } else if (v === '.') { if (!current.includes('.')) current += '.'; } 
+        else if (v === '±') { current = current.startsWith('-') ? current.slice(1) : '-' + current; } 
+        else if (v === '%') { current = String(parseFloat(current) / 100); } 
+        else { if (justEval || current === '0') { current = v; justEval = false; } else current += v; }
+        updateCalcUI(); byId('calcResult').textContent = current;
       };
     }
   };
@@ -1290,37 +1049,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     exportJson() {
       const data = Object.assign({}, Store.state, { version: APP_VERSION, exportedAt: new Date().toISOString() });
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `backup_${formatDateKey(new Date())}.json`;
-      a.click();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${formatDateKey(new Date())}.json`; a.click();
       UI.toast('导出成功', 'success');
     },
     importJson() {
-      const input = document.createElement('input');
-      input.type = 'file'; input.accept = '.json';
+      const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
       input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
           try {
             const data = JSON.parse(ev.target.result);
             if (!data.records || typeof data.records !== 'object') throw new Error('无效的备份文件');
-            Store.state = data;
-            Store.rev++;
-            Store.settingsDirty = true;
-            Store.dirtyRecords.clear();
-            Store.dirtyDeleted.clear();
+            Store.state = data; ensureState(); Store.rev++; Store.settingsDirty = true;
+            Store.dirtyRecords.clear(); Store.dirtyDeleted.clear();
             for (const k in data.records) Store.dirtyRecords.add(k);
-            Store.persistCache();
-            Settings.load();
-            Render.all();
-            Store.flush();
+            Store.persistCache(); Settings.load(); Render.all(); Store.flush();
             UI.toast('导入成功', 'success');
-          } catch (err) {
-            UI.toast('导入失败：' + err.message, 'error');
-          }
+          } catch (err) { UI.toast('导入失败：' + err.message, 'error'); }
         };
         reader.readAsText(file);
       };
@@ -1330,125 +1076,73 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 
   const App = {
     init() {
-      Session.init();
-      Calendar.init();
-      Clock.init();
-      Settings.init();
-      Calculator.init();
+      Session.init(); Calendar.init(); Clock.init(); Settings.init(); Calculator.init();
+      document.querySelectorAll('.nav-item').forEach(item => item.onclick = () => UI.goPage(item.dataset.page));
+      byId('syncBar').onclick = () => this.syncFromCloud(false);
 
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.onclick = () => UI.goPage(item.dataset.page);
-      });
-      byId('syncBar').onclick = () => { this.syncFromCloud(false); };
-
+      let lastSyncTime = 0;
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && Session.username) {
-          this.syncFromCloud(true);
+          const now = Date.now();
+          if (now - lastSyncTime > 60000) { lastSyncTime = now; this.syncFromCloud(true); }
+        }
+      });
+      
+      window.addEventListener('storage', (e) => {
+        if (e.key === SESSION_KEY || e.key === USER_KEY) {
+          if (!e.newValue && Session.username) this.forceLogout();
+          else if (e.newValue && e.newValue !== Session.username) window.location.reload();
         }
       });
 
-      if (Session.username && Session.token) {
-        this.showApp();
-      } else {
-        byId('authPage').style.display = 'flex';
-        byId('app').style.display = 'none';
-      }
+      if (Session.username && Session.token) this.showApp();
+      else { byId('authPage').style.display = 'flex'; byId('app').style.display = 'none'; }
 
       byId('authForm').onsubmit = async (e) => {
         e.preventDefault();
-        const u = byId('username').value.trim();
-        const p = byId('password').value;
+        const u = byId('username').value.trim(), p = byId('password').value;
         byId('authBtn').textContent = '登录中...';
         try {
           const saltRes = await Api.getSalt(u);
           const hash = await Api.deriveHash(p, saltRes.salt, saltRes.kdf, saltRes.iterations);
           const res = await Api.login(u, hash);
-          Session.set(u, res.token);
-          this.showApp();
-        } catch (err) {
-          UI.toast(err.message, 'error');
-        }
+          Session.set(u, res.token); this.showApp();
+        } catch (err) { UI.toast(err.message, 'error'); }
         byId('authBtn').textContent = '登录';
       };
     },
-
     async showApp() {
-      byId('authPage').style.display = 'none';
-      byId('app').style.display = 'flex';
-      byId('profileName').textContent = Session.username;
-      
-      // 🟢 核心兜底：不管有没有缓存，先强行渲染一次（避免白屏）
-      Settings.load();
-      Render.all(); 
-      
-      if (Store.loadCache()) {
-        Settings.load();
-        Render.all();
-      }
-      
+      byId('authPage').style.display = 'none'; byId('app').style.display = 'flex'; byId('profileName').textContent = Session.username;
+      ensureState(); Settings.load(); Render.all(); 
+      if (Store.loadCache()) { Settings.load(); Render.all(); }
       this.syncFromCloud(true);
     },
-
     async syncFromCloud(silent = false) {
       if (!silent) Store.setStatus('saving');
       try {
         await Store.flush();
-        const res = await Promise.race([
-          Api.getData(Session.username),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时')), 8000))
-        ]);
-
-        Store.state = res.data;
-        Store.rev++;
-        Store.persistCache();
-        Settings.load();
-        Render.all();
-        Store.setStatus('idle');
+        const res = await Promise.race([Api.getData(Session.username), new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时')), 8000))]);
+        if (!res || !res.data) throw new Error('返回数据为空');
+        Store.state = res.data; ensureState(); Store.rev++; Store.persistCache(); Settings.load(); Render.all(); Store.setStatus('idle');
         if (!silent) UI.toast('已同步云端数据', 'success');
       } catch (e) {
         Store.setStatus('error');
-        if (e.status === 401 || e.code === 'USER_NOT_FOUND' || e.code === 'TOKEN_REVOKED') {
-          UI.toast('登录已失效，请重新登录', 'error');
-          this.forceLogout();
-        } else {
-          if (!silent) UI.toast('同步失败，当前展示本地数据', 'error');
-        }
+        if (e.status === 401 || e.code === 'USER_NOT_FOUND' || e.code === 'TOKEN_REVOKED') { UI.toast('登录已失效，请重新登录', 'error'); this.forceLogout(); } 
+        else { if (!silent) UI.toast('同步失败，当前展示本地数据', 'error'); }
       }
     },
-
     async clearAll() {
       if (!await UI.confirmDangerous('清空数据', '将删除所有打卡记录且不可恢复，是否继续？')) return;
-      Store.state.records = {};
-      Store.state.deleted = {};
-      Store.rev++;
-      Store.settingsDirty = true;
-      for(const k of Store.dirtyRecords) Store.dirtyDeleted.add(k);
-      Store.dirtyRecords.clear();
-      Store.persistCache();
-      Render.all();
-      Store.flush();
-      UI.toast('已清空数据', 'success');
+      Store.state.records = {}; Store.state.deleted = {}; Store.deleted = {}; Store.rev++; Store.settingsDirty = true;
+      Store.dirtyRecords.clear(); Store.dirtyDeleted.clear(); Store.persistCache(); Render.all(); Store.flush(); UI.toast('已清空数据', 'success');
     },
-
     forceLogout() {
-      Store.state = { records: {}, settings: defaultSettings(), goal: 0, deleted: {}, dataRev: 0 };
-      Store.rev = 0;
-      Store.dirtyRecords.clear();
-      Store.dirtyDeleted.clear();
-      Store.settingsDirty = false;
-      Session.clear();
-      byId('app').style.display = 'none';
-      byId('authPage').style.display = 'flex';
+      Store.state = defaultUserData(); Store.rev = 0; Store.dirtyRecords.clear(); Store.dirtyDeleted.clear(); Store.settingsDirty = false;
+      Session.clear(); byId('app').style.display = 'none'; byId('authPage').style.display = 'flex';
     }
   };
 
-  window.App = { 
-    forceLogout: App.forceLogout, 
-    syncFromCloud: (s) => App.syncFromCloud(s),
-    clearAll: () => App.clearAll(),
-    importExport: ImportExport
-  };
-
+  window.App = { forceLogout: App.forceLogout, syncFromCloud: (s) => App.syncFromCloud(s), clearAll: () => App.clearAll(), importExport: ImportExport };
   document.addEventListener('DOMContentLoaded', () => App.init());
 })();
 </script>
