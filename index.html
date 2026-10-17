@@ -8,7 +8,9 @@
 <meta name="color-scheme" content="light dark">
 <title>工时记录助手</title>
 <style>
-/* 🟢 纯黑护眼极简色彩 */
+/* ====================================================
+   🟢 极简 HIG 视觉系统
+   ==================================================== */
 :root {
   --bg: #F4F5F6;
   --surface: #FFFFFF;
@@ -20,9 +22,12 @@
   --primary-soft: #E6EEEA;
   --color-ot: #D4A373;
   --color-weekend: #7B95A6;
+  --color-holiday: #EF4444;
   --border: #E5E7EB;
   --border-strong: #D1D5DB;
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 999px;
@@ -44,6 +49,8 @@
     --border: #334155;
     --border-strong: #475569;
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.3);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
   }
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -58,8 +65,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .hidden { display: none !important; }
 
 #app { max-width: 480px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column; padding-top: var(--safe-top); background: var(--bg); }
-
-/* Header */
 .header { padding: 16px; background: transparent; transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); overflow: hidden; flex-shrink: 0; }
 .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; transition: margin 0.3s; }
 .app-name { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
@@ -86,20 +91,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .progress-fill { height: 100%; background: var(--primary); width: 0%; border-radius: 2px; transition: width 0.3s; }
 .progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 8px; font-weight: 600; }
 
-/* 智能折叠 */
 #app.collapse-header .header { padding-bottom: 8px; border-bottom: 1px solid var(--border); background: var(--surface); }
 #app.collapse-header .header-top { margin-bottom: 0; }
 #app.collapse-header .header-month,
 #app.collapse-header .stats-bar,
 #app.collapse-header .progress-wrap { max-height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none; overflow: hidden; }
 
-/* 页面框架 */
 .page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
 .page.active { display: flex; }
 .page-scroll { flex: 1; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 16px; overscroll-behavior: contain; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
 
-/* 日历 */
 .weekdays { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: 12px; color: var(--text-tertiary); margin-bottom: 12px; font-weight: 600;}
 .weekdays span:first-child, .weekdays span:last-child { color: #EF4444; }
 .days-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
@@ -119,13 +121,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
 .star { position: absolute; top: 4px; right: 5px; font-size: 11px; color: var(--color-ot); }
 
-/* 详情与空状态 */
 .empty-state { text-align: center; padding: 40px 20px; color: var(--text-tertiary); }
 .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
 .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .empty-desc { font-size: 13px; }
 
-/* 按钮 */
 .btns-group { display: flex; flex-direction: column; gap: 12px; }
 .btn { height: 52px; border-radius: var(--radius-md); border: none; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
 .btn:active { transform: scale(0.98); }
@@ -133,7 +133,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .btn-secondary { background: var(--surface); color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-danger { background: #EF4444; color: #fff; }
 
-/* 统计面板 */
 .card-num { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin: 8px 0; color: var(--text); }
 .card-sub { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
 .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -156,9 +155,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .row-normal .hours-list-name::before { background: var(--primary); }
 .row-ot .hours-list-name::before { background: var(--color-ot); }
 .row-weekend .hours-list-name::before { background: var(--color-weekend); }
-.row-holiday .hours-list-name::before { background: #EF4444; }
+.row-holiday .hours-list-name::before { background: var(--color-holiday); }
 
-/* 调休账本 */
 .ledger-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .ledger-balance { font-size: 30px; font-weight: 900; letter-spacing: -0.5px; color: var(--text); }
 .ledger-stat { text-align: right; font-size: 12px; color: var(--text-secondary); line-height: 1.6; font-weight: 500; }
@@ -167,14 +165,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .ledger-val.earn { color: #10B981; font-weight: 900; }
 .ledger-val.use { color: #F87171; font-weight: 900; }
 
-/* 底部导航 */
 .bottom-nav { display: flex; border-top: 1px solid var(--border); background: var(--surface); padding: 8px 0 var(--safe-bottom); flex-shrink: 0; }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-tertiary); cursor: pointer; }
 .nav-item.active { color: var(--primary); }
 .nav-icon { font-size: 20px; font-weight: 500;}
 .nav-label { font-size: 11px; font-weight: 800; }
 
-/* 弹窗 */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; align-items: flex-end; z-index: 100; }
 .modal-overlay.show { display: flex; }
 .modal-content { background: var(--surface); width: 100%; max-width: 480px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 24px 20px calc(20px + var(--safe-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1); max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
@@ -183,7 +179,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .modal-title { font-size: 18px; font-weight: 900; }
 .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
 
-/* 表单与选项 */
 .field-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
 .option-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
 .option-grid.cols-2 { grid-template-columns: repeat(2,1fr); }
@@ -202,14 +197,25 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .note-area textarea { width: 100%; height: 80px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); resize: none; color: var(--text); font-size: 14px; }
 .note-area textarea:focus { border-color: var(--primary); }
 
-/* Toast */
+.calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.calc-tab { flex: 1; height: 44px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--border); font-weight: 600; font-size: 15px; }
+.calc-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.calc-panel { display: none; }
+.calc-panel.active { display: block; }
+.calc-display { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; text-align: right; margin-bottom: 16px; border: 1px solid var(--border); }
+.calc-expr { font-size: 13px; color: var(--text-secondary); min-height: 20px; word-break: break-all; }
+.calc-result { font-size: 32px; font-weight: 900; word-break: break-all; }
+.calc-keys { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.calc-key { height: 60px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); font-size: 20px; font-weight: 600; }
+.calc-key.op { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
+.calc-key.eq { background: var(--text); color: var(--bg); border-color: transparent; }
+
 .toast-wrap { position: fixed; top: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; z-index: 1000; pointer-events: none; }
 .toast { background: rgba(30,32,38,0.9); color: #fff; padding: 10px 20px; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; margin-bottom: 8px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s cubic-bezier(0.2,0.8,0.2,1); backdrop-filter: blur(8px); }
 .toast.success { color: #10B981; }
 .toast.error { color: #EF4444; }
 @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* Auth Page */
 .auth-page { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 .auth-box { width: 100%; max-width: 360px; background: var(--surface); padding: 32px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
 .auth-title { font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 8px; }
@@ -314,14 +320,61 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 
   <section class="page" id="pageCalculator">
     <div class="page-scroll">
-      <div class="card">
-        <h2 class="chart-title">个税计算 (简化)</h2>
-        <div class="form-group"><label>税前月收入（元）</label><input type="number" id="taxIncome" value="0" step="100"></div>
-        <div class="form-group"><label>五险一金比例（合计 %）</label><input type="number" id="taxInsuranceRate" value="0" step="0.5"></div>
-        <div class="card" style="background:var(--bg); border:none; padding:16px; margin-top:16px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;"><span>应纳税所得额</span><strong id="dtTaxable">¥0</strong></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;"><span>应缴个税</span><strong id="dtTax">¥0</strong></div>
-          <div style="display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:16px;"><span>税后收入</span><strong id="dtNet" style="color:var(--primary); font-size:20px;">¥0</strong></div>
+      <div class="calc-tabs" role="tablist">
+        <button class="calc-tab active" type="button" data-tab="tax">个税</button>
+        <button class="calc-tab" type="button" data-tab="salary">工资</button>
+        <button class="calc-tab" type="button" data-tab="simple">计算器</button>
+      </div>
+      
+      <div class="calc-panel active" id="calcTax">
+        <div class="card">
+          <div class="form-group"><label>税前月收入（元）</label><input type="number" id="taxIncome" value="0" step="100"></div>
+          <div class="form-group"><label>五险一金比例（合计 %）</label><input type="number" id="taxInsuranceRate" value="0" step="0.5"></div>
+          <div class="card" style="background:var(--bg); border:none; padding:16px; margin-top:16px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;"><span>应纳税所得额</span><strong id="dtTaxable">¥0</strong></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;"><span>应缴个税</span><strong id="dtTax">¥0</strong></div>
+            <div style="display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:16px;"><span>税后收入</span><strong id="dtNet" style="color:var(--primary); font-size:20px;">¥0</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-panel" id="calcSalary">
+        <div class="card">
+          <div class="form-group"><label>时薪（元/小时）</label><input type="number" id="salaryRate" value="0" step=".5"></div>
+          <div class="form-group"><label>每日工时</label><input type="number" id="salaryHours" value="8" step=".5"></div>
+          <div class="form-group"><label>每月工作天数</label><input type="number" id="salaryDays" value="21.75" step=".5"></div>
+          <div class="card" style="background:var(--bg); border:none; padding:16px; margin-top:16px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;"><span>日薪</span><strong id="salaryDaily">¥0</strong></div>
+            <div style="display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:16px;"><span>月薪</span><strong id="salaryMonthly" style="color:var(--primary); font-size:20px;">¥0</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-panel" id="calcSimple">
+        <div class="card" style="padding:0; background:transparent; border:none; box-shadow:none;">
+          <div class="calc-display"><div class="calc-expr" id="calcExpr"></div><div class="calc-result" id="calcResult">0</div></div>
+          <div class="calc-keys" id="calcKeys">
+            <button class="calc-key" type="button" data-key="C">C</button>
+            <button class="calc-key" type="button" data-key="⌫">⌫</button>
+            <button class="calc-key" type="button" data-key="%">%</button>
+            <button class="calc-key op" type="button" data-key="÷">÷</button>
+            <button class="calc-key" type="button" data-key="7">7</button>
+            <button class="calc-key" type="button" data-key="8">8</button>
+            <button class="calc-key" type="button" data-key="9">9</button>
+            <button class="calc-key op" type="button" data-key="×">×</button>
+            <button class="calc-key" type="button" data-key="4">4</button>
+            <button class="calc-key" type="button" data-key="5">5</button>
+            <button class="calc-key" type="button" data-key="6">6</button>
+            <button class="calc-key op" type="button" data-key="-">−</button>
+            <button class="calc-key" type="button" data-key="1">1</button>
+            <button class="calc-key" type="button" data-key="2">2</button>
+            <button class="calc-key" type="button" data-key="3">3</button>
+            <button class="calc-key op" type="button" data-key="+">+</button>
+            <button class="calc-key" type="button" data-key="±">+/−</button>
+            <button class="calc-key" type="button" data-key="0">0</button>
+            <button class="calc-key" type="button" data-key=".">.</button>
+            <button class="calc-key eq" type="button" data-key="=">=</button>
+          </div>
         </div>
       </div>
     </div>
@@ -357,8 +410,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     <div class="page-scroll">
       <div class="card">
         <h2 class="chart-title" id="profileName">当前用户</h2>
-        <button class="btn btn-primary" type="button" onclick="window.App.syncFromCloud(false)" style="margin-bottom:12px;">从云端强制拉取最新数据</button>
+        <button class="btn btn-primary" type="button" onclick="window.App.syncFromCloud(false)" style="margin-bottom:12px;">同步最新数据</button>
         <button class="btn btn-secondary" type="button" onclick="window.App.importExport.exportJson()">导出 JSON 备份</button>
+        <button class="btn btn-secondary" type="button" onclick="window.App.importExport.importJson()" style="margin-top:12px;">导入 JSON 恢复</button>
+        <button class="btn btn-secondary" type="button" onclick="window.App.clearAll()" style="margin-top:12px;">清空当前数据</button>
         <button class="btn btn-danger" type="button" onclick="window.App.forceLogout()" style="margin-top:12px;">退出登录</button>
       </div>
     </div>
@@ -490,7 +545,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     { max: Infinity, rate: 0.45, quick: 15160 },
   ];
   const THRESHOLD = 5000;
-  const MAX_NOTE_LEN = 500;
   const HOUR_PRESET = { day: 8, early: 6, mid: 7, night: 7 };
   const MONTH_NAMES = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
   const WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -542,6 +596,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     group(v) { return num(v).toLocaleString('zh-CN'); }
   };
 
+  // 简易节假日估算（兜底）
   const Holiday = {
     isHoliday(k) { return ['01-01','05-01','10-01','10-02','10-03'].some(s => k.endsWith(s)); },
     isWorkday(k) { return false; },
@@ -943,7 +998,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       
       c.innerHTML = `
         <div class="hours-dist">
-          <div class="hours-donut" style="background:conic-gradient(var(--primary) 0% ${p1}%, var(--color-ot) ${p1}% ${p2}%, var(--color-weekend) ${p2}% ${p3}%, #EF4444 ${p3}% 100%);">
+          <div class="hours-donut" style="background:conic-gradient(var(--primary) 0% ${p1}%, var(--color-ot) ${p1}% ${p2}%, var(--color-weekend) ${p2}% ${p3}%, var(--color-holiday) ${p3}% 100%);">
             <div class="hours-donut-center">
               <div class="hours-donut-total">${round1(total).toFixed(0)}</div>
               <div class="hours-donut-label">HOURS</div>
@@ -1135,7 +1190,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 
   const Calculator = {
     init() {
-      const calc = () => {
+      document.querySelectorAll('.calc-tab').forEach(tab => {
+        tab.onclick = () => {
+          document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+        };
+      });
+      
+      const calcTax = () => {
         const gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
         const ins = gross * clamp(byId('taxInsuranceRate').value, 0, 100, 0) / 100;
         const taxable = Math.max(0, gross - ins - 5000);
@@ -1147,8 +1211,120 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
         byId('dtTax').textContent = '¥' + tax.toFixed(2);
         byId('dtNet').textContent = '¥' + (gross - ins - tax).toFixed(2);
       };
-      byId('taxIncome').oninput = calc;
-      byId('taxInsuranceRate').oninput = calc;
+      byId('taxIncome').oninput = calcTax;
+      byId('taxInsuranceRate').oninput = calcTax;
+      
+      const calcSalary = () => {
+        const rate = clamp(byId('salaryRate').value, 0, 10000, 0);
+        const hours = clamp(byId('salaryHours').value, 0, 24, 0);
+        const days = clamp(byId('salaryDays').value, 0, 31, 0);
+        const daily = rate * hours;
+        const monthly = daily * days;
+        byId('salaryDaily').textContent = '¥' + daily.toFixed(2);
+        byId('salaryMonthly').textContent = '¥' + monthly.toFixed(2);
+      };
+      byId('salaryRate').oninput = calcSalary;
+      byId('salaryHours').oninput = calcSalary;
+      byId('salaryDays').oninput = calcSalary;
+
+      // 简易计算器
+      let tokens = [], current = '0', justEval = false;
+      const updateCalcUI = () => {
+        byId('calcExpr').textContent = tokens.join(' ') + (current ? ' ' + current : '');
+      };
+      const computeCalc = (arr) => {
+        const stk = arr.slice();
+        for (let i = 1; i < stk.length - 1; i += 2) {
+          if (stk[i] === '×' || stk[i] === '÷') {
+            const l = parseFloat(stk[i-1])||0, r = parseFloat(stk[i+1])||0;
+            stk.splice(i-1, 3, String(stk[i] === '×' ? l*r : (r===0?NaN:l/r)));
+            i -= 2;
+          }
+        }
+        let res = parseFloat(stk[0]) || 0;
+        for (let i = 1; i < stk.length - 1; i += 2) {
+          const r = parseFloat(stk[i+1]) || 0;
+          if (stk[i] === '+') res += r;
+          if (stk[i] === '-') res -= r;
+        }
+        return isFinite(res) ? String(parseFloat(res.toPrecision(12))) : 'Error';
+      };
+      byId('calcKeys').onclick = (e) => {
+        const k = e.target.closest('[data-key]');
+        if (!k) return;
+        const v = k.dataset.key;
+        if (v === 'C') { tokens = []; current = '0'; justEval = false; }
+        else if (v === '⌫') { current = current.length > 1 ? current.slice(0, -1) : '0'; }
+        else if ('+-×÷'.includes(v)) {
+          if (justEval) { tokens = []; justEval = false; }
+          if (current !== '0') { tokens.push(current); current = '0'; }
+          else if (tokens.length && !'+-×÷'.includes(tokens[tokens.length-1])) tokens.pop();
+          tokens.push(v);
+        } else if (v === '=') {
+          if (current !== '0') tokens.push(current);
+          while(tokens.length && '+-×÷'.includes(tokens[tokens.length-1])) tokens.pop();
+          if (tokens.length) {
+            const r = computeCalc(tokens);
+            byId('calcExpr').textContent = tokens.join(' ') + ' =';
+            current = r; tokens = []; justEval = true;
+            byId('calcResult').textContent = r;
+            return;
+          }
+        } else if (v === '.') {
+          if (!current.includes('.')) current += '.';
+        } else if (v === '±') {
+          current = current.startsWith('-') ? current.slice(1) : '-' + current;
+        } else if (v === '%') {
+          current = String(parseFloat(current) / 100);
+        } else {
+          if (justEval || current === '0') { current = v; justEval = false; }
+          else current += v;
+        }
+        updateCalcUI();
+        byId('calcResult').textContent = current;
+      };
+    }
+  };
+
+  const ImportExport = {
+    exportJson() {
+      const data = Object.assign({}, Store.state, { version: APP_VERSION, exportedAt: new Date().toISOString() });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `backup_${formatDateKey(new Date())}.json`;
+      a.click();
+      UI.toast('导出成功', 'success');
+    },
+    importJson() {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!data.records || typeof data.records !== 'object') throw new Error('无效的备份文件');
+            Store.state = data;
+            Store.rev++;
+            Store.settingsDirty = true;
+            Store.dirtyRecords.clear();
+            Store.dirtyDeleted.clear();
+            for (const k in data.records) Store.dirtyRecords.add(k);
+            Store.persistCache();
+            Settings.load();
+            Render.all();
+            Store.flush();
+            UI.toast('导入成功', 'success');
+          } catch (err) {
+            UI.toast('导入失败：' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
     }
   };
 
@@ -1201,11 +1377,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
       byId('app').style.display = 'flex';
       byId('profileName').textContent = Session.username;
       
+      // 🟢 核心兜底：不管有没有缓存，先强行渲染一次（避免白屏）
+      Settings.load();
+      Render.all(); 
+      
       if (Store.loadCache()) {
         Settings.load();
         Render.all();
-      } else {
-        byId('detailArea').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">正在加载数据...</div></div>';
       }
       
       this.syncFromCloud(true);
@@ -1214,7 +1392,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
     async syncFromCloud(silent = false) {
       if (!silent) Store.setStatus('saving');
       try {
-        await Store.flush(); // 先把本地未保存的推上去
+        await Store.flush();
         const res = await Promise.race([
           Api.getData(Session.username),
           new Promise((_, reject) => setTimeout(() => reject(new Error('网络超时')), 8000))
@@ -1233,9 +1411,23 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
           UI.toast('登录已失效，请重新登录', 'error');
           this.forceLogout();
         } else {
-          if (!silent) UI.toast('同步失败：显示的是本地缓存', 'error');
+          if (!silent) UI.toast('同步失败，当前展示本地数据', 'error');
         }
       }
+    },
+
+    async clearAll() {
+      if (!await UI.confirmDangerous('清空数据', '将删除所有打卡记录且不可恢复，是否继续？')) return;
+      Store.state.records = {};
+      Store.state.deleted = {};
+      Store.rev++;
+      Store.settingsDirty = true;
+      for(const k of Store.dirtyRecords) Store.dirtyDeleted.add(k);
+      Store.dirtyRecords.clear();
+      Store.persistCache();
+      Render.all();
+      Store.flush();
+      UI.toast('已清空数据', 'success');
     },
 
     forceLogout() {
@@ -1252,14 +1444,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 
   window.App = { 
     forceLogout: App.forceLogout, 
-    syncFromCloud: (silent) => App.syncFromCloud(silent),
-    importExport: { 
-      exportJson: () => {
-        const data = Object.assign({}, Store.state, { version: APP_VERSION, exportedAt: new Date().toISOString() });
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${formatDateKey(new Date())}.json`; a.click();
-      }
-    }
+    syncFromCloud: (s) => App.syncFromCloud(s),
+    clearAll: () => App.clearAll(),
+    importExport: ImportExport
   };
 
   document.addEventListener('DOMContentLoaded', () => App.init());
