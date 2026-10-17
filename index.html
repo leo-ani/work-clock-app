@@ -496,7 +496,9 @@ button{background:none;border:none;cursor:pointer;}
         <button data-type="holiday">节假日</button>
       </div>
     </div>
-    <div class="hours-control">
+
+    <!-- 正班工时 (周末/节假日时隐藏) -->
+    <div class="hours-control" id="rowNormal">
       <span style="font-weight:600;">正班工时</span>
       <div style="display:flex;align-items:center;gap:12px;">
         <button class="hours-btn" data-adjust="normal" data-delta="-0.5">−</button>
@@ -504,14 +506,17 @@ button{background:none;border:none;cursor:pointer;}
         <button class="hours-btn" data-adjust="normal" data-delta="0.5">+</button>
       </div>
     </div>
-    <div class="hours-control">
-      <span style="font-weight:600;">加班工时</span>
+    
+    <!-- 加班工时 (周末/节假日时显示，标签改变) -->
+    <div class="hours-control" id="rowOt">
+      <span style="font-weight:600;" id="lblOt">加班工时</span>
       <div style="display:flex;align-items:center;gap:12px;">
         <button class="hours-btn" data-adjust="ot" data-delta="-0.5">−</button>
         <span class="hours-value" id="valOt">0.0 H</span>
         <button class="hours-btn" data-adjust="ot" data-delta="0.5">+</button>
       </div>
     </div>
+    
     <div class="form-group" style="margin-top:16px;">
       <label>加班补偿类型</label>
       <div class="segmented-control" id="compensationRow">
@@ -1054,11 +1059,15 @@ byId('nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() 
 /* 打卡弹窗 */
 byId('addRecordBtn').onclick = () => {
   const rec = Store.state.records[selectedDate];
-  let baseDraft = rec ? { ...rec } : { shift: 'day', type: getAutoType(selectedDate), normal: 8, ot: 0, leave: 'none', compensation: 'pay', note: '' };
+  const autoType = getAutoType(selectedDate);
+  const isRest = autoType === 'weekend' || autoType === 'holiday';
   
-  if (baseDraft.type === 'normal') {
-    const autoType = getAutoType(selectedDate);
-    if (autoType !== 'normal') baseDraft.type = autoType;
+  let baseDraft = rec ? { ...rec } : { shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '' };
+  
+  if (baseDraft.type === 'normal' && isRest) {
+    baseDraft.type = autoType;
+    baseDraft.ot += baseDraft.normal;
+    baseDraft.normal = 0;
   }
   
   draft = baseDraft;
@@ -1069,7 +1078,10 @@ byId('addRecordBtn').onclick = () => {
 
 byId('quickPunchBtn').onclick = () => {
   const autoType = getAutoType(selectedDate);
-  Store.mutate(s => s.records[selectedDate] = { shift: 'day', type: autoType, normal: 8, ot: 0, leave: 'none', compensation: 'pay', note: '', updatedAt: Date.now() });
+  const isRest = autoType === 'weekend' || autoType === 'holiday';
+  Store.mutate(s => s.records[selectedDate] = { 
+    shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '', updatedAt: Date.now() 
+  });
   toast('打卡成功');
 };
 
@@ -1084,8 +1096,14 @@ byId('quickClearBtn').onclick = () => {
   syncClockUI();
 };
 byId('quick8hBtn').onclick = () => {
-  draft.normal = 8;
-  draft.ot = 0;
+  const isRest = draft.type === 'weekend' || draft.type === 'holiday';
+  if (isRest) {
+    draft.ot = 8;
+    draft.normal = 0;
+  } else {
+    draft.normal = 8;
+    draft.ot = 0;
+  }
   syncClockUI();
 };
 
@@ -1104,6 +1122,11 @@ function syncClockUI() {
   byId('valNormal').textContent = draft.normal.toFixed(1) + ' H';
   byId('valOt').textContent = draft.ot.toFixed(1) + ' H';
   byId('noteInput').value = draft.note;
+  
+  const isRest = draft.type === 'weekend' || draft.type === 'holiday';
+  byId('rowNormal').style.display = isRest ? 'none' : 'flex';
+  byId('lblOt').textContent = draft.type === 'weekend' ? '周末加班' : (draft.type === 'holiday' ? '节假日加班' : '加班工时');
+  
   document.querySelectorAll('#shiftRow button').forEach(b => b.classList.toggle('active', b.dataset.shift === draft.shift));
   document.querySelectorAll('#typeRow button').forEach(b => b.classList.toggle('active', b.dataset.type === draft.type));
   document.querySelectorAll('#compensationRow button').forEach(b => b.classList.toggle('active', b.dataset.comp === draft.compensation));
@@ -1116,7 +1139,25 @@ document.querySelectorAll('[data-adjust]').forEach(b => b.onclick = () => {
   syncClockUI();
 });
 byId('shiftRow').onclick = e => { if(e.target.dataset.shift) { draft.shift = e.target.dataset.shift; syncClockUI(); } };
-byId('typeRow').onclick = e => { if(e.target.dataset.type) { draft.type = e.target.dataset.type; syncClockUI(); } };
+
+byId('typeRow').onclick = e => {
+  if(e.target.dataset.type) {
+    const oldType = draft.type;
+    draft.type = e.target.dataset.type;
+    const oldIsRest = oldType === 'weekend' || oldType === 'holiday';
+    const newIsRest = draft.type === 'weekend' || draft.type === 'holiday';
+    
+    if (!oldIsRest && newIsRest) {
+      draft.ot += draft.normal;
+      draft.normal = 0;
+    } else if (oldIsRest && !newIsRest) {
+      draft.normal += draft.ot;
+      draft.ot = 0;
+    }
+    syncClockUI();
+  }
+};
+
 byId('compensationRow').onclick = e => { if(e.target.dataset.comp) { draft.compensation = e.target.dataset.comp; syncClockUI(); } };
 byId('leaveRow').onclick = e => { if(e.target.dataset.leave) { draft.leave = e.target.dataset.leave; syncClockUI(); } };
 
