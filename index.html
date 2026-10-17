@@ -760,7 +760,7 @@ const Store = {
       next.records[k] = local;
     }
     if (opts.prefsDirty) next.settings = this.state.settings;
-    this.state = next; this.persist(); this.rev++;
+    this.state = next; this.persist();
     if (!opts.silent) renderAll();
   },
   persist() { if (Session.username) safeSet(CACHE_PREFIX + Session.username, JSON.stringify({ state: this.state, deleted: this.deleted })); },
