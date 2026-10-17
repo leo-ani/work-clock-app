@@ -82,10 +82,12 @@ button{background:none;border:none;cursor:pointer;}
 .day-badge{position:absolute;top:2px;right:4px;display:flex;flex-direction:column;align-items:center;z-index:3;}
 .badge-star{font-size:10px;color:var(--sys-orange);line-height:1;}
 .badge-dot{width:4px;height:4px;border-radius:50%;background:var(--brand);}
-.day.selected{background:var(--sys-text)!important;}
-.day.selected .day-num,.day.selected .day-sub,.day.selected .badge-star,.day.selected .badge-dot{color:var(--sys-surface)!important;background:var(--sys-surface);}
+/* 找到原来的这几行并替换掉： */
+.day.selected{background:var(--brand)!important;}
+.day.selected .day-num,.day.selected .day-sub,.day.selected .badge-star,.day.selected .badge-dot{color:#fff!important;}
 .day.selected .badge-star{background:none;}
-.day.today::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--brand);opacity:0.1;z-index:1;}
+.day.selected .badge-dot{background:#fff;}
+.day.today{background:var(--brand-soft);} /* 今天未选中时，给个极浅的底色 */
 .day.today .day-num{color:var(--brand);}
 
 /* 按钮 */
@@ -840,7 +842,8 @@ function renderAll() {
   byId('stDays').textContent = sum.totalDays + '天';
   byId('stHours').textContent = round1(sum.totalHours) + 'h';
   byId('stMoney').textContent = fmt.compact(sum.totalIncome);
-  byId('headerMonth').textContent = `${currentDate.getMonth()+1}月 ${currentDate.getFullYear()}`;
+  
+  byId('headerMonth').textContent = `${currentDate.getFullYear()}年 ${currentDate.getMonth()+1}月`;
   
   const grid = byId('calGrid'); grid.innerHTML = '';
   const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
