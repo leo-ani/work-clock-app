@@ -975,15 +975,14 @@ function getAutoType(key) {
 }
 
 function aggregateMonth(year, month, records, settings) {
-  let totalDays = 0, totalHours = 0, totalIncome = 0;
+  let totalDays = 0, totalHours = 0, totalIncome = 0, timeoffEarned = 0, timeoffUsed = 0;
   const cat = { normal: 0, ot: 0 };
   const engine = createIncomeEngine(settings);
 
-  let timeoffEarnedTotal = 0, timeoffUsedTotal = 0;
   for (const k in records) {
     const r = records[k];
-    if (r.compensation === 'timeoff' && r.leave === 'none') timeoffEarnedTotal += num(r.normal) + num(r.ot);
-    if (r.leave === 'timeoff') timeoffUsedTotal += num(r.deductHours) || 8;
+    if (r.compensation === 'timeoff' && r.leave === 'none') timeoffEarned += num(r.normal) + num(r.ot);
+    if (r.leave === 'timeoff') timeoffUsed += num(r.deductHours) || 8;
   }
 
   for (const key in records) {
@@ -1007,7 +1006,7 @@ function aggregateMonth(year, month, records, settings) {
   if (settings.mode === 'salary' && settings.salaryFixedMode === 'monthly') {
     totalIncome += num(settings.baseSalary) + num(settings.performance);
   }
-  return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarnedTotal - timeoffUsedTotal };
+  return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarned - timeoffUsed };
 }
 
 function renderAll() {
@@ -1101,7 +1100,6 @@ function renderAll() {
     byId('timeoffBox').style.display = isSalaryMode ? 'block' : 'none';
     byId('boxTimeoff').textContent = round1(sum.timeoffBalance);
     
-    // 目标进度条联动
     const goal = Store.state.goal || 0;
     if (goal > 0) {
       byId('goalProgressWrap').style.display = 'block';
@@ -1223,7 +1221,7 @@ byId('clockSaveBtn').onclick = () => {
   if (draft.leave === 'none' && draft.normal === 0 && draft.ot === 0 && !draft.note) {
     Store.mutate(s => { 
       const oldRec = s.records[selectedDate];
-      const delTime = oldRec ? oldRec.updatedAt + 1000 : Date.now();
+      const delTime = Math.max(Date.now(), oldRec ? oldRec.updatedAt + 1000 : 0);
       delete s.records[selectedDate]; 
       s.deleted[selectedDate] = delTime; 
     });
