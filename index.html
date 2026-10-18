@@ -190,6 +190,7 @@ button{background:none;border:none;cursor:pointer;}
 .deduction-list.collapsed { display: none; }
 
 /* 计算器 */
+.calc-mode-hint{margin:0 0 16px;padding:10px 14px;border-radius:var(--radius-m);background:var(--brand-soft);color:var(--brand);font-size:13px;font-weight:600;}
 .calc-tabs{display:flex;background:var(--sys-surface);padding:0 16px;gap:8px;position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--sys-border);}
 .calc-tab{flex:1;padding:16px 0;font-size:15px;font-weight:600;color:var(--sys-text-sec);border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;cursor:pointer;text-align:center;}
 .calc-tab.active{color:var(--sys-blue);border-bottom-color:var(--sys-blue);}
@@ -330,6 +331,9 @@ button{background:none;border:none;cursor:pointer;}
           <div style="height:6px;background:var(--sys-gray);border-radius:100px;overflow:hidden;">
             <div id="goalProgressFill" style="height:100%;background:var(--brand);border-radius:100px;transition:width 0.3s;width:0%;"></div>
           </div>
+          <div id="goalInputGroup" style="margin-top:12px;">
+            <div class="input-wrap"><input type="number" id="goalInput" min="0" max="1000" placeholder="设置月度工时目标"><span class="suffix">h</span></div>
+          </div>
         </div>
       </div>
       <div class="stat-grid">
@@ -392,14 +396,43 @@ button{background:none;border:none;cursor:pointer;}
       </div>
 
       <div class="calc-panel" id="calcSalary">
-        <div class="form-group"><label>时薪 (元/小时)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="salaryRate" value="0" step="0.5" max="10000"></div></div>
-        <div class="form-group"><label>每日工时 (小时)</label><div class="input-wrap"><input type="number" id="salaryHours" value="8" step="0.5" max="24"><span class="suffix">h</span></div></div>
-        <div class="form-group"><label>每月工作天数</label><div class="input-wrap"><input type="number" id="salaryDays" value="21.75" step="0.5" max="31"><span class="suffix">天</span></div></div>
+        <div class="form-group">
+          <label>薪资模式</label>
+          <div class="segmented-control" id="modeSwitch">
+            <button data-mode="hourly" class="active">小时工</button>
+            <button data-mode="salary">月薪制</button>
+          </div>
+        </div>
+
+        <div id="hourlyForm">
+          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inNormal" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inHoliday" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
+        </div>
+
+        <div id="salaryForm" class="hidden">
+          <div class="form-group"><label>底薪发放方式</label>
+            <select id="inSalaryFixedMode" style="width:100%;padding:12px;border-radius:var(--radius-m);border:1px solid var(--sys-border);background:var(--sys-bg);font-size:16px;font-weight:600;">
+              <option value="daily">按出勤天数折算</option>
+              <option value="monthly">固定整月发放</option>
+            </select>
+          </div>
+          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inBaseSalary" step="100" min="0" max="500000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inPerformance" step="100" min="0" max="500000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"><span class="suffix">天</span></div></div>
+        </div>
+
+        <div class="form-group"><label>每日工时 (H)</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"><span class="suffix">h</span></div></div>
+
         <div class="card" style="margin:16px 0 0;background:var(--sys-bg);box-shadow:none;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center;">
             <div><div class="stat-box-lbl">日薪</div><div style="font-size:20px;font-weight:800;color:var(--brand)" id="salaryDaily">¥0</div></div>
             <div><div class="stat-box-lbl">月薪</div><div style="font-size:20px;font-weight:800;color:var(--brand)" id="salaryMonthly">¥0</div></div>
           </div>
+          <div class="hidden" id="calcHourlyFromMonthly" style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--sys-border);display:flex;justify-content:space-between;align-items:center;">
+            <span class="stat-box-lbl">折算时薪</span>
+            <span style="font-size:17px;font-weight:800;color:var(--brand)" id="salaryHourly">¥0</span>
+          </div>
+          <div style="margin-top:12px;font-size:11.5px;color:var(--sys-text-sec);line-height:1.6;">改动会立即保存到账号，并与「记录 / 统计」的收入计算共用同一份数据。</div>
         </div>
       </div>
 
@@ -433,31 +466,13 @@ button{background:none;border:none;cursor:pointer;}
     <!-- 设置与我的页 -->
     <div class="page" id="pageSettings">
       <div class="card" style="margin-top:16px;">
-        <div class="form-group">
-          <label>薪资模式</label>
-          <div class="segmented-control" id="modeSwitch">
-            <button data-mode="hourly" class="active">小时工</button>
-            <button data-mode="salary">月薪制</button>
-          </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px;">账号</div>
+        <div class="detail-row" style="border-top:none;padding-top:0;"><span class="detail-label">用户名</span><span class="detail-value" id="profileUser">-</span></div>
+        <div class="detail-row"><span class="detail-label">薪资模式</span><span class="detail-value" id="profileMode">-</span></div>
+        <div class="detail-row"><span class="detail-label">数据同步</span><span class="detail-value" id="profileSync">-</span></div>
+        <div style="margin-top:12px;font-size:12px;color:var(--sys-text-sec);line-height:1.6;">
+          薪资、时薪、五险一金等设置在「计算 → 工资 / 个税」页调整，改动会自动保存。
         </div>
-        <div id="hourlyForm">
-          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inNormal" step="0.5" max="1000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inHoliday" step="0.5" max="1000" inputmode="decimal"></div></div>
-        </div>
-        <div id="salaryForm" class="hidden">
-          <div class="form-group"><label>底薪发放方式</label>
-            <select id="inSalaryFixedMode" style="width:100%;padding:12px;border-radius:var(--radius-m);border:1px solid var(--sys-border);background:var(--sys-bg);font-size:16px;font-weight:600;">
-              <option value="daily">按出勤天数折算</option>
-              <option value="monthly">固定整月发放</option>
-            </select>
-          </div>
-          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><input type="number" id="inBaseSalary" step="100" max="500000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><input type="number" id="inPerformance" step="100" max="500000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"></div></div>
-          <div class="form-group"><label>每日工时 (H)</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"></div></div>
-        </div>
-        <div class="form-group" id="goalInputGroup" style="margin-top:24px;"><label>月度工时目标 (H)</label><div class="input-wrap"><input type="number" id="goalInput" min="0" max="1000"></div></div>
-        <button class="btn-primary" id="saveSettingsBtn" style="margin-top:16px;width:100%;">保存设置</button>
       </div>
 
       <div class="card" style="padding:0;">
@@ -1111,9 +1126,14 @@ const Session = {
 
 function updateSyncUI() {
   const dot = byId('syncDot'), txt = byId('syncText');
-  if (!dot || !txt) return;
-  dot.className = 'sync-dot ' + Store.syncStatus;
-  txt.textContent = { idle: '已同步', synced: '已同步', saving: '同步中', pending: '待上传', error: '失败' }[Store.syncStatus] || '已连接';
+  const label = { idle: '已同步', synced: '已同步', saving: '同步中', pending: '待上传', error: '失败' }[Store.syncStatus] || '已连接';
+  if (dot && txt) {
+    dot.className = 'sync-dot ' + Store.syncStatus;
+    txt.textContent = label;
+  }
+  // 设置页的"数据同步"也保持一致
+  const profileSync = byId('profileSync');
+  if (profileSync) profileSync.textContent = label;
 }
 
 /* UI 渲染 */
@@ -1229,13 +1249,18 @@ function ensureCalCells(grid) {
 function applyGoalVisibility(sum) {
   const wrap = byId('goalProgressWrap');
   if (!wrap) return;
-  const isHourly = Store.state.settings.mode === 'hourly';
-  const goal = num(Store.state.goal);
-  const show = isHourly && goal > 0;
+  // 时薪制显示（含未设置目标时的输入框）；月薪制整块隐藏
+  const show = Store.state.settings.mode === 'hourly';
   wrap.style.display = show ? 'block' : 'none';
   if (!show) return;
-  byId('goalProgressText').textContent = round1(sum.totalHours) + ' / ' + goal + ' h';
-  byId('goalProgressFill').style.width = Math.min(100, (sum.totalHours / goal) * 100) + '%';
+  const goal = num(Store.state.goal);
+  byId('goalProgressText').textContent = goal > 0
+    ? round1(sum.totalHours) + ' / ' + goal + ' h'
+    : '未设置';
+  byId('goalProgressFill').style.width = goal > 0
+    ? Math.min(100, (sum.totalHours / goal) * 100) + '%'
+    : '0%';
+  setIfIdle('goalInput', goal > 0 ? goal : '');
 }
 
 function renderCalendar(s, todayKey) {
@@ -1730,43 +1755,39 @@ function syncSettingsUI() {
   setIfIdle('salaryDays', cs.days);
   byId('taxUseCumulative').checked = s.taxUseCumulative === true;
 
+  const userEl = byId('profileUser');
+  if (userEl) userEl.textContent = Session.username || '-';
+  const modeEl = byId('profileMode');
+  if (modeEl) modeEl.textContent = s.mode === 'salary' ? '月薪制' : '小时工';
+  const syncEl = byId('profileSync');
+  if (syncEl) {
+    syncEl.textContent = { idle: '已连接', synced: '已同步', saving: '同步中', pending: '待上传', error: '同步失败' }[Store.syncStatus] || '已连接';
+  }
+
   renderSpecialDeductions();
   ensureInsuranceDefaults();
   syncInsuranceUI();
-  calcSalary();
+  syncCalcSalaryUI();
+  fillTaxIncomeIfEmpty();
   calcTax();
 }
 document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
+  const mode = b.dataset.mode === 'salary' ? 'salary' : 'hourly';
   document.querySelectorAll('#modeSwitch button').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
-  byId('hourlyForm').classList.toggle('hidden', b.dataset.mode !== 'hourly');
-  byId('salaryForm').classList.toggle('hidden', b.dataset.mode !== 'salary');
-  byId('goalInputGroup').classList.toggle('hidden', b.dataset.mode !== 'hourly'); // 修复切模式时立刻隐藏
-  // 五险一金跟随模式：时薪制归 0，月薪制取记住的比例（不等保存即时生效）
-  applyInsuranceForMode(b.dataset.mode);
-  syncInsuranceUI();
-  calcTax();
-  if (b.dataset.mode === 'salary') byId('goalProgressWrap').style.display = 'none';
-});
-byId('saveSettingsBtn').onclick = () => {
-  Store.mutate(s => {
-    s.settings.mode = document.querySelector('#modeSwitch .active').dataset.mode;
-    s.settings.salaryFixedMode = byId('inSalaryFixedMode').value;
-    s.settings.normalRate = clamp(byId('inNormal').value, 0, 10000, 0);
-    s.settings.holidayRate = clamp(byId('inHoliday').value, 0, 10000, 0);
-    s.settings.baseSalary = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
-    s.settings.performance = clamp(byId('inPerformance').value, 0, 1000000, 0);
-    s.settings.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
-    s.settings.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
-    
-    // 修复：只有时薪制才保存目标工时，防止月薪制覆盖
-    if (s.settings.mode === 'hourly') {
-      s.goal = clamp(byId('goalInput').value, 0, 1000, 0);
-    }
-  });
+  // 立即写进账号（不再需要"保存设置"）
+  Store.state.settings.mode = mode;
   Store.settingsDirty = true;
-  toast('设置已保存');
-};
+  applyInsuranceForMode(mode);
+  Store.persist();
+  Store.scheduleSave();
+  syncCalcSalaryUI();
+  syncInsuranceUI();
+  syncSettingsUI();   // 同步设置页的"当前模式"、目标显隐等
+  renderAll();
+  calcTax();
+});
+
 
 /* 计算器 */
 document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
@@ -1790,25 +1811,48 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
     calcTax();
   });
 });
-function persistCalcSalaryInputs() {
+/** 把工资页的输入写回 settings（与设置页同一字段），并同步另一端 UI */
+/** 把计算页的薪资输入写回 settings（唯一数据源），改动即保存 */
+function persistSalaryInputs() {
+  const s = Store.state.settings;
   const next = {
-    rate: clamp(byId('salaryRate').value, 0, 10000, 0),
-    hours: clamp(byId('salaryHours').value, 1, 24, 8),
-    days: clamp(byId('salaryDays').value, 1, 31, 21.75),
+    normalRate: clamp(byId('inNormal').value, 0, 10000, 0),
+    holidayRate: clamp(byId('inHoliday').value, 0, 10000, 0),
+    baseSalary: clamp(byId('inBaseSalary').value, 0, 1000000, 0),
+    performance: clamp(byId('inPerformance').value, 0, 1000000, 0),
+    salaryDays: clamp(byId('inSalaryDays').value, 1, 31, 21.75),
+    salaryHours: clamp(byId('inSalaryHours').value, 1, 24, 8),
   };
-  const cur = Store.state.settings.calcSalary || {};
-  if (cur.rate === next.rate && cur.hours === next.hours && cur.days === next.days) return;
-  Store.state.settings.calcSalary = next;
+  const changed = Object.keys(next).some((k) => s[k] !== next[k]);
+  if (!changed) return;
+  Object.assign(s, next);
   Store.settingsDirty = true;
   Store.persist();
   Store.scheduleSave();
 }
-['salaryRate','salaryHours','salaryDays'].forEach(id => {
-  byId(id).addEventListener('input', e => {
+['inNormal','inHoliday','inBaseSalary','inPerformance','inSalaryDays','inSalaryHours'].forEach((id) => {
+  const el = byId(id);
+  if (!el) return;
+  el.addEventListener('input', (e) => {
     sanitizeNumericInput(e.target);
-    persistCalcSalaryInputs();   // 随账号保存，换设备也在
+    persistSalaryInputs();
     calcSalary();
   });
+});
+byId('inSalaryFixedMode').addEventListener('change', () => {
+  Store.state.settings.salaryFixedMode = byId('inSalaryFixedMode').value === 'monthly' ? 'monthly' : 'daily';
+  Store.settingsDirty = true;
+  Store.persist();
+  Store.scheduleSave();
+  renderAll();
+});
+byId('goalInput').addEventListener('input', (e) => {
+  sanitizeNumericInput(e.target);
+  Store.state.goal = clamp(e.target.value, 0, 1000, 0);
+  Store.settingsDirty = true;
+  Store.persist();
+  Store.scheduleSave();
+  renderAll();
 });
 byId('taxUseCumulative').addEventListener('change', () => {
   Store.state.settings.taxUseCumulative = byId('taxUseCumulative').checked === true;
@@ -1913,10 +1957,52 @@ function calcTax() {
   byId('dtNet').textContent = '¥' + (gross - insTotal - tax).toFixed(2);
 }
 
+/**
+ * 工资页：跟设置页共用同一批字段，不再有第二套"计算器专用"数值。
+ *  - 时薪制：时薪 = settings.normalRate
+ *  - 月薪制：月薪 = settings.baseSalary + settings.performance
+ *  - 每日工时 / 月计薪天数 共用 settings.salaryHours / settings.salaryDays
+ */
+/** 个税页的「税前月收入」为空时，用本月预估收入（月薪制含整月底薪）自动填充 */
+function fillTaxIncomeIfEmpty() {
+  const el = byId('taxIncome');
+  if (!el || Number(el.value) !== 0) return;
+  const sum = aggregateMonth(currentDate.getFullYear(), currentDate.getMonth(), Store.state.records, Store.state.settings);
+  if (sum.totalIncome <= 0) return;
+  el.value = Math.round(sum.totalIncome * 100) / 100;
+}
+
+/** 工资页与设置共用同一批 settings 字段：这里只负责切换显示与回填 */
+function syncCalcSalaryUI() {
+  const s = Store.state.settings;
+  const isSalary = s.mode === 'salary';
+  byId('hourlyForm').classList.toggle('hidden', isSalary);
+  byId('salaryForm').classList.toggle('hidden', !isSalary);
+  byId('calcHourlyFromMonthly').classList.toggle('hidden', !isSalary);
+
+  setIfIdle('inNormal', s.normalRate || '');
+  setIfIdle('inHoliday', s.holidayRate || '');
+  setIfIdle('inBaseSalary', s.baseSalary || '');
+  setIfIdle('inPerformance', s.performance || '');
+  setIfIdle('inSalaryDays', s.salaryDays);
+  setIfIdle('inSalaryHours', s.salaryHours);
+  setIfIdle('inSalaryFixedMode', s.salaryFixedMode);
+  calcSalary();
+}
+
 function calcSalary() {
-  const rate = clamp(byId('salaryRate').value, 0, 10000, 0);
-  const hours = clamp(byId('salaryHours').value, 0, 24, 0);
-  const days = clamp(byId('salaryDays').value, 0, 31, 0);
+  const s = Store.state.settings;
+  const hours = clamp(byId('inSalaryHours').value, 1, 24, 8);
+  const days = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
+  if (s.mode === 'salary') {
+    const monthly = num(s.baseSalary) + num(s.performance);
+    const daily = days > 0 ? monthly / days : 0;
+    byId('salaryDaily').textContent = '¥' + daily.toFixed(2);
+    byId('salaryMonthly').textContent = '¥' + monthly.toFixed(2);
+    byId('salaryHourly').textContent = '¥' + (hours > 0 ? daily / hours : 0).toFixed(2);
+    return;
+  }
+  const rate = clamp(byId('inNormal').value, 0, 10000, 0);
   byId('salaryDaily').textContent = '¥' + (rate * hours).toFixed(2);
   byId('salaryMonthly').textContent = '¥' + (rate * hours * days).toFixed(2);
 }
