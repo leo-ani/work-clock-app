@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light dark">
 <meta name="app-version" content="V6.2">
+<link rel="preconnect" href="https://api.leoani.dpdns.org" crossorigin>
+<link rel="dns-prefetch" href="https://api.leoani.dpdns.org">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 
 <title>工时记录助手</title>
@@ -52,12 +54,20 @@ button{background:none;border:none;cursor:pointer;}
 .header-top-left{display:flex;align-items:center;gap:8px;}
 .app-icon-svg { width: 24px; height: 24px; color: var(--brand); }
 .app-name{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
-.sync-pill{background:var(--sys-gray);padding:6px 12px;border-radius:100px;font-size:12px;font-weight:600;color:var(--sys-text-sec);display:flex;align-items:center;gap:6px;cursor:pointer;}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--sys-text-sec);}
-.sync-dot.synced{background:var(--brand-graphic);}
-.sync-dot.syncing{background:var(--sys-blue);animation:pulse 1s infinite;}
+/* 同步胶囊：状态与配色一一对应（原来 idle / saving 没有规则，圆点一直是灰的） */
+.sync-pill{background:var(--sys-gray);padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;color:var(--sys-text-sec);display:flex;align-items:center;gap:6px;cursor:pointer;transition:background .25s,color .25s;}
+.sync-pill.synced{background:color-mix(in srgb, var(--brand-graphic) 16%, transparent);color:var(--brand);}
+.sync-pill.saving{background:color-mix(in srgb, var(--sys-blue) 15%, transparent);color:var(--sys-blue);}
+.sync-pill.pending{background:color-mix(in srgb, var(--sys-orange) 18%, transparent);color:#B26A00;}
+.sync-pill.error{background:color-mix(in srgb, var(--sys-red) 15%, transparent);color:var(--sys-red);}
+@media (prefers-color-scheme:dark){
+  .sync-pill.pending{color:var(--sys-orange);}
+}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--sys-text-sec);flex-shrink:0;transition:background .25s;}
+.sync-dot.synced{background:var(--brand-graphic);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-graphic) 22%, transparent);}
+.sync-dot.saving{background:var(--sys-blue);animation:pulse 1s infinite;}
 .sync-dot.pending{background:var(--sys-orange);}
-.sync-dot.error{background:var(--sys-red);}
+.sync-dot.error{background:var(--sys-red);box-shadow:0 0 0 3px color-mix(in srgb, var(--sys-red) 20%, transparent);}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .header-stats{display:flex;gap:12px;margin-top:16px;}
 .h-stat{flex:1;text-align:center;background:var(--sys-surface);padding:12px 8px;border-radius:var(--radius-m);box-shadow:0 1px 3px rgba(0,0,0,0.02);}
@@ -1026,7 +1036,9 @@ const Api = {
   },
   generateSalt() { const bytes = new Uint8Array(24); crypto.getRandomValues(bytes); return btoa(String.fromCharCode(...bytes)); },
   getSalt(username) { return this.call('getSalt', { username }); },
-  login(username, hash, upgrade) { return this.call('login', { username, hash, ...(upgrade || {}) }); },
+  login(username, hash, upgrade, withData) {
+    return this.call('login', { username, hash, ...(upgrade || {}), ...(withData ? { withData: true } : {}) });
+  },
   register(username, hash, salt, iterations) { return this.call('register', { username, hash, salt, kdf: 'PBKDF2-SHA256', iterations }); },
   getData(username) { return this.call('getData', { username }); },
   setData(username, data, settingsTouched, signal) { return this.call('setData', { username, data, settingsTouched }, { signal }); },
@@ -1078,14 +1090,29 @@ const Store = {
     if (!opts.silent) renderAll();
     if (typeof syncSettingsUI === 'function') syncSettingsUI();
   },
-  persist() { if (Session.username) safeSet(CACHE_PREFIX + Session.username, JSON.stringify({ state: this.state, deleted: this.deleted })); },
+  persist() {
+    if (!Session.username) return;
+    // dirty 一起落盘：离线改了设置后关页面，重开仍能以本地为准，不会被云端旧值覆盖
+    safeSet(CACHE_PREFIX + Session.username, JSON.stringify({
+      state: this.state, deleted: this.deleted, dirty: this.settingsDirty === true,
+    }));
+  },
   load() {
     if (!Session.username) return false;
     const parsed = safeJson(CACHE_PREFIX + Session.username);
-    if (parsed && parsed.state) { this.state = normalizeUserData(parsed.state); this.deleted = parsed.deleted || {}; this.rev++; return true; }
+    if (parsed && parsed.state) {
+      this.state = normalizeUserData(parsed.state);
+      this.deleted = parsed.deleted || {};
+      this.settingsDirty = parsed.dirty === true;
+      // 顺带清理超过 30 天的墓碑，避免同步载荷越滚越大
+      const cutoff = Date.now() - 30 * 86400000;
+      for (const k in this.deleted) { if (num(this.deleted[k]) < cutoff) delete this.deleted[k]; }
+      this.rev++;
+      return true;
+    }
     return false;
   },
-  scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 800); this.syncStatus = 'pending'; updateSyncUI(); },
+  scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 500); this.syncStatus = 'pending'; updateSyncUI(); },
 
   /** 取消待执行的重试（退出登录、手动同步成功时调用） */
   cancelRetry() {
@@ -1177,12 +1204,15 @@ const Session = {
 };
 
 function updateSyncUI() {
-  const dot = byId('syncDot'), txt = byId('syncText');
+  const dot = byId('syncDot'), txt = byId('syncText'), pill = byId('syncPill');
   const label = { idle: '已同步', synced: '已同步', saving: '同步中', pending: '待上传', error: '失败' }[Store.syncStatus] || '已连接';
+  // 把内部状态映射成 CSS 类名：idle 等同于 synced，saving 对应 .saving
+  const uiState = Store.syncStatus === 'idle' ? 'synced' : Store.syncStatus;
   if (dot && txt) {
-    dot.className = 'sync-dot ' + Store.syncStatus;
+    dot.className = 'sync-dot ' + uiState;
     txt.textContent = label;
   }
+  if (pill) pill.className = 'sync-pill ' + uiState;
   // 设置页账号卡片的胶囊标签
   const profileSync = byId('profileSync');
   if (profileSync) profileSync.textContent = label;
@@ -2333,8 +2363,9 @@ byId('authForm').onsubmit = async (e) => {
           upgrade = { newHash: upHash, newSalt: upSalt };
         } catch (e) { upgrade = null; }
       }
-      const res = await Api.login(u, hash, upgrade);
-      Session.set(u, res.token); enterApp();
+      // withData: 登录响应里直接带回用户数据，省掉紧随其后的一次 getData 往返
+      const res = await Api.login(u, hash, upgrade, true);
+      Session.set(u, res.token); enterApp(res && res.data ? res.data : null);
     } else {
       const salt = Api.generateSalt();
       const hash = await Api.deriveHash(p, salt, 'PBKDF2-SHA256', 600000);
@@ -2346,7 +2377,7 @@ byId('authForm').onsubmit = async (e) => {
   } finally { byId('authBtn').disabled = false; byId('authBtn').textContent = isLoginMode ? '登录' : '注册'; }
 };
 
-function enterApp() {
+function enterApp(preloaded) {
   byId('authPage').style.display = 'none'; byId('app').style.display = 'flex';
   Holiday.ensure();
   // 先复位，再读缓存：避免上一个账号的状态/墓碑串到新会话
@@ -2354,6 +2385,18 @@ function enterApp() {
   Store.settingsDirty = false; Store.syncStatus = 'idle'; Store.lastSyncedAt = 0;
   Store.load();
   syncSettingsUI(); renderAll(); updateSyncUI();
+  // 登录时已经带回数据：直接合并，不再多发一次请求
+  if (preloaded && typeof preloaded === 'object') {
+    Store.reconcile(preloaded, { prefsDirty: Store.settingsDirty });
+    // 保持 lastSyncedAt = 0：本地缓存里可能还有未上传的改动（离线打卡），
+    // 若在这里把水位线推到"现在"，首次增量上传会跳过它们。宁可多发一次全量。
+    Store.syncStatus = 'synced';
+    syncSettingsUI();
+    renderAll();
+    updateSyncUI();
+    return;
+  }
+
   Api.getData(Session.username).then(res => {
     Store.reconcile(res, { prefsDirty: Store.settingsDirty });
     syncSettingsUI(); Store.syncStatus = 'synced'; updateSyncUI();
@@ -2393,6 +2436,19 @@ byId('syncPill').onclick = () => {
   if (Store.inflight) return;
   Store.flush().then(() => { if (Store.syncStatus === 'synced') toast('同步完成'); else toast('同步失败'); });
 };
+
+// 页面被隐藏/关闭时，如果还有未上传的改动，尽力补传一次（浏览器可能中断，属于兜底）
+function flushOnHide() {
+  if (!Session.token) return;
+  if (!Store.settingsDirty && Store.syncStatus !== 'pending') return;
+  try { Store.flush(); } catch (e) {}
+}
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushOnHide(); });
+}
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('pagehide', flushOnHide);
+}
 
 Session.init();
 if (Session.username && Session.token) enterApp();
