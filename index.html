@@ -162,6 +162,20 @@ button{background:none;border:none;cursor:pointer;}
 .hours-btn:active{background:var(--sys-gray);}
 .hours-value{font-size:22px;font-weight:800;color:var(--brand);min-width:80px;text-align:center;}
 
+/* 专项扣除列表 */
+.deduction-list { display: flex; flex-direction: column; gap: 8px; }
+.deduction-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--sys-bg); border-radius: var(--radius-m); cursor: pointer; border: 1.5px solid transparent; transition: all 0.2s; }
+.deduction-item.active { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+.deduction-name { font-size: 14px; font-weight: 600; color: var(--sys-text-sec); display: flex; align-items: center; gap: 8px; }
+.deduction-item.active .deduction-name { color: var(--brand); }
+.deduction-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--sys-border); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.deduction-item.active .deduction-check { background: var(--brand); border-color: var(--brand); color: #fff; }
+.deduction-item.active .deduction-check svg { display: block; }
+.deduction-check svg { display: none; width: 12px; height: 12px; }
+.deduction-amount { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--sys-text); }
+.deduction-amount input { width: 60px; text-align: right; border: none; background: transparent; font-weight: 700; color: inherit; outline: none; }
+.deduction-item:not(.active) .deduction-amount { opacity: 0.4; pointer-events: none; }
+
 /* 计算器 */
 .calc-tabs{display:flex;background:var(--sys-surface);padding:0 16px;gap:8px;position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--sys-border);}
 .calc-tab{flex:1;padding:16px 0;font-size:15px;font-weight:600;color:var(--sys-text-sec);border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;cursor:pointer;text-align:center;}
@@ -294,14 +308,23 @@ button{background:none;border:none;cursor:pointer;}
         <div class="stat-box-lbl">本月预估收入</div>
         <div style="font-size:32px;font-weight:800;color:var(--brand);margin-top:8px;" id="monthIncome">¥0</div>
         <div style="font-size:13px;color:var(--sys-text-sec);margin-top:8px;">平均日薪 <span id="avgDailyIncome">¥0</span> · 最高日收入 <span id="maxDailyIncome">¥0</span></div>
+        
+        <div style="margin-top:16px;" id="goalProgressWrap">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--sys-text-sec);margin-bottom:6px;">
+            <span>工时目标进度</span>
+            <span id="goalProgressText">0 / 0 h</span>
+          </div>
+          <div style="height:6px;background:var(--sys-gray);border-radius:100px;overflow:hidden;">
+            <div id="goalProgressFill" style="height:100%;background:var(--brand);border-radius:100px;transition:width 0.3s;width:0%;"></div>
+          </div>
+        </div>
       </div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-box-num" id="boxDays">0</div><div class="stat-box-lbl">出勤天数</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxHours">0</div><div class="stat-box-lbl">总工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxNormal">0</div><div class="stat-box-lbl">正班工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxOt">0</div><div class="stat-box-lbl">加班工时</div></div>
-        <!-- 调休余额框，时薪制时会被 JS 隐藏 -->
-        <div class="stat-box" id="timeoffBox" style="grid-column:1/-1;"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额(本月)</div></div>
+        <div class="stat-box" id="timeoffBox" style="grid-column:1/-1;"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额(累计)</div></div>
       </div>
       <div class="card">
         <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;">工时分布</h2>
@@ -318,16 +341,24 @@ button{background:none;border:none;cursor:pointer;}
       </div>
       
       <div class="calc-panel active" id="calcTax">
-        <div class="form-group"><label>税前月收入 (元)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal"></div></div>
+        <div class="form-group"><label>税前月收入 (元)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal" placeholder="自动读取本月收入"></div></div>
         
-        <div class="form-group"><label>专项附加扣除 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxSpecial" value="0" step="100" min="0" max="100000" inputmode="decimal"></div></div>
+        <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <label style="margin:0;">按年度累计预扣计算</label>
+          <input type="checkbox" id="taxUseCumulative" style="width:20px; height:20px; accent-color:var(--brand);">
+        </div>
+
+        <div class="form-group">
+          <label>专项附加扣除</label>
+          <div class="deduction-list" id="taxSpecialList"></div>
+        </div>
 
         <div class="form-group"><label>五险一金比例 (%)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div class="input-wrap"><span class="prefix">养老</span><input type="number" id="taxPension" value="0" max="20" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">医疗</span><input type="number" id="taxMedical" value="0" max="10" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">失业</span><input type="number" id="taxUnemployment" value="0" max="5" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">公积金</span><input type="number" id="taxFund" value="0" max="12" style="text-align:right"><span class="suffix">%</span></div>
+            <div class="input-wrap"><span class="prefix">养老</span><input type="number" id="taxPension" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+            <div class="input-wrap"><span class="prefix">医疗</span><input type="number" id="taxMedical" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+            <div class="input-wrap"><span class="prefix">失业</span><input type="number" id="taxUnemployment" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+            <div class="input-wrap"><span class="prefix">公积金</span><input type="number" id="taxFund" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
           </div>
         </div>
         <div class="card" style="margin:0 0 16px;padding:16px;background:var(--sys-bg);box-shadow:none;border:0.5px solid var(--sys-border);">
@@ -394,8 +425,8 @@ button{background:none;border:none;cursor:pointer;}
           </div>
         </div>
         <div id="hourlyForm">
-          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inNormal" step="0.5" max="1000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inHoliday" step="0.5" max="1000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inNormal" step="0.5" max="10000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inHoliday" step="0.5" max="10000" inputmode="decimal"></div></div>
         </div>
         <div id="salaryForm" class="hidden">
           <div class="form-group"><label>底薪发放方式</label>
@@ -404,8 +435,8 @@ button{background:none;border:none;cursor:pointer;}
               <option value="monthly">固定整月发放</option>
             </select>
           </div>
-          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><input type="number" id="inBaseSalary" step="100" max="500000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><input type="number" id="inPerformance" step="100" max="500000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><input type="number" id="inBaseSalary" step="100" max="1000000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><input type="number" id="inPerformance" step="100" max="1000000" inputmode="decimal"></div></div>
           <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"></div></div>
           <div class="form-group"><label>每日工时 (H)</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"></div></div>
         </div>
@@ -502,7 +533,6 @@ button{background:none;border:none;cursor:pointer;}
       </div>
     </div>
 
-    <!-- 正班工时 (周末/节假日时隐藏) -->
     <div class="hours-control" id="rowNormal">
       <span style="font-weight:600;">正班工时</span>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -512,7 +542,6 @@ button{background:none;border:none;cursor:pointer;}
       </div>
     </div>
     
-    <!-- 加班工时 (周末/节假日时显示，标签改变) -->
     <div class="hours-control" id="rowOt">
       <span style="font-weight:600;" id="lblOt">加班工时</span>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -592,7 +621,7 @@ button{background:none;border:none;cursor:pointer;}
 <script>
 (function(){
 "use strict";
-const APP_VERSION = '6.0.1';
+const APP_VERSION = 'V4.1-flash1017';
 const SCHEMA_VERSION = 4;
 const API_BASE = 'https://api.leoani.dpdns.org/';
 const SESSION_KEY = 'wc_session';
@@ -611,6 +640,16 @@ const MAX_NOTE_LEN = 500;
 const TYPE_NAMES = { normal: '正班', weekend: '周末', holiday: '节假', daily: '日结' };
 const SHIFT_NAMES = { day: '白班', early: '早班', mid: '中班', night: '晚班' };
 const LEAVE_NAMES = { none: '上班', sick: '病假', personal: '事假', paid: '薪假', timeoff: '调休' };
+
+const SPECIAL_DEDUCTIONS = [
+  { key: 'child', name: '子女教育', default: 2000 },
+  { key: 'infant', name: '3岁以下婴幼儿', default: 2000 },
+  { key: 'edu', name: '继续教育', default: 400 },
+  { key: 'loan', name: '住房贷款利息', default: 1000 },
+  { key: 'rent', name: '住房租金', default: 1500 },
+  { key: 'elder', name: '赡养老人', default: 3000 },
+  { key: 'medical', name: '大病医疗', default: 0 }
+];
 
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 const clamp = (v, lo, hi, fb) => { const n = Number(v); if (!Number.isFinite(n)) return fb === undefined ? lo : fb; return Math.min(hi, Math.max(lo, n)); };
@@ -753,6 +792,7 @@ function normalizeRecord(raw) {
     normal: clamp(raw.normal, 0, MAX_DAY_HOURS, 0),
     ot: clamp(raw.ot, 0, MAX_DAY_HOURS, 0),
     compensation: COMPENSATIONS.includes(raw.compensation) ? raw.compensation : 'pay',
+    deductHours: clamp(raw.deductHours, 0, MAX_DAY_HOURS, 8),
     note: typeof raw.note === 'string' ? raw.note.slice(0, MAX_NOTE_LEN) : '',
     updatedAt: clamp(raw.updatedAt, 0, now + 86400000, 0)
   };
@@ -761,7 +801,14 @@ function normalizeRecord(raw) {
   return rec;
 }
 
-function defaultSettings() { return { mode: 'hourly', salaryFixedMode: 'daily', normalRate: 0, holidayRate: 0, baseSalary: 0, performance: 0, salaryDays: 21.75, salaryHours: 8 }; }
+function defaultSettings() { 
+  return { 
+    mode: 'hourly', salaryFixedMode: 'daily', normalRate: 0, holidayRate: 0, baseSalary: 0, performance: 0, 
+    salaryDays: 21.75, salaryHours: 8, salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
+    salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0, rule: 'fixed', taxSpecial: {} 
+  }; 
+}
+
 function defaultUserData() { return { schemaVersion: SCHEMA_VERSION, records: {}, settings: defaultSettings(), goal: 0, deleted: {} }; }
 function normalizeUserData(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
@@ -850,6 +897,7 @@ const Store = {
     if (opts.prefsDirty) next.settings = this.state.settings;
     this.state = next; this.persist(); 
     if (!opts.silent) renderAll();
+    if (typeof syncSettingsUI === 'function') syncSettingsUI();
   },
   persist() { if (Session.username) safeSet(CACHE_PREFIX + Session.username, JSON.stringify({ state: this.state, deleted: this.deleted })); },
   load() {
@@ -860,24 +908,43 @@ const Store = {
   },
   scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 800); this.syncStatus = 'pending'; updateSyncUI(); },
   async flush() {
-    if (!Session.token || this.inflight) return;
+    if (!Session.token) return;
+    if (this.inflight) { this.dirtyAgain = true; return this.inflight; }
+    clearTimeout(this.saveTimer);
     this.syncStatus = 'saving'; updateSyncUI();
     this.inflight = true;
     const snapshotRev = this.rev;
     const touched = this.settingsDirty;
+    
+    const ctrl = new AbortController();
+    const timeoutId = setTimeout(() => ctrl.abort(), 15000);
+
     try {
       const payload = { records: {}, deleted: this.deleted, settings: this.state.settings, goal: this.state.goal };
-      for (const k in this.state.records) { if (num(this.state.records[k].updatedAt) >= Date.now() - 7 * 86400000) payload.records[k] = this.state.records[k]; }
-      const res = await Api.setData(Session.username, payload, touched);
+      for (const k in this.state.records) { if (num(this.state.records[k].updatedAt) >= Date.now() - 30 * 86400000) payload.records[k] = this.state.records[k]; }
+      const res = await Api.setData(Session.username, payload, touched, ctrl.signal);
+      clearTimeout(timeoutId);
+      
       if (touched) this.settingsDirty = false;
       if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
       this.syncStatus = 'synced';
-      if (this.rev !== snapshotRev) this.scheduleSave();
+      if (this.dirtyAgain || this.rev !== snapshotRev) {
+        this.dirtyAgain = false;
+        this.inflight = null;
+        return this.flush();
+      }
     } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError' || e.code === 'TIMEOUT') {
+        toast('网络超时，已在后台重试');
+      }
       if (e.code === 'UNAUTHORIZED') return forceLogout();
       this.syncStatus = e.code === 'TIMEOUT' || e.code === 'NETWORK' ? 'pending' : 'error';
       if (this.syncStatus === 'pending') this.scheduleSave();
-    } finally { this.inflight = null; updateSyncUI(); }
+    } finally { 
+      this.inflight = null; 
+      updateSyncUI(); 
+    }
   }
 };
 
@@ -908,24 +975,28 @@ function getAutoType(key) {
 }
 
 function aggregateMonth(year, month, records, settings) {
-  let totalDays = 0, totalHours = 0, totalIncome = 0, timeoffEarned = 0, timeoffUsed = 0;
+  let totalDays = 0, totalHours = 0, totalIncome = 0;
   const cat = { normal: 0, ot: 0 };
   const engine = createIncomeEngine(settings);
+
+  let timeoffEarnedTotal = 0, timeoffUsedTotal = 0;
+  for (const k in records) {
+    const r = records[k];
+    if (r.compensation === 'timeoff' && r.leave === 'none') timeoffEarnedTotal += num(r.normal) + num(r.ot);
+    if (r.leave === 'timeoff') timeoffUsedTotal += num(r.deductHours) || 8;
+  }
 
   for (const key in records) {
     const rec = records[key];
     const d = parseDateKey(key);
     if (!d || d.getFullYear() !== year || d.getMonth() !== month) continue;
-    if (rec.leave === 'timeoff') { timeoffUsed += num(rec.normal) || 8; continue; }
     if (rec.leave !== 'none') continue;
     if (num(rec.normal) === 0 && num(rec.ot) === 0 && !rec.note) continue;
 
     totalDays++; totalHours += num(rec.normal) + num(rec.ot);
-    if (rec.compensation === 'timeoff') timeoffEarned += num(rec.normal) + num(rec.ot);
     totalIncome += engine.of(rec, d);
 
     const makeup = Holiday.isWorkday(key);
-    // 统一归类：所有周末、节假日、补班之外产生的非正班工时，统统算作加班
     if ((isWeekend(d) && !makeup) || rec.type === 'weekend' || Holiday.isHoliday(key) || rec.type === 'holiday') {
       cat.ot += num(rec.normal) + num(rec.ot);
     } else {
@@ -933,8 +1004,10 @@ function aggregateMonth(year, month, records, settings) {
       cat.ot += num(rec.ot);
     }
   }
-  if (settings.mode === 'salary' && settings.salaryFixedMode === 'monthly' && totalDays > 0) totalIncome += num(settings.baseSalary) + num(settings.performance);
-  return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarned - timeoffUsed };
+  if (settings.mode === 'salary' && settings.salaryFixedMode === 'monthly') {
+    totalIncome += num(settings.baseSalary) + num(settings.performance);
+  }
+  return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarnedTotal - timeoffUsedTotal };
 }
 
 function renderAll() {
@@ -949,7 +1022,6 @@ function renderAll() {
   const grid = byId('calGrid'); grid.innerHTML = '';
   const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const lead = (first.getDay() + 6) % 7;
-  const dim = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 0).getDate();
   const todayKey = formatDateKey(new Date());
   
   for (let i = 0; i < 42; i++) {
@@ -1004,8 +1076,13 @@ function renderAll() {
         </div></div>
         <div class="detail-income">¥${income.toFixed(2)}</div>
       </div>
-      <div class="detail-row"><span class="detail-label">正班工时</span><span class="detail-value">${round1(selectedRec.normal)} h</span></div>
-      <div class="detail-row"><span class="detail-label">加班工时</span><span class="detail-value">${round1(selectedRec.ot)} h</span></div>
+      
+      ${selectedRec.leave === 'timeoff' 
+        ? `<div class="detail-row"><span class="detail-label">调休扣除</span><span class="detail-value" style="color:var(--sys-blue)">${selectedRec.deductHours || 8} h</span></div>`
+        : `<div class="detail-row"><span class="detail-label">正班工时</span><span class="detail-value">${round1(selectedRec.normal)} h</span></div>
+           <div class="detail-row"><span class="detail-label">加班工时</span><span class="detail-value">${round1(selectedRec.ot)} h</span></div>`
+      }
+      
       <div class="detail-row"><span class="detail-label">备注</span><span class="detail-value" style="color:var(--sys-text-sec)">${escapeHtml(selectedRec.note) || '无'}</span></div>
     `;
   } else {
@@ -1020,11 +1097,20 @@ function renderAll() {
     byId('boxNormal').textContent = round1(sum.cat.normal);
     byId('boxOt').textContent = round1(sum.cat.ot);
     
-    // 月薪制才显示调休余额
     const isSalaryMode = s.settings.mode === 'salary';
     byId('timeoffBox').style.display = isSalaryMode ? 'block' : 'none';
     byId('boxTimeoff').textContent = round1(sum.timeoffBalance);
     
+    // 目标进度条联动
+    const goal = Store.state.goal || 0;
+    if (goal > 0) {
+      byId('goalProgressWrap').style.display = 'block';
+      byId('goalProgressText').textContent = `${round1(sum.totalHours)} / ${goal} h`;
+      byId('goalProgressFill').style.width = Math.min(100, (sum.totalHours / goal) * 100) + '%';
+    } else {
+      byId('goalProgressWrap').style.display = 'none';
+    }
+
     const totH = sum.cat.normal + sum.cat.ot;
     if (totH > 0) {
       const p1 = (sum.cat.normal/totH)*100;
@@ -1051,6 +1137,8 @@ function renderAll() {
 }
 
 /* 页面 Tab */
+const syncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('wc_sync_channel') : null;
+
 document.querySelectorAll('.tab-item').forEach(el => {
   el.onclick = () => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1062,8 +1150,22 @@ document.querySelectorAll('.tab-item').forEach(el => {
   };
 });
 
-byId('prevMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderAll(); };
-byId('nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderAll(); };
+byId('prevMonth').onclick = () => { 
+  currentDate.setMonth(currentDate.getMonth() - 1); 
+  renderAll(); 
+  if (byId('pageCalculator').classList.contains('active') && byId('calcTax').classList.contains('active')) {
+    byId('taxIncome').value = 0; 
+    document.querySelector('[data-tab="tax"]').click();
+  }
+};
+byId('nextMonth').onclick = () => { 
+  currentDate.setMonth(currentDate.getMonth() + 1); 
+  renderAll(); 
+  if (byId('pageCalculator').classList.contains('active') && byId('calcTax').classList.contains('active')) {
+    byId('taxIncome').value = 0; 
+    document.querySelector('[data-tab="tax"]').click();
+  }
+};
 
 /* 打卡弹窗 */
 byId('addRecordBtn').onclick = () => {
@@ -1071,7 +1173,7 @@ byId('addRecordBtn').onclick = () => {
   const autoType = getAutoType(selectedDate);
   const isRest = autoType === 'weekend' || autoType === 'holiday';
   
-  let baseDraft = rec ? { ...rec } : { shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '' };
+  let baseDraft = rec ? { ...rec } : { shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '', deductHours: 8 };
   
   if (baseDraft.type === 'normal' && isRest) {
     baseDraft.type = autoType;
@@ -1089,7 +1191,7 @@ byId('quickPunchBtn').onclick = () => {
   const autoType = getAutoType(selectedDate);
   const isRest = autoType === 'weekend' || autoType === 'holiday';
   Store.mutate(s => s.records[selectedDate] = { 
-    shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '', updatedAt: Date.now() 
+    shift: 'day', type: autoType, normal: isRest ? 0 : 8, ot: isRest ? 8 : 0, leave: 'none', compensation: 'pay', note: '', deductHours: 8, updatedAt: Date.now() 
   });
   toast('打卡成功');
 };
@@ -1105,21 +1207,26 @@ byId('quickClearBtn').onclick = () => {
   syncClockUI();
 };
 byId('quick8hBtn').onclick = () => {
+  if (draft.leave !== 'none') { toast('休假中无需填工时'); return; }
   const isRest = draft.type === 'weekend' || draft.type === 'holiday';
-  if (isRest) {
-    draft.ot = 8;
-    draft.normal = 0;
-  } else {
-    draft.normal = 8;
-    draft.ot = 0;
-  }
+  if (isRest) { draft.ot = 8; draft.normal = 0; } else { draft.normal = 8; draft.ot = 0; }
   syncClockUI();
 };
 
 byId('clockSaveBtn').onclick = () => {
   draft.note = byId('noteInput').value.slice(0, 500);
+  
+  if (draft.leave === 'timeoff') {
+    draft.deductHours = clamp(byId('timeoffDeduct').value, 0, 24, 8);
+  }
+  
   if (draft.leave === 'none' && draft.normal === 0 && draft.ot === 0 && !draft.note) {
-    Store.mutate(s => { delete s.records[selectedDate]; s.deleted[selectedDate] = Date.now(); });
+    Store.mutate(s => { 
+      const oldRec = s.records[selectedDate];
+      const delTime = oldRec ? oldRec.updatedAt + 1000 : Date.now();
+      delete s.records[selectedDate]; 
+      s.deleted[selectedDate] = delTime; 
+    });
   } else {
     Store.mutate(s => s.records[selectedDate] = { ...draft, updatedAt: Date.now() });
   }
@@ -1133,14 +1240,23 @@ function syncClockUI() {
   byId('noteInput').value = draft.note;
   
   const isRest = draft.type === 'weekend' || draft.type === 'holiday';
-  byId('rowNormal').style.display = isRest ? 'none' : 'flex';
+  const isLeave = draft.leave !== 'none';
+  
+  byId('rowNormal').style.display = (isRest || isLeave) ? 'none' : 'flex';
+  byId('rowOt').style.display = isLeave ? 'none' : 'flex';
+  
   byId('lblOt').textContent = draft.type === 'weekend' ? '周末加班' : (draft.type === 'holiday' ? '节假日加班' : '加班工时');
   
   document.querySelectorAll('#shiftRow button').forEach(b => b.classList.toggle('active', b.dataset.shift === draft.shift));
   document.querySelectorAll('#typeRow button').forEach(b => b.classList.toggle('active', b.dataset.type === draft.type));
   document.querySelectorAll('#compensationRow button').forEach(b => b.classList.toggle('active', b.dataset.comp === draft.compensation));
   document.querySelectorAll('#leaveRow button').forEach(b => b.classList.toggle('active', b.dataset.leave === draft.leave));
-  byId('timeoffDeductGroup').classList.toggle('hidden', draft.leave !== 'timeoff');
+  
+  const isTimeoff = draft.leave === 'timeoff';
+  byId('timeoffDeductGroup').classList.toggle('hidden', !isTimeoff);
+  if (isTimeoff && document.activeElement !== byId('timeoffDeduct')) {
+     byId('timeoffDeduct').value = draft.deductHours || 8;
+  }
 }
 
 document.querySelectorAll('[data-adjust]').forEach(b => b.onclick = () => {
@@ -1170,6 +1286,68 @@ byId('typeRow').onclick = e => {
 byId('compensationRow').onclick = e => { if(e.target.dataset.comp) { draft.compensation = e.target.dataset.comp; syncClockUI(); } };
 byId('leaveRow').onclick = e => { if(e.target.dataset.leave) { draft.leave = e.target.dataset.leave; syncClockUI(); } };
 
+/* 专项扣除渲染与交互 */
+function renderSpecialDeductions() {
+  const list = byId('taxSpecialList');
+  const taxSpecial = Store.state.settings.taxSpecial || {};
+  const activeKey = document.activeElement && document.activeElement.closest('.deduction-item') ? document.activeElement.closest('.deduction-item').dataset.key : null;
+
+  list.innerHTML = SPECIAL_DEDUCTIONS.map(item => {
+    const isChecked = taxSpecial[item.key] !== undefined;
+    const isActive = activeKey === item.key;
+    const val = isChecked ? taxSpecial[item.key] : item.default;
+    
+    return `
+      <div class="deduction-item ${isChecked ? 'active' : ''}" data-key="${item.key}">
+        <div class="deduction-name">
+          <div class="deduction-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+          ${item.name}
+        </div>
+        <div class="deduction-amount">
+          <span>¥</span>
+          <input type="number" value="${isActive ? document.activeElement.value : val}" step="100" ${isChecked ? '' : 'disabled'}>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+byId('taxSpecialList').addEventListener('click', e => {
+  const item = e.target.closest('.deduction-item');
+  if (!item || e.target.tagName === 'INPUT') return;
+  
+  const key = item.dataset.key;
+  const def = SPECIAL_DEDUCTIONS.find(d => d.key === key);
+  
+  Store.mutate(s => {
+    if (!s.settings.taxSpecial) s.settings.taxSpecial = {};
+    if (s.settings.taxSpecial[key] !== undefined) {
+      delete s.settings.taxSpecial[key];
+    } else {
+      s.settings.taxSpecial[key] = def.default;
+    }
+  });
+  Store.settingsDirty = true;
+  renderSpecialDeductions();
+  calcTax();
+});
+
+byId('taxSpecialList').addEventListener('input', e => {
+  if (e.target.tagName !== 'INPUT') return;
+  const item = e.target.closest('.deduction-item');
+  const key = item.dataset.key;
+  sanitizeNumericInput(e.target);
+  
+  const val = clamp(e.target.value, 0, 100000, 0);
+  
+  if (!Store.state.settings.taxSpecial) Store.state.settings.taxSpecial = {};
+  Store.state.settings.taxSpecial[key] = val;
+  
+  Store.settingsDirty = true;
+  Store.scheduleSave();
+  calcTax();
+});
+
 /* 设置项 */
 function syncSettingsUI() {
   const s = Store.state.settings;
@@ -1184,6 +1362,9 @@ function syncSettingsUI() {
   byId('inSalaryDays').value = s.salaryDays;
   byId('inSalaryHours').value = s.salaryHours;
   byId('goalInput').value = Store.state.goal || '';
+  
+  renderSpecialDeductions();
+  calcTax();
 }
 document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#modeSwitch button').forEach(x => x.classList.remove('active'));
@@ -1195,10 +1376,10 @@ byId('saveSettingsBtn').onclick = () => {
   Store.mutate(s => {
     s.settings.mode = document.querySelector('#modeSwitch .active').dataset.mode;
     s.settings.salaryFixedMode = byId('inSalaryFixedMode').value;
-    s.settings.normalRate = clamp(byId('inNormal').value, 0, 1000, 0);
-    s.settings.holidayRate = clamp(byId('inHoliday').value, 0, 1000, 0);
-    s.settings.baseSalary = clamp(byId('inBaseSalary').value, 0, 500000, 0);
-    s.settings.performance = clamp(byId('inPerformance').value, 0, 500000, 0);
+    s.settings.normalRate = clamp(byId('inNormal').value, 0, 10000, 0);
+    s.settings.holidayRate = clamp(byId('inHoliday').value, 0, 10000, 0);
+    s.settings.baseSalary = clamp(byId('inBaseSalary').value, 0, 1000000, 0);
+    s.settings.performance = clamp(byId('inPerformance').value, 0, 1000000, 0);
     s.settings.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
     s.settings.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
     s.goal = clamp(byId('goalInput').value, 0, 1000, 0);
@@ -1213,39 +1394,96 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
   document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
   tab.classList.add('active');
   byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+  
+  if (tab.dataset.tab === 'tax') {
+    const sum = aggregateMonth(currentDate.getFullYear(), currentDate.getMonth(), Store.state.records, Store.state.settings);
+    if (Number(byId('taxIncome').value) === 0 && sum.totalIncome > 0) {
+      byId('taxIncome').value = Math.round(sum.totalIncome * 100) / 100;
+      calcTax();
+    }
+  }
 });
-['taxIncome','taxSpecial','taxPension','taxMedical','taxUnemployment','taxFund'].forEach(id => {
+['taxIncome','taxPension','taxMedical','taxUnemployment','taxFund'].forEach(id => {
   byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcTax(); });
 });
 ['salaryRate','salaryHours','salaryDays'].forEach(id => {
   byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcSalary(); });
 });
+byId('taxUseCumulative').addEventListener('change', calcTax);
 
 function calcTax() {
-  const gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
-  const special = clamp(byId('taxSpecial').value, 0, 100000, 0);
-  const insRate = (clamp(byId('taxPension').value, 0, 20, 0) + clamp(byId('taxMedical').value, 0, 10, 0) + clamp(byId('taxUnemployment').value, 0, 5, 0) + clamp(byId('taxFund').value, 0, 12, 0)) / 100;
-  const insTotal = gross * insRate;
-  // 加入专项附加扣除
-  const taxable = Math.max(0, gross - insTotal - special - 5000);
+  let gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
+  let specialTotal = 0;
+  const taxSpecial = Store.state.settings.taxSpecial || {};
+  for (const key in taxSpecial) specialTotal += num(taxSpecial[key]);
   
-  let rate = 0.03, quick = 0;
-  if (taxable > 80000) { rate = 0.45; quick = 15160; }
-  else if (taxable > 55000) { rate = 0.35; quick = 7160; }
-  else if (taxable > 35000) { rate = 0.30; quick = 4410; }
-  else if (taxable > 25000) { rate = 0.25; quick = 2660; }
-  else if (taxable > 12000) { rate = 0.20; quick = 1410; }
-  else if (taxable > 3000) { rate = 0.10; quick = 210; }
-  const tax = Math.max(0, taxable * rate - quick);
+  const insRate = (clamp(byId('taxPension').value, 0, 50, 0) + clamp(byId('taxMedical').value, 0, 50, 0) + clamp(byId('taxUnemployment').value, 0, 50, 0) + clamp(byId('taxFund').value, 0, 50, 0)) / 100;
+  
+  let insTotal = gross * insRate;
+  let taxable = 0;
+  let tax = 0;
+
+  const useCumulative = byId('taxUseCumulative').checked;
+  
+  if (!useCumulative) {
+    taxable = Math.max(0, gross - insTotal - specialTotal - 5000);
+    let rate = 0.03, quick = 0;
+    if (taxable > 80000) { rate = 0.45; quick = 15160; }
+    else if (taxable > 55000) { rate = 0.35; quick = 7160; }
+    else if (taxable > 35000) { rate = 0.30; quick = 4410; }
+    else if (taxable > 25000) { rate = 0.25; quick = 2660; }
+    else if (taxable > 12000) { rate = 0.20; quick = 1410; }
+    else if (taxable > 3000) { rate = 0.10; quick = 210; }
+    tax = Math.max(0, taxable * rate - quick);
+    byId('dtRate').textContent = (rate * 100).toFixed(0) + '%';
+  } else {
+    let cumIncome = gross; 
+    const y = currentDate.getFullYear(), m = currentDate.getMonth() + 1;
+    
+    for (const k in Store.state.records) {
+      const d = parseDateKey(k);
+      if (!d || d.getFullYear() !== y || d.getMonth() + 1 >= m) continue;
+      const rec = Store.state.records[k];
+      if (rec.leave === 'none' && rec.compensation !== 'timeoff') {
+        cumIncome += createIncomeEngine(Store.state.settings).of(rec, d);
+      }
+    }
+    
+    if (Store.state.settings.mode === 'salary' && Store.state.settings.salaryFixedMode === 'monthly') {
+       let monthsPassed = 0;
+       for(let i=1; i<m; i++) monthsPassed++; 
+       cumIncome += (num(Store.state.settings.baseSalary) + num(Store.state.settings.performance)) * monthsPassed;
+    }
+
+    const cumIns = cumIncome * insRate;
+    const cumSpecial = specialTotal * m; 
+    const cumTaxable = Math.max(0, cumIncome - cumIns - cumSpecial - 5000 * m);
+    
+    let cumRate = 0.03, cumQuick = 0;
+    if (cumTaxable > 960000) { cumRate = 0.45; cumQuick = 181920; }
+    else if (cumTaxable > 660000) { cumRate = 0.35; cumQuick = 85920; }
+    else if (cumTaxable > 420000) { cumRate = 0.30; cumQuick = 52920; }
+    else if (cumTaxable > 300000) { cumRate = 0.25; cumQuick = 31920; }
+    else if (cumTaxable > 144000) { cumRate = 0.20; cumQuick = 16920; }
+    else if (cumTaxable > 36000) { cumRate = 0.10; cumQuick = 2520; }
+    
+    const cumTaxTotal = Math.max(0, cumTaxable * cumRate - cumQuick);
+    tax = cumTaxTotal / m; 
+    byId('dtRate').textContent = '累计约' + (cumRate * 100).toFixed(0) + '%';
+    
+    gross = cumIncome;
+    insTotal = cumIns;
+    taxable = cumTaxable;
+  }
   
   byId('dtGross').textContent = '¥' + gross.toFixed(2);
   byId('dtInsurance').textContent = '¥' + insTotal.toFixed(2);
-  byId('dtSpecial').textContent = '¥' + (5000 + special).toFixed(2);
+  byId('dtSpecial').textContent = '¥' + ((useCumulative ? 5000 * (currentDate.getMonth() + 1) : 5000) + (useCumulative ? specialTotal * (currentDate.getMonth() + 1) : specialTotal)).toFixed(2);
   byId('dtTaxable').textContent = '¥' + taxable.toFixed(2);
-  byId('dtRate').textContent = (rate * 100).toFixed(0) + '%';
   byId('dtTax').textContent = '¥' + tax.toFixed(2);
   byId('dtNet').textContent = '¥' + (gross - insTotal - tax).toFixed(2);
 }
+
 function calcSalary() {
   const rate = clamp(byId('salaryRate').value, 0, 10000, 0);
   const hours = clamp(byId('salaryHours').value, 0, 24, 0);
@@ -1317,6 +1555,7 @@ byId('importFile').onchange = e => {
       const parsed = JSON.parse(ev.target.result);
       if (!parsed.records) throw new Error('格式错误');
       Store.mutate(s => { s.records = Object.assign(s.records, parsed.records); if(parsed.settings) s.settings = parsed.settings; });
+      syncSettingsUI();
       toast('导入成功'); byId('importModal').classList.remove('show');
     } catch (err) { toast('导入失败：文件格式错误'); }
   };
@@ -1326,6 +1565,7 @@ byId('importFile').onchange = e => {
 byId('clearAllBtn').onclick = () => {
   if (confirm('确定要清空所有当前记录吗？')) {
     Store.mutate(s => { s.records = {}; s.deleted = {}; });
+    syncSettingsUI();
     toast('数据已清空');
   }
 };
@@ -1397,6 +1637,42 @@ byId('syncPill').onclick = () => {
   Store.flush().then(() => { if (Store.syncStatus === 'synced') toast('同步完成'); else toast('同步失败'); });
 };
 
+function bindGlobal() {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== SESSION_KEY && e.key !== USER_KEY) return;
+    if (sessionStorage.getItem('wc_sync_lock')) return;
+    sessionStorage.setItem('wc_sync_lock', '1');
+    setTimeout(() => sessionStorage.removeItem('wc_sync_lock'), 500);
+    
+    const newUser = safeGet(USER_KEY);
+    const newToken = safeGet(SESSION_KEY);
+    if (newUser === Session.username && newToken === Session.token) return;
+
+    if (newToken && newUser) {
+      Session.set(newUser, newToken);
+      if (syncChannel) syncChannel.postMessage({ type: 'LOGIN', user: newUser });
+      enterApp();
+    } else {
+      if (syncChannel) syncChannel.postMessage({ type: 'LOGOUT' });
+      forceLogout();
+    }
+  });
+  
+  if (syncChannel) {
+    syncChannel.onmessage = (e) => {
+      if (e.data.type === 'LOGIN' && e.data.user !== Session.username) {
+        toast('检测到其他标签页登录了新账号，正在切换…');
+        Store.clearCache(); Store.state = defaultUserData(); Store.rev = 0;
+        enterApp();
+      } else if (e.data.type === 'LOGOUT') {
+        toast('其他标签页已退出登录');
+        forceLogout();
+      }
+    };
+  }
+}
+
+bindGlobal();
 Session.init();
 if (Session.username && Session.token) enterApp();
 else { byId('authPage').style.display = 'flex'; updateAuthUI('login'); }
