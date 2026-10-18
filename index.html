@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light dark">
+<meta name="app-version" content="V6.2">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 
 <title>工时记录助手</title>
@@ -656,7 +657,9 @@ button{background:none;border:none;cursor:pointer;}
 <script>
 (function(){
 "use strict";
-const APP_VERSION = 'V4.1-flash1017';
+const APP_VERSION = 'V6.2';
+// 暴露版本号，便于在控制台确认线上构建（window.__APP_VERSION__）
+try { window.__APP_VERSION__ = APP_VERSION; } catch (e) {}
 const SCHEMA_VERSION = 4;
 const API_BASE = 'https://api.leoani.dpdns.org/';
 const SESSION_KEY = 'wc_session';
@@ -845,7 +848,11 @@ function defaultSettings() {
   return { 
     mode: 'hourly', salaryFixedMode: 'daily', normalRate: 0, holidayRate: 0, baseSalary: 0, performance: 0, 
     salaryDays: 21.75, salaryHours: 8, salaryRateNormal: 1, salaryRateOt: 1.5, salaryRateWeekend: 2, salaryRateHoliday: 3,
-    salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0, rule: 'fixed', taxSpecial: {} 
+    salaryNormal: 0, salaryOt: 0, salaryWeekend: 0, salaryHoliday: 0, rule: 'fixed', taxSpecial: {},
+    // 以下三项随账号保存（服务端 normalizeSettings 已支持同名字段）
+    calcSalary: { rate: 0, hours: 8, days: 21.75 },
+    taxUseCumulative: false,
+    insuranceSalary: { pension: 8, medical: 2, unemployment: 0.5, fund: 5 }
   }; 
 }
 
@@ -873,6 +880,18 @@ function normalizeUserData(raw) {
     salaryDays: clamp(rawSettings.salaryDays, 1, 31, 21.75),
     salaryHours: clamp(rawSettings.salaryHours, 1, 24, 8),
     taxSpecial: (rawSettings.taxSpecial && typeof rawSettings.taxSpecial === 'object' && !Array.isArray(rawSettings.taxSpecial)) ? rawSettings.taxSpecial : {},
+    calcSalary: {
+      rate: clamp(rawSettings.calcSalary && rawSettings.calcSalary.rate, 0, 10000, 0),
+      hours: clamp(rawSettings.calcSalary && rawSettings.calcSalary.hours, 1, 24, 8),
+      days: clamp(rawSettings.calcSalary && rawSettings.calcSalary.days, 1, 31, 21.75),
+    },
+    taxUseCumulative: rawSettings.taxUseCumulative === true,
+    insuranceSalary: {
+      pension: clamp(rawSettings.insuranceSalary && rawSettings.insuranceSalary.pension, 0, 50, 8),
+      medical: clamp(rawSettings.insuranceSalary && rawSettings.insuranceSalary.medical, 0, 50, 2),
+      unemployment: clamp(rawSettings.insuranceSalary && rawSettings.insuranceSalary.unemployment, 0, 50, 0.5),
+      fund: clamp(rawSettings.insuranceSalary && rawSettings.insuranceSalary.fund, 0, 50, 5),
+    },
   });
   return { schemaVersion: SCHEMA_VERSION, records, settings, goal: clamp(src.goal, 0, 1000, 0), deleted: src.deleted && typeof src.deleted === 'object' ? src.deleted : {}, insurance };
 }
@@ -910,7 +929,9 @@ const Api = {
         if (res.status === 404) throw ApiError(data.error || '未找到', 'USER_NOT_FOUND', 404);
         if (res.status === 401 || res.status === 403) throw ApiError('登录失效', 'UNAUTHORIZED', res.status);
         // 保留服务端 code（如 MISSING_D1_BINDING / INTERNAL_ERROR），否则前端只能看到"500"
-        if (res.status >= 500 || res.status === 429) throw ApiError(data.error || '服务异常', data.code || 'RETRYABLE', res.status);
+        // 服务端若带了 detail（如 no such column: compensation），一并展示，便于直接定位
+        const detail = typeof data.detail === 'string' && data.detail ? '：' + data.detail : '';
+        if (res.status >= 500 || res.status === 429) throw ApiError((data.error || '服务异常') + detail, data.code || 'RETRYABLE', res.status);
         throw ApiError(data.error || '请求失败', data.code || 'FATAL', res.status);
       }
       return data;
@@ -947,6 +968,7 @@ const Api = {
   getData(username) { return this.call('getData', { username }); },
   setData(username, data, settingsTouched, signal) { return this.call('setData', { username, data, settingsTouched }, { signal }); },
   deleteUser(username) { return this.call('deleteUser', { username }); },
+  clearData(username) { return this.call('clearData', { username }); },
   changePassword(username, oldHash, newHash, newSalt) { return this.call('changePassword', { username, oldHash, newHash, newSalt }); }
 };
 
@@ -958,20 +980,38 @@ const Store = {
   reconcile(remote, opts = {}) {
     const next = normalizeUserData(remote);
     const serverDeleted = remote.deleted || {};
-    for (const k in serverDeleted) { if (serverDeleted[k] > num(this.deleted[k])) this.deleted[k] = serverDeleted[k]; }
-    for (const k in this.deleted) {
-      if (num(this.deleted[k]) >= num(serverDeleted[k])) {
-        const rec = next.records[k];
-        if (rec && num(rec.updatedAt) <= num(this.deleted[k])) delete next.records[k];
-      }
+
+    // 1) 墓碑：两端取较新的删除时间
+    for (const k in serverDeleted) {
+      if (num(serverDeleted[k]) > num(this.deleted[k])) this.deleted[k] = num(serverDeleted[k]);
     }
-    for (const k in next.records) {
+
+    // 2) 记录：做「并集」而不是「以服务端为准」。
+    //    服务端没有、本地有的记录必须保留 ——
+    //    否则新建的空库 / 换设备第一次同步时，本地已有数据会被整体清空（并写回缓存）。
+    const merged = Object.assign({}, next.records);
+    for (const k in this.state.records) {
       const local = this.state.records[k];
-      if (!local || num(next.records[k].updatedAt) > num(local.updatedAt)) continue;
-      next.records[k] = local;
+      const server = merged[k];
+      if (!server || num(local.updatedAt) >= num(server.updatedAt)) merged[k] = local;
     }
-    if (opts.prefsDirty) next.settings = this.state.settings;
-    this.state = next; this.persist(); 
+
+    // 3) 应用墓碑：删除时间不早于记录更新时间 => 真正删除
+    for (const k in this.deleted) {
+      const rec = merged[k];
+      if (rec && num(this.deleted[k]) >= num(rec.updatedAt)) delete merged[k];
+    }
+
+    next.records = merged;
+
+    // 4) 偏好字段：本地有未上传改动，或服务端还没有用户数据行时，以本地为准
+    if (opts.prefsDirty || num(remote.dataRev) === 0) {
+      next.settings = this.state.settings;
+      next.goal = this.state.goal;
+      next.insurance = this.state.insurance;
+    }
+
+    this.state = next; this.persist();
     if (!opts.silent) renderAll();
     if (typeof syncSettingsUI === 'function') syncSettingsUI();
   },
@@ -1602,18 +1642,40 @@ const INSURANCE_MIN_TIER = { pension: 8, medical: 2, unemployment: 0.5, fund: 5 
  * 首次进入月薪制时把五险一金填成最低档。
  * 只做一次（localStorage 按用户记标记）：之后用户把它改成 0 也不会被反复覆盖。
  */
-function maybeApplyInsuranceTier(modeOverride) {
-  const mode = modeOverride || Store.state.settings.mode;
-  if (mode !== 'salary') return;
-  const ins = Store.state.insurance || defaultInsurance();
-  if (INSURANCE_KEYS.some((k) => num(ins[k]) > 0)) return;
-  const flagKey = 'wc_ins_tier_' + (Session.username || 'anon');
-  if (safeGet(flagKey)) return;
-  Store.state.insurance = Object.assign({}, INSURANCE_MIN_TIER);
+/**
+ * 五险一金随薪资模式变化：
+ *   时薪制 -> 全部 0（多数时薪岗位不缴，避免预估收入被"虚扣"）
+ *   月薪制 -> 用记住的月薪制比例，首次默认最低档 8/2/0.5/5
+ * 月薪制下改过的值写进 settings.insuranceSalary，切走再切回能恢复。
+ */
+function insuranceForMode(mode) {
+  if (mode !== 'salary') return { pension: 0, medical: 0, unemployment: 0, fund: 0 };
+  const mem = (Store.state.settings && Store.state.settings.insuranceSalary) || INSURANCE_MIN_TIER;
+  return {
+    pension: clamp(mem.pension, 0, 50, INSURANCE_MIN_TIER.pension),
+    medical: clamp(mem.medical, 0, 50, INSURANCE_MIN_TIER.medical),
+    unemployment: clamp(mem.unemployment, 0, 50, INSURANCE_MIN_TIER.unemployment),
+    fund: clamp(mem.fund, 0, 50, INSURANCE_MIN_TIER.fund),
+  };
+}
+
+function applyInsuranceForMode(mode) {
+  const target = insuranceForMode(mode || Store.state.settings.mode);
+  const cur = Store.state.insurance || defaultInsurance();
+  if (INSURANCE_KEYS.every((k) => num(cur[k]) === target[k])) return false;
+  Store.state.insurance = target;
   Store.settingsDirty = true;
-  safeSet(flagKey, '1');
   Store.persist();
   Store.scheduleSave();
+  return true;
+}
+
+/** 载入时只补「月薪制但比例为空」的情况；时薪制保留用户自己填的值 */
+function ensureInsuranceDefaults() {
+  if (Store.state.settings.mode !== 'salary') return;
+  const ins = Store.state.insurance || defaultInsurance();
+  if (INSURANCE_KEYS.some((k) => num(ins[k]) > 0)) return;
+  applyInsuranceForMode('salary');
 }
 
 function syncInsuranceUI() {
@@ -1623,11 +1685,22 @@ function syncInsuranceUI() {
   setIfIdle('taxUnemployment', ins.unemployment);
   setIfIdle('taxFund', ins.fund);
 }
+/** 当前界面上选中的薪资模式（可能还没点「保存设置」，所以不能只看 settings.mode） */
+function uiMode() {
+  const btn = document.querySelector('#modeSwitch .active');
+  return btn && btn.dataset && btn.dataset.mode === 'salary' ? 'salary' : 'hourly';
+}
+
 function persistInsuranceInputs() {
   const ins = readInsuranceInputs();
   const cur = Store.state.insurance || defaultInsurance();
-  if (ins.pension === cur.pension && ins.medical === cur.medical
-    && ins.unemployment === cur.unemployment && ins.fund === cur.fund) return;
+  const changed = !(ins.pension === cur.pension && ins.medical === cur.medical
+    && ins.unemployment === cur.unemployment && ins.fund === cur.fund);
+  // 即使数值没变也要按当前模式刷新记忆（切模式后立刻改比例的场景）
+  if (uiMode() === 'salary') {
+    Store.state.settings.insuranceSalary = Object.assign({}, ins);
+  }
+  if (!changed) return;
   Store.state.insurance = ins;
   Store.settingsDirty = true;
   Store.persist();
@@ -1650,9 +1723,17 @@ function syncSettingsUI() {
   setIfIdle('inSalaryHours', s.salaryHours);
   setIfIdle('goalInput', Store.state.goal || '');
 
+  // 计算器设置（随账号保存）
+  const cs = s.calcSalary || defaultSettings().calcSalary;
+  setIfIdle('salaryRate', cs.rate || '');
+  setIfIdle('salaryHours', cs.hours);
+  setIfIdle('salaryDays', cs.days);
+  byId('taxUseCumulative').checked = s.taxUseCumulative === true;
+
   renderSpecialDeductions();
-  maybeApplyInsuranceTier();
+  ensureInsuranceDefaults();
   syncInsuranceUI();
+  calcSalary();
   calcTax();
 }
 document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
@@ -1661,11 +1742,11 @@ document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
   byId('hourlyForm').classList.toggle('hidden', b.dataset.mode !== 'hourly');
   byId('salaryForm').classList.toggle('hidden', b.dataset.mode !== 'salary');
   byId('goalInputGroup').classList.toggle('hidden', b.dataset.mode !== 'hourly'); // 修复切模式时立刻隐藏
-  // 切到月薪制：立刻把五险一金填成最低档、并隐藏统计页的工时目标（不等保存）
-  if (b.dataset.mode === 'salary') {
-    maybeApplyInsuranceTier('salary');
-    byId('goalProgressWrap').style.display = 'none';
-  }
+  // 五险一金跟随模式：时薪制归 0，月薪制取记住的比例（不等保存即时生效）
+  applyInsuranceForMode(b.dataset.mode);
+  syncInsuranceUI();
+  calcTax();
+  if (b.dataset.mode === 'salary') byId('goalProgressWrap').style.display = 'none';
 });
 byId('saveSettingsBtn').onclick = () => {
   Store.mutate(s => {
@@ -1709,10 +1790,33 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
     calcTax();
   });
 });
+function persistCalcSalaryInputs() {
+  const next = {
+    rate: clamp(byId('salaryRate').value, 0, 10000, 0),
+    hours: clamp(byId('salaryHours').value, 1, 24, 8),
+    days: clamp(byId('salaryDays').value, 1, 31, 21.75),
+  };
+  const cur = Store.state.settings.calcSalary || {};
+  if (cur.rate === next.rate && cur.hours === next.hours && cur.days === next.days) return;
+  Store.state.settings.calcSalary = next;
+  Store.settingsDirty = true;
+  Store.persist();
+  Store.scheduleSave();
+}
 ['salaryRate','salaryHours','salaryDays'].forEach(id => {
-  byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcSalary(); });
+  byId(id).addEventListener('input', e => {
+    sanitizeNumericInput(e.target);
+    persistCalcSalaryInputs();   // 随账号保存，换设备也在
+    calcSalary();
+  });
 });
-byId('taxUseCumulative').addEventListener('change', calcTax);
+byId('taxUseCumulative').addEventListener('change', () => {
+  Store.state.settings.taxUseCumulative = byId('taxUseCumulative').checked === true;
+  Store.settingsDirty = true;
+  Store.persist();
+  Store.scheduleSave();
+  calcTax();
+});
 
 function calcTax() {
   let gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
@@ -1956,15 +2060,30 @@ byId('importFile').onchange = e => {
   reader.readAsText(file);
 };
 
-byId('clearAllBtn').onclick = () => {
-  if (confirm('确定要清空所有当前记录吗？')) {
-    // 关键：真正参与同步的是 Store.deleted，而不是 state.deleted。
-    // 原实现只清了 state.deleted，残留墓碑会在下次打卡时把新记录当作"已删除"。
+byId('clearAllBtn').onclick = async () => {
+  const count = Object.keys(Store.state.records).length;
+  if (count === 0) { toast('当前没有可清空的记录'); return; }
+  if (!confirm('清空全部 ' + count + ' 天打卡记录？\n云端会一并删除，且不可恢复。')) return;
+
+  const btn = byId('clearAllBtn');
+  btn.disabled = true;
+  try {
+    // 必须先删云端：只清本地的话，下次同步会把服务端的记录当"较新"拉回来（表现为"清空后复活"）。
+    // 也不用生成 100+ 个墓碑 —— 那样载荷大、容易超时，还会触发重试。
+    const res = await Api.clearData(Session.username);
+    Store.cancelRetry();
     Store.mutate(s => { s.records = {}; s.deleted = {}; });
     Store.deleted = {};
-    Store.lastSyncedAt = 0;
+    Store.lastSyncedAt = Date.now();
+    Store.syncStatus = 'synced';
+    if (res && res.data) Store.reconcile(res.data, { silent: false });
     syncSettingsUI();
-    toast('数据已清空');
+    updateSyncUI();
+    toast('已清空 ' + count + ' 天记录（含云端）');
+  } catch (e) {
+    toast('清空失败：' + (e && e.message ? e.message : '请稍后重试'));
+  } finally {
+    btn.disabled = false;
   }
 };
 
