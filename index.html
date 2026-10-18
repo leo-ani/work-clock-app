@@ -212,6 +212,34 @@ button{background:none;border:none;cursor:pointer;}
 .dropzone{width:100%;border:2px dashed var(--sys-border);border-radius:var(--radius-l);padding:40px 20px;text-align:center;background:var(--sys-bg);cursor:pointer;}
 .dropzone:active{background:var(--sys-gray);}
 
+/* 账号卡片 */
+.account-hero{display:flex;align-items:center;gap:14px;padding:18px 16px;}
+.avatar{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#4A9573,#2E7D4F);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0;}
+.account-name{font-size:18px;font-weight:800;letter-spacing:-0.2px;line-height:1.2;}
+.account-chips{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:100px;background:var(--sys-bg);font-size:12px;font-weight:600;color:var(--sys-text-sec);}
+.chip.brand{background:var(--brand-soft);color:var(--brand);}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:var(--sys-text-sec);}
+.chip .dot.synced{background:var(--brand-graphic);}
+.chip .dot.saving{background:var(--sys-blue);animation:pulse 1s infinite;}
+.chip .dot.pending{background:var(--sys-orange);}
+.chip .dot.error{background:var(--sys-red);}
+
+/* 设置页分区 */
+.settings-section{margin:0 16px 20px;}
+.settings-title{font-size:12px;font-weight:700;color:var(--sys-text-sec);letter-spacing:0.5px;margin:0 4px 8px;}
+.settings-card{background:var(--sys-surface);border-radius:var(--radius-l);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.02);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:15px;border-top:0.5px solid var(--sys-border);}
+.settings-row:first-child{border-top:none;}
+.settings-row .label{color:var(--sys-text-sec);font-weight:500;}
+.settings-row .value{font-weight:600;max-width:60%;text-align:right;}
+.settings-action{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:left;border-top:0.5px solid var(--sys-border);background:transparent;cursor:pointer;}
+.settings-action:first-child{border-top:none;}
+.settings-action:active{background:var(--sys-bg);}
+.settings-action .t{font-weight:700;font-size:15px;}
+.settings-action .d{font-size:12px;color:var(--sys-text-sec);margin-top:2px;}
+.settings-action.danger .t{color:var(--sys-red);}
+
 /* 弹窗 */
 .modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1000;}
 .modal-overlay.show{display:flex;}
@@ -360,9 +388,11 @@ button{background:none;border:none;cursor:pointer;}
       <div class="calc-panel active" id="calcTax">
         <div class="form-group"><label>税前月收入 (元)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal" placeholder="自动读取本月收入"></div></div>
         
-        <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <label style="margin:0;">按年度累计预扣计算</label>
-          <input type="checkbox" id="taxUseCumulative" style="width:20px; height:20px; accent-color:var(--brand);">
+        <div class="settings-card" style="margin-bottom:20px;">
+          <label class="settings-row" style="cursor:pointer;">
+            <span class="label">按年度累计预扣计算</span>
+            <input type="checkbox" id="taxUseCumulative" style="width:22px; height:22px; accent-color:var(--brand);">
+          </label>
         </div>
 
         <div class="form-group">
@@ -465,55 +495,73 @@ button{background:none;border:none;cursor:pointer;}
 
     <!-- 设置与我的页 -->
     <div class="page" id="pageSettings">
-      <div class="card" style="margin-top:16px;">
-        <div style="font-size:16px;font-weight:700;margin-bottom:12px;">账号</div>
-        <div class="detail-row" style="border-top:none;padding-top:0;"><span class="detail-label">用户名</span><span class="detail-value" id="profileUser">-</span></div>
-        <div class="detail-row"><span class="detail-label">薪资模式</span><span class="detail-value" id="profileMode">-</span></div>
-        <div class="detail-row"><span class="detail-label">数据同步</span><span class="detail-value" id="profileSync">-</span></div>
-        <div style="margin-top:12px;font-size:12px;color:var(--sys-text-sec);line-height:1.6;">
-          薪资、时薪、五险一金等设置在「计算 → 工资 / 个税」页调整，改动会自动保存。
+      <div class="settings-section" style="margin-top:16px;">
+        <div class="settings-title">账号</div>
+        <div class="settings-card">
+          <div class="account-hero">
+            <div class="avatar" id="profileAvatar">·</div>
+            <div style="min-width:0;">
+              <div class="account-name" id="profileName">-</div>
+              <div class="account-chips">
+                <span class="chip brand" id="profileMode">-</span>
+                <span class="chip"><i class="dot" id="profileDot"></i><span id="profileSync">-</span></span>
+              </div>
+            </div>
+          </div>
+          <button class="settings-action" id="openPasswordBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-blue);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <div style="flex:1;">
+              <div class="t">修改密码</div>
+              <div class="d">修改后需要重新登录</div>
+            </div>
+            <span style="color:var(--sys-text-sec);font-size:18px;">›</span>
+          </button>
         </div>
       </div>
 
-      <div class="card" style="padding:0;">
-        <button class="export-option" id="openExportBtn">
-          <div class="icon-box" style="background:var(--sys-blue);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          </div>
-          <div><div style="font-weight:700;">导出数据</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">备份为 JSON 或 CSV 格式</div></div>
-        </button>
-        <button class="export-option" id="openImportBtn">
-          <div class="icon-box" style="background:var(--sys-orange);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          </div>
-          <div><div style="font-weight:700;">导入数据</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">从 JSON 备份文件恢复</div></div>
-        </button>
-        <button class="export-option" id="clearAllBtn" style="color:var(--sys-red);">
-          <div class="icon-box" style="background:var(--sys-red);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-          </div>
-          <div><div style="font-weight:700;">清空数据</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">删除所有打卡记录</div></div>
-        </button>
-        <button class="export-option" id="deleteAccountBtn" style="color:var(--sys-red);">
-          <div class="icon-box" style="background:var(--sys-red);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          </div>
-          <div><div style="font-weight:700;">注销账号</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">永久删除云端与本地数据</div></div>
-        </button>
-        <button class="export-option" id="openPasswordBtn">
-          <div class="icon-box" style="background:var(--sys-blue);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          </div>
-          <div><div style="font-weight:700;">修改密码</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">修改后需要重新登录</div></div>
-        </button>
-        <button class="export-option" id="logoutBtn" style="color:var(--sys-red);">
-          <div class="icon-box" style="background:var(--sys-red);">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          </div>
-          <div><div style="font-weight:700;">退出登录</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">保留云端数据</div></div>
-        </button>
+      <div class="settings-section">
+        <div class="settings-title">数据管理</div>
+        <div class="settings-card">
+          <button class="settings-action" id="openExportBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-blue);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <div style="flex:1;"><div class="t">导出数据</div><div class="d">备份为 JSON 或 CSV 格式</div></div>
+          </button>
+          <button class="settings-action" id="openImportBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-orange);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <div style="flex:1;"><div class="t">导入数据</div><div class="d">从 JSON 备份文件恢复</div></div>
+          </button>
+          <button class="settings-action danger" id="clearAllBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-red);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </div>
+            <div style="flex:1;"><div class="t">清空数据</div><div class="d">删除记录并重置薪资参数</div></div>
+          </button>
+        </div>
       </div>
-    </div>
+
+      <div class="settings-section">
+        <div class="settings-title">账号操作</div>
+        <div class="settings-card">
+          <button class="settings-action danger" id="deleteAccountBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-red);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <div style="flex:1;"><div class="t">注销账号</div><div class="d">永久删除云端与本地数据</div></div>
+          </button>
+          <button class="settings-action danger" id="logoutBtn" type="button">
+            <div class="icon-box" style="background:var(--sys-gray);color:var(--sys-text-sec);">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </div>
+            <div style="flex:1;"><div class="t" style="color:var(--sys-text);">退出登录</div><div class="d">保留云端数据</div></div>
+          </button>
+        </div>
+      </div>
   </div>
 
   <div class="tab-bar">
@@ -1066,6 +1114,10 @@ const Store = {
     this.inflight = true;
     const snapshotRev = this.rev;
     const touched = this.settingsDirty;
+    // 水位线用「发请求前」的时间：若上传途中用户又改了记录，
+    // 它的 updatedAt 会大于该水位线，下一轮增量上传才不会把它漏掉。
+    // 原来成功后取 Date.now()，会把这期间的修改永久跳过（本地有、云端永远没有）。
+    const startedAt = Date.now();
     
     const ctrl = new AbortController();
     const timeoutId = setTimeout(() => ctrl.abort(), 15000);
@@ -1087,7 +1139,7 @@ const Store = {
       clearTimeout(timeoutId);
       
       if (touched) this.settingsDirty = false;
-      this.lastSyncedAt = Date.now();
+      this.lastSyncedAt = startedAt;
       if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
       this.syncStatus = 'synced';
       this.cancelRetry();
@@ -1131,9 +1183,11 @@ function updateSyncUI() {
     dot.className = 'sync-dot ' + Store.syncStatus;
     txt.textContent = label;
   }
-  // 设置页的"数据同步"也保持一致
+  // 设置页账号卡片的胶囊标签
   const profileSync = byId('profileSync');
   if (profileSync) profileSync.textContent = label;
+  const profileDot = byId('profileDot');
+  if (profileDot) profileDot.className = 'dot ' + (Store.syncStatus === 'idle' ? 'synced' : Store.syncStatus);
 }
 
 /* UI 渲染 */
@@ -1184,12 +1238,20 @@ function aggregateMonth(year, month, records, settings) {
   }
   // 最高日收入：原来页面上这个值恒为 ¥0（从未被计算/写入）
   let maxDailyIncome = 0;
+  // 月薪制「固定整月发放」下，正班工时不产生单独收入（由整月底薪覆盖），
+  // 若直接取 engine.of 会得到 0。这里把整月底薪按出勤天数摊到每天，才和「月薪」口径一致。
+  const fixedMonthly = settings.mode === 'salary' && settings.salaryFixedMode === 'monthly';
+  const fixedShare = fixedMonthly && totalDays > 0
+    ? (num(settings.baseSalary) + num(settings.performance)) / totalDays
+    : 0;
   for (const key in records) {
     const rec = records[key];
     const d = parseDateKey(key);
     if (!d || d.getFullYear() !== year || d.getMonth() !== month) continue;
     if (rec.leave !== 'none') continue;
-    maxDailyIncome = Math.max(maxDailyIncome, engine.of(rec, d));
+    const dayHours = num(rec.normal) + num(rec.ot);
+    if (dayHours <= 0) continue;
+    maxDailyIncome = Math.max(maxDailyIncome, engine.of(rec, d) + fixedShare);
   }
   return { totalDays, totalHours, totalIncome, cat, maxDailyIncome, timeoffBalance: timeoffEarned - timeoffUsed };
 }
@@ -1334,7 +1396,13 @@ function renderAll() {
   
   if (selectedRec) {
     const d = parseDateKey(selectedDate);
-    const income = createIncomeEngine(s.settings).of(selectedRec, d);
+    // 月薪制「固定整月发放」下，正班工时本身不产生单独收入（整月底薪覆盖），
+    // 详情里若只显示 engine.of 会是 ¥0。这里按本月出勤天数摊入日薪，与「月薪」口径一致。
+    const selHours = num(selectedRec.normal) + num(selectedRec.ot);
+    const detailFixedShare = (s.settings.mode === 'salary' && s.settings.salaryFixedMode === 'monthly' && selHours > 0 && sum.totalDays > 0)
+      ? (num(s.settings.baseSalary) + num(s.settings.performance)) / sum.totalDays
+      : 0;
+    const income = createIncomeEngine(s.settings).of(selectedRec, d) + detailFixedShare;
     detail.innerHTML = `
       <div class="detail-header">
         <div><div class="detail-date">${selectedDate.slice(5)} ${['日','一','二','三','四','五','六'][d.getDay()]}</div>
@@ -1755,14 +1823,14 @@ function syncSettingsUI() {
   setIfIdle('salaryDays', cs.days);
   byId('taxUseCumulative').checked = s.taxUseCumulative === true;
 
-  const userEl = byId('profileUser');
-  if (userEl) userEl.textContent = Session.username || '-';
+  const name = Session.username || '-';
+  const nameEl = byId('profileName');
+  if (nameEl) nameEl.textContent = name;
+  const avatarEl = byId('profileAvatar');
+  if (avatarEl) avatarEl.textContent = (name[0] || '·').toUpperCase();
   const modeEl = byId('profileMode');
   if (modeEl) modeEl.textContent = s.mode === 'salary' ? '月薪制' : '小时工';
-  const syncEl = byId('profileSync');
-  if (syncEl) {
-    syncEl.textContent = { idle: '已连接', synced: '已同步', saving: '同步中', pending: '待上传', error: '同步失败' }[Store.syncStatus] || '已连接';
-  }
+  updateSyncUI();
 
   renderSpecialDeductions();
   ensureInsuranceDefaults();
@@ -1966,7 +2034,7 @@ function calcTax() {
 /** 个税页的「税前月收入」为空时，用本月预估收入（月薪制含整月底薪）自动填充 */
 function fillTaxIncomeIfEmpty() {
   const el = byId('taxIncome');
-  if (!el || Number(el.value) !== 0) return;
+  if (!el || document.activeElement === el || Number(el.value) !== 0) return;
   const sum = aggregateMonth(currentDate.getFullYear(), currentDate.getMonth(), Store.state.records, Store.state.settings);
   if (sum.totalIncome <= 0) return;
   el.value = Math.round(sum.totalIncome * 100) / 100;
@@ -2149,7 +2217,7 @@ byId('importFile').onchange = e => {
 byId('clearAllBtn').onclick = async () => {
   const count = Object.keys(Store.state.records).length;
   if (count === 0) { toast('当前没有可清空的记录'); return; }
-  if (!confirm('清空全部 ' + count + ' 天打卡记录？\n云端会一并删除，且不可恢复。')) return;
+  if (!confirm('清空全部 ' + count + ' 天打卡记录？\n同时会把时薪、底薪、绩效、专项扣除、五险一金重置为 0。\n云端会一并删除，且不可恢复。')) return;
 
   const btn = byId('clearAllBtn');
   btn.disabled = true;
@@ -2158,11 +2226,24 @@ byId('clearAllBtn').onclick = async () => {
     // 也不用生成 100+ 个墓碑 —— 那样载荷大、容易超时，还会触发重试。
     const res = await Api.clearData(Session.username);
     Store.cancelRetry();
-    Store.mutate(s => { s.records = {}; s.deleted = {}; });
+    Store.mutate(s => {
+      s.records = {};
+      s.deleted = {};
+      // 薪资/税费参数一并归零，否则"清空"后计算页还显示旧的时薪与月薪
+      s.settings.normalRate = 0;
+      s.settings.holidayRate = 0;
+      s.settings.baseSalary = 0;
+      s.settings.performance = 0;
+      s.settings.taxSpecial = {};
+      s.settings.insuranceSalary = { pension: 0, medical: 0, unemployment: 0, fund: 0 };
+      s.insurance = defaultInsurance();
+    });
+    Store.settingsDirty = true;
     Store.deleted = {};
     Store.lastSyncedAt = Date.now();
     Store.syncStatus = 'synced';
     if (res && res.data) Store.reconcile(res.data, { silent: false });
+    byId('taxIncome').value = 0;
     syncSettingsUI();
     updateSyncUI();
     toast('已清空 ' + count + ' 天记录（含云端）');
@@ -2276,7 +2357,16 @@ function enterApp() {
   Api.getData(Session.username).then(res => {
     Store.reconcile(res, { prefsDirty: Store.settingsDirty });
     syncSettingsUI(); Store.syncStatus = 'synced'; updateSyncUI();
-  }).catch(e => { Store.syncStatus = 'error'; updateSyncUI(); });
+  }).catch(e => {
+    // 账号已在别处注销：本地留着也做不了什么，直接回登录页
+    if (e && e.code === 'USER_NOT_FOUND') {
+      toast('账号不存在或已注销，请重新登录');
+      forceLogout();
+      return;
+    }
+    Store.syncStatus = 'error';
+    updateSyncUI();
+  });
 }
 
 function forceLogout() {
