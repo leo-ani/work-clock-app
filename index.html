@@ -176,7 +176,17 @@ button{background:none;border:none;cursor:pointer;}
 .deduction-check svg { display: none; width: 12px; height: 12px; }
 .deduction-amount { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--sys-text); }
 .deduction-amount input { width: 60px; text-align: right; border: none; background: transparent; font-weight: 700; color: inherit; outline: none; }
-.deduction-item:not(.active) .deduction-amount { opacity: 0.4; pointer-events: none; }
+/* 未勾选：折叠成单行，不显示金额输入 */
+.deduction-item:not(.active) { padding: 10px 16px; }
+.deduction-item:not(.active) .deduction-amount { display: none; }
+
+/* 整块默认折叠；展开后勾选项展示金额、未勾选项保持单行 */
+.deduction-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--sys-surface); border: 1px solid var(--sys-border); border-radius: var(--radius-m); font-size: 14px; font-weight: 600; color: var(--sys-text); cursor: pointer; }
+.deduction-toggle-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--sys-text-sec); }
+.deduction-toggle .chev { transition: transform 0.2s; }
+.deduction-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.deduction-list { margin-top: 8px; }
+.deduction-list.collapsed { display: none; }
 
 /* 计算器 */
 .calc-tabs{display:flex;background:var(--sys-surface);padding:0 16px;gap:8px;position:sticky;top:0;z-index:5;border-bottom:0.5px solid var(--sys-border);}
@@ -351,8 +361,11 @@ button{background:none;border:none;cursor:pointer;}
         </div>
 
         <div class="form-group">
-          <label>专项附加扣除</label>
-          <div class="deduction-list" id="taxSpecialList"></div>
+          <button type="button" class="deduction-toggle" id="taxSpecialToggle" aria-expanded="false">
+            <span>专项附加扣除</span>
+            <span class="deduction-toggle-meta"><span id="taxSpecialSummary">未选择</span><span class="chev">▾</span></span>
+          </button>
+          <div class="deduction-list collapsed" id="taxSpecialList"></div>
         </div>
 
         <div class="form-group"><label>五险一金比例 (%)</label>
@@ -896,7 +909,8 @@ const Api = {
       if (!res.ok) {
         if (res.status === 404) throw ApiError(data.error || '未找到', 'USER_NOT_FOUND', 404);
         if (res.status === 401 || res.status === 403) throw ApiError('登录失效', 'UNAUTHORIZED', res.status);
-        if (res.status >= 500 || res.status === 429) throw ApiError(data.error || '服务异常', 'RETRYABLE', res.status);
+        // 保留服务端 code（如 MISSING_D1_BINDING / INTERNAL_ERROR），否则前端只能看到"500"
+        if (res.status >= 500 || res.status === 429) throw ApiError(data.error || '服务异常', data.code || 'RETRYABLE', res.status);
         throw ApiError(data.error || '请求失败', data.code || 'FATAL', res.status);
       }
       return data;
@@ -939,6 +953,7 @@ const Api = {
 /* Store */
 const Store = {
   state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null, lastSyncedAt: 0,
+  retryAttempt: 0, _retryTimer: null,
   mutate(fn) { if (fn(this.state) === false) return; this.rev++; this.persist(); renderAll(); this.scheduleSave(); },
   reconcile(remote, opts = {}) {
     const next = normalizeUserData(remote);
@@ -968,6 +983,26 @@ const Store = {
     return false;
   },
   scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 800); this.syncStatus = 'pending'; updateSyncUI(); },
+
+  /** 取消待执行的重试（退出登录、手动同步成功时调用） */
+  cancelRetry() {
+    if (this._retryTimer) { clearTimeout(this._retryTimer); this._retryTimer = null; }
+    this.retryAttempt = 0;
+  },
+
+  /**
+   * 服务端 5xx / 限流时自动重试（3s、6s、12s、24s，最多 4 次）。
+   * 没有它，一旦某次上传失败，已删除的墓碑会一直卡在本地，
+   * 只能等用户下次改记录才「顺带」重传 —— 表现就是"删了又回来"。
+   */
+  scheduleRetry() {
+    if (this._retryTimer) return;
+    const attempt = (this.retryAttempt || 0) + 1;
+    if (attempt > 4) { this.retryAttempt = attempt; return; }
+    this.retryAttempt = attempt;
+    const delay = Math.min(30000, 3000 * Math.pow(2, attempt - 1));
+    this._retryTimer = setTimeout(() => { this._retryTimer = null; this.flush(); }, delay);
+  },
   async flush() {
     if (!Session.token) return;
     if (this.inflight) { this.dirtyAgain = true; return this.inflight; }
@@ -1000,6 +1035,7 @@ const Store = {
       this.lastSyncedAt = Date.now();
       if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
       this.syncStatus = 'synced';
+      this.cancelRetry();
       if (this.dirtyAgain || this.rev !== snapshotRev) {
         this.dirtyAgain = false;
         this.inflight = null;
@@ -1011,7 +1047,13 @@ const Store = {
         toast('网络超时，已在后台重试');
       }
       if (e.code === 'UNAUTHORIZED') return forceLogout();
+      // 服务端 5xx 时把 code 报出来（同一个错误只提示一次，避免刷屏）
+      if (e.code && e.code !== 'TIMEOUT' && e.code !== 'NETWORK' && this._lastErrorCode !== e.code) {
+        this._lastErrorCode = e.code;
+        toast('同步失败：' + (e.message || '服务异常') + '（' + e.code + '）');
+      }
       this.syncStatus = e.code === 'TIMEOUT' || e.code === 'NETWORK' ? 'pending' : 'error';
+      if (this.syncStatus === 'error') this.scheduleRetry();
       if (this.syncStatus === 'pending') this.scheduleSave();
     } finally { 
       this.inflight = null; 
@@ -1080,7 +1122,16 @@ function aggregateMonth(year, month, records, settings) {
   if (settings.mode === 'salary' && settings.salaryFixedMode === 'monthly') {
     totalIncome += num(settings.baseSalary) + num(settings.performance);
   }
-  return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarned - timeoffUsed };
+  // 最高日收入：原来页面上这个值恒为 ¥0（从未被计算/写入）
+  let maxDailyIncome = 0;
+  for (const key in records) {
+    const rec = records[key];
+    const d = parseDateKey(key);
+    if (!d || d.getFullYear() !== year || d.getMonth() !== month) continue;
+    if (rec.leave !== 'none') continue;
+    maxDailyIncome = Math.max(maxDailyIncome, engine.of(rec, d));
+  }
+  return { totalDays, totalHours, totalIncome, cat, maxDailyIncome, timeoffBalance: timeoffEarned - timeoffUsed };
 }
 
 
@@ -1128,6 +1179,23 @@ function ensureCalCells(grid) {
     renderAll();
   });
   return calCells;
+}
+
+/**
+ * 工时目标进度只在「时薪制 + 目标 > 0」时出现。
+ * 抽成独立函数并在每次 renderAll 都执行（不依赖当前停留在哪个页面），
+ * 避免切到统计页时残留上一次的显示状态。
+ */
+function applyGoalVisibility(sum) {
+  const wrap = byId('goalProgressWrap');
+  if (!wrap) return;
+  const isHourly = Store.state.settings.mode === 'hourly';
+  const goal = num(Store.state.goal);
+  const show = isHourly && goal > 0;
+  wrap.style.display = show ? 'block' : 'none';
+  if (!show) return;
+  byId('goalProgressText').textContent = round1(sum.totalHours) + ' / ' + goal + ' h';
+  byId('goalProgressFill').style.width = Math.min(100, (sum.totalHours / goal) * 100) + '%';
 }
 
 function renderCalendar(s, todayKey) {
@@ -1226,9 +1294,12 @@ function renderAll() {
     detail.innerHTML = `<div style="text-align:center;padding:20px;color:var(--sys-text-sec)">这一天还没有记录</div>`;
   }
 
+  applyGoalVisibility(sum);
+
   if (byId('pageStats').classList.contains('active')) {
     byId('monthIncome').textContent = fmt.compact(sum.totalIncome);
     byId('avgDailyIncome').textContent = fmt.compact(sum.totalIncome / (sum.totalDays||1));
+    byId('maxDailyIncome').textContent = fmt.compact(sum.maxDailyIncome || 0);
     byId('boxDays').textContent = sum.totalDays;
     byId('boxHours').textContent = round1(sum.totalHours);
     byId('boxNormal').textContent = round1(sum.cat.normal);
@@ -1238,15 +1309,6 @@ function renderAll() {
     byId('timeoffBox').style.display = isSalaryMode ? 'block' : 'none';
     byId('boxTimeoff').textContent = round1(sum.timeoffBalance);
     
-    const goal = Store.state.goal || 0;
-    if (s.settings.mode === 'hourly' && goal > 0) { // 修复：只有时薪制且目标大于0才显示
-      byId('goalProgressWrap').style.display = 'block';
-      byId('goalProgressText').textContent = `${round1(sum.totalHours)} / ${goal} h`;
-      byId('goalProgressFill').style.width = Math.min(100, (sum.totalHours / goal) * 100) + '%';
-    } else {
-      byId('goalProgressWrap').style.display = 'none';
-    }
-
     const totH = sum.cat.normal + sum.cat.ot;
     if (totH > 0) {
       const p1 = (sum.cat.normal/totH)*100;
@@ -1364,12 +1426,16 @@ byId('clockSaveBtn').onclick = () => {
   }
   
   if (draft.leave === 'none' && draft.normal === 0 && draft.ot === 0 && !draft.note) {
-    Store.mutate(s => { 
+    Store.mutate(s => {
       const oldRec = s.records[selectedDate];
-      // 修复：强制让删除时间戳绝对碾压旧记录的时间
+      // 删除时间戳必须碾压旧记录，否则服务端会认为旧记录更新
       const delTime = Math.max(Date.now(), oldRec ? oldRec.updatedAt + 1000 : 0);
-      delete s.records[selectedDate]; 
-      s.deleted[selectedDate] = delTime; 
+      delete s.records[selectedDate];
+      if (s.deleted) delete s.deleted[selectedDate];
+      // 关键：墓碑必须写进 Store.deleted —— 同步链路上只认它。
+      // 原来写的是 state.deleted（没有任何代码读取），墓碑永远上不了云，
+      // 所以删除后下一次同步就会被服务端的旧记录"复活"。
+      Store.deleted[selectedDate] = delTime;
     });
   } else {
     Store.mutate(s => s.records[selectedDate] = { ...draft, updatedAt: Date.now() });
@@ -1431,6 +1497,17 @@ byId('compensationRow').onclick = e => { if(e.target.dataset.comp) { draft.compe
 byId('leaveRow').onclick = e => { if(e.target.dataset.leave) { draft.leave = e.target.dataset.leave; syncClockUI(); } };
 
 /* 专项扣除渲染与交互 */
+function updateDeductionSummary() {
+  const taxSpecial = Store.state.settings.taxSpecial || {};
+  const chosen = Object.keys(taxSpecial);
+  const el = byId('taxSpecialSummary');
+  if (!el) return;
+  if (!chosen.length) { el.textContent = '未选择'; return; }
+  let total = 0;
+  for (const k of chosen) total += num(taxSpecial[k]);
+  el.textContent = chosen.length + ' 项 · ¥' + Math.round(total) + '/月';
+}
+
 function renderSpecialDeductions() {
   const list = byId('taxSpecialList');
   // 用户正在列表里输入金额时不要重建 DOM（否则焦点与光标全部丢失）
@@ -1438,6 +1515,7 @@ function renderSpecialDeductions() {
   const taxSpecial = Store.state.settings.taxSpecial || {};
   const activeKey = document.activeElement && document.activeElement.closest('.deduction-item') ? document.activeElement.closest('.deduction-item').dataset.key : null;
 
+  updateDeductionSummary();
   list.innerHTML = SPECIAL_DEDUCTIONS.map(item => {
     const isChecked = taxSpecial[item.key] !== undefined;
     const isActive = activeKey === item.key;
@@ -1457,6 +1535,13 @@ function renderSpecialDeductions() {
     `;
   }).join('');
 }
+
+byId('taxSpecialToggle').onclick = () => {
+  const list = byId('taxSpecialList');
+  const open = list.classList.contains('collapsed');
+  list.classList.toggle('collapsed', !open);
+  byId('taxSpecialToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+};
 
 byId('taxSpecialList').addEventListener('click', e => {
   const item = e.target.closest('.deduction-item');
@@ -1509,6 +1594,28 @@ function readInsuranceInputs() {
     fund: clamp(byId('taxFund').value, 0, 50, 0),
   };
 }
+// 月薪制（正规就业）默认按最低档缴纳；时薪制保持 0（多数不缴）
+const INSURANCE_KEYS = ['pension', 'medical', 'unemployment', 'fund'];
+const INSURANCE_MIN_TIER = { pension: 8, medical: 2, unemployment: 0.5, fund: 5 };
+
+/**
+ * 首次进入月薪制时把五险一金填成最低档。
+ * 只做一次（localStorage 按用户记标记）：之后用户把它改成 0 也不会被反复覆盖。
+ */
+function maybeApplyInsuranceTier(modeOverride) {
+  const mode = modeOverride || Store.state.settings.mode;
+  if (mode !== 'salary') return;
+  const ins = Store.state.insurance || defaultInsurance();
+  if (INSURANCE_KEYS.some((k) => num(ins[k]) > 0)) return;
+  const flagKey = 'wc_ins_tier_' + (Session.username || 'anon');
+  if (safeGet(flagKey)) return;
+  Store.state.insurance = Object.assign({}, INSURANCE_MIN_TIER);
+  Store.settingsDirty = true;
+  safeSet(flagKey, '1');
+  Store.persist();
+  Store.scheduleSave();
+}
+
 function syncInsuranceUI() {
   const ins = Store.state.insurance || defaultInsurance();
   setIfIdle('taxPension', ins.pension);
@@ -1544,6 +1651,7 @@ function syncSettingsUI() {
   setIfIdle('goalInput', Store.state.goal || '');
 
   renderSpecialDeductions();
+  maybeApplyInsuranceTier();
   syncInsuranceUI();
   calcTax();
 }
@@ -1553,6 +1661,11 @@ document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
   byId('hourlyForm').classList.toggle('hidden', b.dataset.mode !== 'hourly');
   byId('salaryForm').classList.toggle('hidden', b.dataset.mode !== 'salary');
   byId('goalInputGroup').classList.toggle('hidden', b.dataset.mode !== 'hourly'); // 修复切模式时立刻隐藏
+  // 切到月薪制：立刻把五险一金填成最低档、并隐藏统计页的工时目标（不等保存）
+  if (b.dataset.mode === 'salary') {
+    maybeApplyInsuranceTier('salary');
+    byId('goalProgressWrap').style.display = 'none';
+  }
 });
 byId('saveSettingsBtn').onclick = () => {
   Store.mutate(s => {
@@ -1779,7 +1892,12 @@ byId('openExportBtn').onclick = () => byId('exportModal').classList.add('show');
 byId('openImportBtn').onclick = () => byId('importModal').classList.add('show');
 
 byId('exportJsonBtn').onclick = () => {
-  const data = Object.assign({}, Store.state, { version: APP_VERSION, exportedAt: new Date().toISOString() });
+  // 墓碑必须一起导出，否则在另一台设备导入后，已删除的日期会被云端旧记录复活
+  const data = Object.assign({}, Store.state, {
+    deleted: Object.assign({}, Store.deleted),
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+  });
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `worktime_backup_${formatDateKey(new Date())}.json`; a.click();
   toast('JSON 已导出'); byId('exportModal').classList.remove('show');
@@ -1813,6 +1931,13 @@ byId('importFile').onchange = e => {
       });
       if (!keys.length) throw new Error('没有可导入的有效记录');
       const nowTs = Date.now();
+      // 备份里带的墓碑：先恢复，再按时间戳淘汰更旧的记录
+      const incomingDeleted = (parsed.deleted && typeof parsed.deleted === 'object') ? parsed.deleted : {};
+      for (const k in incomingDeleted) {
+        const at = Number(incomingDeleted[k]);
+        if (!isValidDateKey(k) || !Number.isFinite(at) || at <= 0) continue;
+        if (at > num(Store.deleted[k])) Store.deleted[k] = at;
+      }
       Store.mutate(s => {
         for (const k of keys) {
           // updatedAt 置为当前时间：导入的数据必须能上行到云端（旧时间戳会被增量水位线跳过）
@@ -1952,6 +2077,7 @@ function enterApp() {
 function forceLogout() {
   const username = Session.username;
   clearTimeout(Store.saveTimer);
+  Store.cancelRetry();
   Session.clear();
   // 缓存按用户名分键：退出时删除，避免共用设备残留他人数据
   if (username) safeRemove(CACHE_PREFIX + username);
