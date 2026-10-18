@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+
 <title>工时记录助手</title>
 <style>
 :root{
@@ -138,7 +140,7 @@ button{background:none;border:none;cursor:pointer;}
 .hours-donut-total{font-size:28px;font-weight:800;}
 .hours-donut-label{font-size:11px;color:var(--sys-text-sec);font-weight:600;margin-top:4px;}
 
-.hours-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;margin-top:12px;}
+.hours-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-top:12px;}
 .hours-list-row{display:flex;flex-direction:column;align-items:center;padding:12px 8px;background:var(--sys-surface);border-radius:var(--radius-m);border:1px solid var(--sys-border);gap:4px;}
 .hours-list-name{font-size:12px;color:var(--sys-text-sec);font-weight:600;display:flex;align-items:center;gap:4px;}
 .lg-dot{width:6px;height:6px;border-radius:50%;}
@@ -425,8 +427,8 @@ button{background:none;border:none;cursor:pointer;}
           </div>
         </div>
         <div id="hourlyForm">
-          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inNormal" step="0.5" max="10000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inHoliday" step="0.5" max="10000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inNormal" step="0.5" max="1000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><input type="number" id="inHoliday" step="0.5" max="1000" inputmode="decimal"></div></div>
         </div>
         <div id="salaryForm" class="hidden">
           <div class="form-group"><label>底薪发放方式</label>
@@ -435,12 +437,12 @@ button{background:none;border:none;cursor:pointer;}
               <option value="monthly">固定整月发放</option>
             </select>
           </div>
-          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><input type="number" id="inBaseSalary" step="100" max="1000000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><input type="number" id="inPerformance" step="100" max="1000000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><input type="number" id="inBaseSalary" step="100" max="500000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><input type="number" id="inPerformance" step="100" max="500000" inputmode="decimal"></div></div>
           <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"></div></div>
           <div class="form-group"><label>每日工时 (H)</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"></div></div>
         </div>
-        <div class="form-group" style="margin-top:24px;"><label>月度工时目标 (H)</label><div class="input-wrap"><input type="number" id="goalInput" min="0" max="1000"></div></div>
+        <div class="form-group" id="goalInputGroup" style="margin-top:24px;"><label>月度工时目标 (H)</label><div class="input-wrap"><input type="number" id="goalInput" min="0" max="1000"></div></div>
         <button class="btn-primary" id="saveSettingsBtn" style="margin-top:16px;width:100%;">保存设置</button>
       </div>
 
@@ -468,6 +470,12 @@ button{background:none;border:none;cursor:pointer;}
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           </div>
           <div><div style="font-weight:700;">注销账号</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">永久删除云端与本地数据</div></div>
+        </button>
+        <button class="export-option" id="openPasswordBtn">
+          <div class="icon-box" style="background:var(--sys-blue);">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <div><div style="font-weight:700;">修改密码</div><div style="font-size:12px;color:var(--sys-text-sec);margin-top:2px;">修改后需要重新登录</div></div>
         </button>
         <button class="export-option" id="logoutBtn" style="color:var(--sys-red);">
           <div class="icon-box" style="background:var(--sys-red);">
@@ -612,6 +620,20 @@ button{background:none;border:none;cursor:pointer;}
     <div class="action-btns" style="margin-top:20px;">
       <button class="action-btn btn-cancel" data-close="importModal">取消</button>
       <button class="action-btn btn-save" id="importConfirmBtn" style="display:none;">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal-content">
+    <div class="modal-header"><div class="modal-title">修改密码</div><button class="modal-close" data-close="passwordModal">✕</button></div>
+    <div class="form-group"><label for="oldPassword">当前密码</label><div class="input-wrap"><input type="password" id="oldPassword" autocomplete="current-password"></div></div>
+    <div class="form-group"><label for="newPassword">新密码</label><div class="input-wrap"><input type="password" id="newPassword" autocomplete="new-password" placeholder="至少 6 位"></div></div>
+    <div class="form-group"><label for="newPassword2">确认新密码</label><div class="input-wrap"><input type="password" id="newPassword2" autocomplete="new-password"></div></div>
+    <div class="action-btns">
+      <button class="action-btn btn-cancel" data-close="passwordModal">取消</button>
+      <button class="action-btn btn-save" id="changePasswordBtn">确认修改</button>
     </div>
   </div>
 </div>
@@ -773,10 +795,15 @@ function createIncomeEngine(settings) {
     const normal = num(rec.normal), ot = num(rec.ot);
     const key = formatDateKey(date);
     const makeup = Holiday.isWorkday(key);
-    let isHolidayOrWeekend = false;
-    if (rec.type === 'holiday' || (Holiday.isHoliday(key) && !makeup)) isHolidayOrWeekend = true;
-    else if ((isWeekend(date) && !makeup) || rec.type === 'weekend') isHolidayOrWeekend = true;
-    if (isHolidayOrWeekend) return (normal + ot) * rateOf('weekend');
+    // 法定节假日必须走 holiday 倍数，周末走 weekend 倍数。
+    // 原实现两者都取 rateOf('weekend')：时薪制下节假日只按日常时薪算（少给 3 倍）。
+    const isHolidayDay = rec.type === 'holiday' || (Holiday.isHoliday(key) && !makeup);
+    const isWeekendDay = !isHolidayDay && ((isWeekend(date) && !makeup) || rec.type === 'weekend');
+    if (isHolidayDay) return (normal + ot) * rateOf('holiday');
+    if (isWeekendDay) return (normal + ot) * rateOf('weekend');
+    // 月薪制「固定整月发放」：正班工时已由整月底薪覆盖，这里只计加班差额。
+    // 原实现在此又按小时发一遍正班工资，再叠加整月底薪，等于发放约 2 倍。
+    if (mode === 'salary' && settings.salaryFixedMode === 'monthly') return ot * rateOf('ot');
     return normal * rateOf('normal') + ot * rateOf('ot');
   }
   return { of, rateOf };
@@ -809,13 +836,32 @@ function defaultSettings() {
   }; 
 }
 
-function defaultUserData() { return { schemaVersion: SCHEMA_VERSION, records: {}, settings: defaultSettings(), goal: 0, deleted: {} }; }
+function defaultInsurance() { return { pension: 0, medical: 0, unemployment: 0, fund: 0 }; }
+function defaultUserData() { return { schemaVersion: SCHEMA_VERSION, records: {}, settings: defaultSettings(), goal: 0, deleted: {}, insurance: defaultInsurance() }; }
 function normalizeUserData(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const records = {};
   const source = src.records && typeof src.records === 'object' && !Array.isArray(src.records) ? src.records : {};
   for (const key in source) { if (isValidDateKey(key)) { const rec = normalizeRecord(source[key]); if (rec) records[key] = rec; } }
-  return { schemaVersion: SCHEMA_VERSION, records, settings: Object.assign(defaultSettings(), src.settings), goal: clamp(src.goal, 0, 1000, 0), deleted: src.deleted && typeof src.deleted === 'object' ? src.deleted : {} };
+  const ins = src.insurance && typeof src.insurance === 'object' ? src.insurance : {};
+  const insurance = {
+    pension: clamp(ins.pension, 0, 50, 0), medical: clamp(ins.medical, 0, 50, 0),
+    unemployment: clamp(ins.unemployment, 0, 50, 0), fund: clamp(ins.fund, 0, 50, 0),
+  };
+  // settings 也要归一：缓存/导入文件里的非法值（负数、字符串、NaN）不能直接进计算引擎
+  const rawSettings = Object.assign(defaultSettings(), src.settings);
+  const settings = Object.assign(defaultSettings(), {
+    mode: rawSettings.mode === 'salary' ? 'salary' : 'hourly',
+    salaryFixedMode: rawSettings.salaryFixedMode === 'monthly' ? 'monthly' : 'daily',
+    normalRate: clamp(rawSettings.normalRate, 0, 10000, 0),
+    holidayRate: clamp(rawSettings.holidayRate, 0, 10000, 0),
+    baseSalary: clamp(rawSettings.baseSalary, 0, 1000000, 0),
+    performance: clamp(rawSettings.performance, 0, 1000000, 0),
+    salaryDays: clamp(rawSettings.salaryDays, 1, 31, 21.75),
+    salaryHours: clamp(rawSettings.salaryHours, 1, 24, 8),
+    taxSpecial: (rawSettings.taxSpecial && typeof rawSettings.taxSpecial === 'object' && !Array.isArray(rawSettings.taxSpecial)) ? rawSettings.taxSpecial : {},
+  });
+  return { schemaVersion: SCHEMA_VERSION, records, settings, goal: clamp(src.goal, 0, 1000, 0), deleted: src.deleted && typeof src.deleted === 'object' ? src.deleted : {}, insurance };
 }
 
 /* 网络与加密 */
@@ -825,12 +871,26 @@ const Api = {
   async call(action, payload, opts = {}) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 25000);
+    // 允许调用方传入自己的 signal（如同步的 15s 超时、退出登录时取消在途请求），
+    // 原实现把外层 signal 写进形参却被忽略，超时永远不会中断请求。
+    const outer = opts && opts.signal;
+    const signal = outer && typeof AbortSignal !== 'undefined' && typeof AbortSignal.any === 'function'
+      ? AbortSignal.any([outer, ctrl.signal])
+      : ctrl.signal;
     try {
       const res = await fetch(API_BASE, {
         method: 'POST', headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
-        body: JSON.stringify({ action, ...payload }), signal: ctrl.signal, cache: 'no-store'
+        body: JSON.stringify({ action, ...payload }), signal, cache: 'no-store'
       });
       clearTimeout(timer);
+      // 服务端在剩余有效期 < 3 天时会下发 X-Refresh-Token，这里接住并落盘，
+      // 否则 7 天到期必然掉线（原实现从不读取该响应头）。
+      const refreshed = res.headers && typeof res.headers.get === 'function'
+        ? res.headers.get('X-Refresh-Token') : null;
+      if (refreshed && refreshed !== this.token) {
+        this.token = refreshed;
+        if (typeof Session !== 'undefined' && Session.username) Session.set(Session.username, refreshed);
+      }
       const text = await res.text();
       let data = {}; try { data = JSON.parse(text); } catch(e) { data = { error: text.slice(0, 200) }; }
       if (!res.ok) {
@@ -871,13 +931,14 @@ const Api = {
   login(username, hash, upgrade) { return this.call('login', { username, hash, ...(upgrade || {}) }); },
   register(username, hash, salt, iterations) { return this.call('register', { username, hash, salt, kdf: 'PBKDF2-SHA256', iterations }); },
   getData(username) { return this.call('getData', { username }); },
-  setData(username, data, settingsTouched) { return this.call('setData', { username, data, settingsTouched }); },
-  deleteUser(username) { return this.call('deleteUser', { username }); }
+  setData(username, data, settingsTouched, signal) { return this.call('setData', { username, data, settingsTouched }, { signal }); },
+  deleteUser(username) { return this.call('deleteUser', { username }); },
+  changePassword(username, oldHash, newHash, newSalt) { return this.call('changePassword', { username, oldHash, newHash, newSalt }); }
 };
 
 /* Store */
 const Store = {
-  state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null,
+  state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null, lastSyncedAt: 0,
   mutate(fn) { if (fn(this.state) === false) return; this.rev++; this.persist(); renderAll(); this.scheduleSave(); },
   reconcile(remote, opts = {}) {
     const next = normalizeUserData(remote);
@@ -920,12 +981,23 @@ const Store = {
     const timeoutId = setTimeout(() => ctrl.abort(), 15000);
 
     try {
-      const payload = { records: {}, deleted: this.deleted, settings: this.state.settings, goal: this.state.goal };
-      for (const k in this.state.records) { if (num(this.state.records[k].updatedAt) >= Date.now() - 30 * 86400000) payload.records[k] = this.state.records[k]; }
+      // 按「上次同步成功的时间」增量上传，而不是固定 30 天窗口：
+      // 原窗口会把「导入/迁移进来的旧记录」永久排除在外，导致导入后永远上不了云。
+      const since = this.lastSyncedAt || 0;
+      const payload = {
+        records: {}, deleted: this.deleted,
+        settings: this.state.settings, goal: this.state.goal,
+        insurance: this.state.insurance || defaultInsurance(),
+      };
+      for (const k in this.state.records) {
+        const rec = this.state.records[k];
+        if (!since || num(rec.updatedAt) >= since) payload.records[k] = rec;
+      }
       const res = await Api.setData(Session.username, payload, touched, ctrl.signal);
       clearTimeout(timeoutId);
       
       if (touched) this.settingsDirty = false;
+      this.lastSyncedAt = Date.now();
       if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
       this.syncStatus = 'synced';
       if (this.dirtyAgain || this.rev !== snapshotRev) {
@@ -992,7 +1064,9 @@ function aggregateMonth(year, month, records, settings) {
     if (rec.leave !== 'none') continue;
     if (num(rec.normal) === 0 && num(rec.ot) === 0 && !rec.note) continue;
 
-    totalDays++; totalHours += num(rec.normal) + num(rec.ot);
+    const dayHours = num(rec.normal) + num(rec.ot);
+    if (dayHours > 0) totalDays += 1;   // 只有备注、没有工时的记录不计入出勤天数
+    totalHours += dayHours;
     totalIncome += engine.of(rec, d);
 
     const makeup = Holiday.isWorkday(key);
@@ -1009,6 +1083,107 @@ function aggregateMonth(year, month, records, settings) {
   return { totalDays, totalHours, totalIncome, cat, timeoffBalance: timeoffEarned - timeoffUsed };
 }
 
+
+/* ---------- 日历：42 个格子只创建一次，之后按脏检查增量更新 ---------- */
+var CAL_CELLS = 42;
+var calCells = null;
+var calSig = [];
+
+function ensureCalCells(grid) {
+  if (calCells && calCells.length === CAL_CELLS && grid.children.length === CAL_CELLS) return calCells;
+  grid.innerHTML = '';
+  calCells = [];
+  calSig = [];
+  for (var i = 0; i < CAL_CELLS; i++) {
+    var cell = document.createElement('div');
+    cell.className = 'day';
+    cell.setAttribute('role', 'gridcell');
+    var numEl = document.createElement('span');
+    numEl.className = 'day-num';
+    var subEl = document.createElement('span');
+    subEl.className = 'day-sub';
+    var badge = document.createElement('div');
+    badge.className = 'day-badge';
+    var starEl = document.createElement('span');
+    starEl.className = 'badge-star';
+    starEl.textContent = '★';
+    var dotEl = document.createElement('div');
+    dotEl.className = 'badge-dot';
+    badge.appendChild(starEl);
+    badge.appendChild(dotEl);
+    cell.appendChild(numEl);
+    cell.appendChild(subEl);
+    cell.appendChild(badge);
+    grid.appendChild(cell);
+    calCells.push(cell);
+  }
+  // 事件委托：42 个 click 监听合并成 1 个，避免每次重绘产生 42 个闭包
+  grid.addEventListener('click', function (e) {
+    var node = e.target && e.target.closest ? e.target.closest('.day') : null;
+    if (!node) return;
+    if ((node.className || '').indexOf('other-month') !== -1) return;
+    var key = node.dataset ? node.dataset.key : '';
+    if (!key || key === selectedDate) return;
+    selectedDate = key;
+    renderAll();
+  });
+  return calCells;
+}
+
+function renderCalendar(s, todayKey) {
+  var grid = byId('calGrid');
+  var cells = ensureCalCells(grid);
+  var y = currentDate.getFullYear();
+  var m = currentDate.getMonth();
+  var lead = (new Date(y, m, 1).getDay() + 6) % 7;
+  for (var i = 0; i < CAL_CELLS; i++) {
+    var cell = cells[i];
+    var d = new Date(y, m, i - lead + 1);
+    var key = formatDateKey(d);
+    var isMuted = d.getMonth() !== m;
+    var rawRec = isMuted ? null : s.records[key];
+    var rec = (rawRec && (num(rawRec.normal) > 0 || num(rawRec.ot) > 0 || rawRec.leave !== 'none' || rawRec.note)) ? rawRec : null;
+    var sub = '', subCls = 'day-sub';
+    if (isMuted) sub = '';
+    else if (rec) {
+      if (rec.leave && rec.leave !== 'none') { sub = '休假'; subCls += ' is-leave'; }
+      else { sub = round1(num(rec.normal) + num(rec.ot)) + 'h'; if (rec.compensation === 'timeoff') sub += '(调)'; }
+    } else if (Holiday.isWorkday(key)) { sub = '班'; subCls += ' is-work'; }
+    else if (Holiday.isHoliday(key)) { sub = Holiday.name(key); subCls += ' is-holiday'; }
+    else { sub = SolarTerm.get(d.getFullYear(), d.getMonth() + 1, d.getDate()) || Lunar.label(d); }
+
+    var isMakeup = Holiday.isWorkday(key);
+    var cls = 'day'
+      + (isMuted ? ' other-month' : '')
+      + (isWeekend(d) ? ' weekend' : '')
+      + ((Holiday.isHoliday(key) && !isMakeup) ? ' holiday' : '')
+      + (isMakeup ? ' workday' : '')
+      + (rec ? ' has-record' : '')
+      + (key === selectedDate ? ' selected' : '')
+      + (key === todayKey ? ' today' : '');
+    var badgeState = rec ? (rec.note ? 'star' : 'dot') : '';
+
+    // 脏检查：签名完全一致则一个 DOM 操作都不做
+    var sig = key + '|' + cls + '|' + sub + '|' + subCls + '|' + badgeState;
+    if (calSig[i] === sig) continue;
+    calSig[i] = sig;
+
+    if (cell.className !== cls) cell.className = cls;
+    var numEl = cell.children[0];
+    var subEl = cell.children[1];
+    var badgeEl = cell.children[2];
+    var dateText = String(d.getDate());
+    if (numEl.textContent !== dateText) numEl.textContent = dateText;
+    if (subEl.textContent !== sub) subEl.textContent = sub;
+    if (subEl.className !== subCls) subEl.className = subCls;
+    badgeEl.children[0].style.display = badgeState === 'star' ? '' : 'none';
+    badgeEl.children[1].style.display = badgeState === 'dot' ? '' : 'none';
+    badgeEl.style.display = badgeState ? '' : 'none';
+    if (cell.dataset) cell.dataset.key = isMuted ? '' : key;
+    cell.setAttribute('aria-selected', key === selectedDate ? 'true' : 'false');
+  }
+}
+
 function renderAll() {
   const s = Store.state;
   const sum = aggregateMonth(currentDate.getFullYear(), currentDate.getMonth(), s.records, s.settings);
@@ -1018,44 +1193,7 @@ function renderAll() {
   byId('stMoney').textContent = fmt.compact(sum.totalIncome);
   byId('headerMonth').textContent = `${currentDate.getFullYear()}年 ${currentDate.getMonth()+1}月`;
   
-  const grid = byId('calGrid'); grid.innerHTML = '';
-  const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const lead = (first.getDay() + 6) % 7;
-  const todayKey = formatDateKey(new Date());
-  
-  for (let i = 0; i < 42; i++) {
-    const off = i - lead;
-    const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), off + 1);
-    const key = formatDateKey(d);
-    const isMuted = d.getMonth() !== currentDate.getMonth();
-    
-    const rawRec = isMuted ? null : s.records[key];
-    const rec = (rawRec && (num(rawRec.normal) > 0 || num(rawRec.ot) > 0 || rawRec.leave !== 'none' || rawRec.note)) ? rawRec : null;
-    
-    let sub = '', subCls = 'day-sub';
-    if (isMuted) sub = '';
-    else if (rec) {
-      if (rec.leave && rec.leave !== 'none') { sub = '休假'; subCls += ' is-leave'; }
-      else { sub = round1(num(rec.normal)+num(rec.ot)) + 'h'; if (rec.compensation === 'timeoff') sub += '(调)'; }
-    } else if (Holiday.isWorkday(key)) { sub = '班'; subCls += ' is-work'; }
-    else if (Holiday.isHoliday(key)) { sub = Holiday.name(key); subCls += ' is-holiday'; }
-    else { sub = SolarTerm.get(d.getFullYear(), d.getMonth()+1, d.getDate()) || Lunar.label(d); }
-    
-    const isWeekendDay = isWeekend(d);
-    const isHolidayDay = Holiday.isHoliday(key) && !Holiday.isWorkday(key);
-    
-    const cell = document.createElement('div');
-    cell.className = 'day' + (isMuted?' other-month':'') + (key===selectedDate?' selected':'') + (key===todayKey?' today':'');
-    if (isWeekendDay) cell.classList.add('weekend');
-    if (isHolidayDay) cell.classList.add('holiday');
-    if (Holiday.isWorkday(key)) cell.classList.add('workday');
-    if (rec) cell.classList.add('has-record');
-    
-    const star = rec && rec.note ? '<div class="day-badge"><span class="badge-star">★</span></div>' : (rec ? '<div class="day-badge"><div class="badge-dot"></div></div>' : '');
-    cell.innerHTML = `<span class="day-num">${d.getDate()}</span><span class="${subCls}">${sub}</span>${star}`;
-    if (!isMuted) cell.onclick = () => { selectedDate = key; renderAll(); };
-    grid.appendChild(cell);
-  }
+  renderCalendar(s, formatDateKey(new Date()));
   
   const detail = byId('detailArea');
   const rawSelectedRec = s.records[selectedDate];
@@ -1101,7 +1239,7 @@ function renderAll() {
     byId('boxTimeoff').textContent = round1(sum.timeoffBalance);
     
     const goal = Store.state.goal || 0;
-    if (goal > 0) {
+    if (s.settings.mode === 'hourly' && goal > 0) { // 修复：只有时薪制且目标大于0才显示
       byId('goalProgressWrap').style.display = 'block';
       byId('goalProgressText').textContent = `${round1(sum.totalHours)} / ${goal} h`;
       byId('goalProgressFill').style.width = Math.min(100, (sum.totalHours / goal) * 100) + '%';
@@ -1135,8 +1273,6 @@ function renderAll() {
 }
 
 /* 页面 Tab */
-const syncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('wc_sync_channel') : null;
-
 document.querySelectorAll('.tab-item').forEach(el => {
   el.onclick = () => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1148,22 +1284,23 @@ document.querySelectorAll('.tab-item').forEach(el => {
   };
 });
 
-byId('prevMonth').onclick = () => { 
-  currentDate.setMonth(currentDate.getMonth() - 1); 
-  renderAll(); 
+// 月末切换必须先把日期归到 1 号，否则 3/31 setMonth(-1) 会变成 2/31 -> 3/3，月份原地不动。
+function shiftMonth(delta) {
+  const y = currentDate.getFullYear(), m = currentDate.getMonth();
+  currentDate = new Date(y, m + delta, 1);
+  // 选中日期若已移出当前月视图，落到本月 1 号，避免「详情显示的是看不见的日期」
+  const sd = parseDateKey(selectedDate);
+  if (!sd || sd.getFullYear() !== currentDate.getFullYear() || sd.getMonth() !== currentDate.getMonth()) {
+    selectedDate = formatDateKey(currentDate);
+  }
+  renderAll();
   if (byId('pageCalculator').classList.contains('active') && byId('calcTax').classList.contains('active')) {
-    byId('taxIncome').value = 0; 
+    byId('taxIncome').value = 0;
     document.querySelector('[data-tab="tax"]').click();
   }
-};
-byId('nextMonth').onclick = () => { 
-  currentDate.setMonth(currentDate.getMonth() + 1); 
-  renderAll(); 
-  if (byId('pageCalculator').classList.contains('active') && byId('calcTax').classList.contains('active')) {
-    byId('taxIncome').value = 0; 
-    document.querySelector('[data-tab="tax"]').click();
-  }
-};
+}
+byId('prevMonth').onclick = () => shiftMonth(-1);
+byId('nextMonth').onclick = () => shiftMonth(1);
 
 /* 打卡弹窗 */
 byId('addRecordBtn').onclick = () => {
@@ -1186,6 +1323,14 @@ byId('addRecordBtn').onclick = () => {
 };
 
 byId('quickPunchBtn').onclick = () => {
+  // 已有工时/备注时二次确认，避免一次误触把当天记录（尤其备注）瞬间覆盖
+  const prev = Store.state.records[selectedDate];
+  const hasContent = Boolean(prev) && (num(prev.normal) > 0 || num(prev.ot) > 0 || (prev.note || '').trim());
+  if (hasContent) {
+    const desc = prev.leave !== 'none' ? (LEAVE_NAMES[prev.leave] || '请假')
+      : `${round1(num(prev.normal) + num(prev.ot))}h${(prev.note || '').trim() ? ' + 备注' : ''}`;
+    if (!confirm(`${selectedDate} 已有记录（${desc}），一键打卡会覆盖它。\n如只想调整工时，请用「自定义」。继续覆盖？`)) return;
+  }
   const autoType = getAutoType(selectedDate);
   const isRest = autoType === 'weekend' || autoType === 'holiday';
   Store.mutate(s => s.records[selectedDate] = { 
@@ -1221,6 +1366,7 @@ byId('clockSaveBtn').onclick = () => {
   if (draft.leave === 'none' && draft.normal === 0 && draft.ot === 0 && !draft.note) {
     Store.mutate(s => { 
       const oldRec = s.records[selectedDate];
+      // 修复：强制让删除时间戳绝对碾压旧记录的时间
       const delTime = Math.max(Date.now(), oldRec ? oldRec.updatedAt + 1000 : 0);
       delete s.records[selectedDate]; 
       s.deleted[selectedDate] = delTime; 
@@ -1287,6 +1433,8 @@ byId('leaveRow').onclick = e => { if(e.target.dataset.leave) { draft.leave = e.t
 /* 专项扣除渲染与交互 */
 function renderSpecialDeductions() {
   const list = byId('taxSpecialList');
+  // 用户正在列表里输入金额时不要重建 DOM（否则焦点与光标全部丢失）
+  if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.deduction-item')) return;
   const taxSpecial = Store.state.settings.taxSpecial || {};
   const activeKey = document.activeElement && document.activeElement.closest('.deduction-item') ? document.activeElement.closest('.deduction-item').dataset.key : null;
 
@@ -1347,21 +1495,56 @@ byId('taxSpecialList').addEventListener('input', e => {
 });
 
 /* 设置项 */
+// 只填充"当前没有焦点"的输入框：否则后台同步回执会把用户正在输入的内容清空
+function setIfIdle(id, value) {
+  const el = byId(id);
+  if (!el || document.activeElement === el) return;
+  el.value = value;
+}
+function readInsuranceInputs() {
+  return {
+    pension: clamp(byId('taxPension').value, 0, 50, 0),
+    medical: clamp(byId('taxMedical').value, 0, 50, 0),
+    unemployment: clamp(byId('taxUnemployment').value, 0, 50, 0),
+    fund: clamp(byId('taxFund').value, 0, 50, 0),
+  };
+}
+function syncInsuranceUI() {
+  const ins = Store.state.insurance || defaultInsurance();
+  setIfIdle('taxPension', ins.pension);
+  setIfIdle('taxMedical', ins.medical);
+  setIfIdle('taxUnemployment', ins.unemployment);
+  setIfIdle('taxFund', ins.fund);
+}
+function persistInsuranceInputs() {
+  const ins = readInsuranceInputs();
+  const cur = Store.state.insurance || defaultInsurance();
+  if (ins.pension === cur.pension && ins.medical === cur.medical
+    && ins.unemployment === cur.unemployment && ins.fund === cur.fund) return;
+  Store.state.insurance = ins;
+  Store.settingsDirty = true;
+  Store.persist();
+  Store.scheduleSave();
+}
 function syncSettingsUI() {
   const s = Store.state.settings;
   document.querySelectorAll('#modeSwitch button').forEach(b => b.classList.toggle('active', b.dataset.mode === s.mode));
   byId('hourlyForm').classList.toggle('hidden', s.mode !== 'hourly');
   byId('salaryForm').classList.toggle('hidden', s.mode !== 'salary');
-  byId('inNormal').value = s.normalRate || '';
-  byId('inHoliday').value = s.holidayRate || '';
-  byId('inSalaryFixedMode').value = s.salaryFixedMode;
-  byId('inBaseSalary').value = s.baseSalary || '';
-  byId('inPerformance').value = s.performance || '';
-  byId('inSalaryDays').value = s.salaryDays;
-  byId('inSalaryHours').value = s.salaryHours;
-  byId('goalInput').value = Store.state.goal || '';
-  
+
+  byId('goalInputGroup').classList.toggle('hidden', s.mode !== 'hourly');
+
+  setIfIdle('inNormal', s.normalRate || '');
+  setIfIdle('inHoliday', s.holidayRate || '');
+  setIfIdle('inSalaryFixedMode', s.salaryFixedMode);
+  setIfIdle('inBaseSalary', s.baseSalary || '');
+  setIfIdle('inPerformance', s.performance || '');
+  setIfIdle('inSalaryDays', s.salaryDays);
+  setIfIdle('inSalaryHours', s.salaryHours);
+  setIfIdle('goalInput', Store.state.goal || '');
+
   renderSpecialDeductions();
+  syncInsuranceUI();
   calcTax();
 }
 document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
@@ -1369,6 +1552,7 @@ document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
   b.classList.add('active');
   byId('hourlyForm').classList.toggle('hidden', b.dataset.mode !== 'hourly');
   byId('salaryForm').classList.toggle('hidden', b.dataset.mode !== 'salary');
+  byId('goalInputGroup').classList.toggle('hidden', b.dataset.mode !== 'hourly'); // 修复切模式时立刻隐藏
 });
 byId('saveSettingsBtn').onclick = () => {
   Store.mutate(s => {
@@ -1380,7 +1564,11 @@ byId('saveSettingsBtn').onclick = () => {
     s.settings.performance = clamp(byId('inPerformance').value, 0, 1000000, 0);
     s.settings.salaryDays = clamp(byId('inSalaryDays').value, 1, 31, 21.75);
     s.settings.salaryHours = clamp(byId('inSalaryHours').value, 1, 24, 8);
-    s.goal = clamp(byId('goalInput').value, 0, 1000, 0);
+    
+    // 修复：只有时薪制才保存目标工时，防止月薪制覆盖
+    if (s.settings.mode === 'hourly') {
+      s.goal = clamp(byId('goalInput').value, 0, 1000, 0);
+    }
   });
   Store.settingsDirty = true;
   toast('设置已保存');
@@ -1402,7 +1590,11 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
   }
 });
 ['taxIncome','taxPension','taxMedical','taxUnemployment','taxFund'].forEach(id => {
-  byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcTax(); });
+  byId(id).addEventListener('input', e => {
+    sanitizeNumericInput(e.target);
+    if (id !== 'taxIncome') persistInsuranceInputs();   // 比例纳入用户数据，刷新/换设备不再丢
+    calcTax();
+  });
 });
 ['salaryRate','salaryHours','salaryDays'].forEach(id => {
   byId(id).addEventListener('input', e => { sanitizeNumericInput(e.target); calcSalary(); });
@@ -1411,6 +1603,7 @@ byId('taxUseCumulative').addEventListener('change', calcTax);
 
 function calcTax() {
   let gross = clamp(byId('taxIncome').value, 0, 10000000, 0);
+  let cumInfo = null;
   let specialTotal = 0;
   const taxSpecial = Store.state.settings.taxSpecial || {};
   for (const key in taxSpecial) specialTotal += num(taxSpecial[key]);
@@ -1435,48 +1628,69 @@ function calcTax() {
     tax = Math.max(0, taxable * rate - quick);
     byId('dtRate').textContent = (rate * 100).toFixed(0) + '%';
   } else {
-    let cumIncome = gross; 
+    // 累计预扣法：本月应缴 = 累计(1..本月)应纳税额 − 累计(1..上月)应纳税额
+    // 原实现用「累计应纳税额 ÷ 月数」均摊，且税后用累计税前减单月税，口径不一致、数值不可用。
     const y = currentDate.getFullYear(), m = currentDate.getMonth() + 1;
-    
-    for (const k in Store.state.records) {
-      const d = parseDateKey(k);
-      if (!d || d.getFullYear() !== y || d.getMonth() + 1 >= m) continue;
-      const rec = Store.state.records[k];
-      if (rec.leave === 'none' && rec.compensation !== 'timeoff') {
-        cumIncome += createIncomeEngine(Store.state.settings).of(rec, d);
-      }
-    }
-    
-    if (Store.state.settings.mode === 'salary' && Store.state.settings.salaryFixedMode === 'monthly') {
-       let monthsPassed = 0;
-       for(let i=1; i<m; i++) monthsPassed++; 
-       cumIncome += (num(Store.state.settings.baseSalary) + num(Store.state.settings.performance)) * monthsPassed;
-    }
+    const engine = createIncomeEngine(Store.state.settings);
+    const fixedMonthly = Store.state.settings.mode === 'salary' && Store.state.settings.salaryFixedMode === 'monthly';
+    const baseMonthly = fixedMonthly ? num(Store.state.settings.baseSalary) + num(Store.state.settings.performance) : 0;
 
-    const cumIns = cumIncome * insRate;
-    const cumSpecial = specialTotal * m; 
-    const cumTaxable = Math.max(0, cumIncome - cumIns - cumSpecial - 5000 * m);
-    
-    let cumRate = 0.03, cumQuick = 0;
-    if (cumTaxable > 960000) { cumRate = 0.45; cumQuick = 181920; }
-    else if (cumTaxable > 660000) { cumRate = 0.35; cumQuick = 85920; }
-    else if (cumTaxable > 420000) { cumRate = 0.30; cumQuick = 52920; }
-    else if (cumTaxable > 300000) { cumRate = 0.25; cumQuick = 31920; }
-    else if (cumTaxable > 144000) { cumRate = 0.20; cumQuick = 16920; }
-    else if (cumTaxable > 36000) { cumRate = 0.10; cumQuick = 2520; }
-    
-    const cumTaxTotal = Math.max(0, cumTaxable * cumRate - cumQuick);
-    tax = cumTaxTotal / m; 
-    byId('dtRate').textContent = '累计约' + (cumRate * 100).toFixed(0) + '%';
-    
-    gross = cumIncome;
-    insTotal = cumIns;
-    taxable = cumTaxable;
+    const incomeOfMonth = (monthIdx) => {
+      let sum = 0;
+      for (const k in Store.state.records) {
+        const d = parseDateKey(k);
+        if (!d || d.getFullYear() !== y || d.getMonth() !== monthIdx) continue;
+        sum += engine.of(Store.state.records[k], d);
+      }
+      return sum;
+    };
+    // 1..uptoMonth 的历史月份收入（不含本月）：历史月份只能靠记录推算
+    const historyIncome = (uptoMonth) => {
+      let sum = 0;
+      for (let i = 1; i <= uptoMonth; i++) sum += incomeOfMonth(i - 1) + baseMonthly;
+      return sum;
+    };
+    const bracket = (amount) => {
+      let rate = 0.03, quick = 0;
+      if (amount > 960000) { rate = 0.45; quick = 181920; }
+      else if (amount > 660000) { rate = 0.35; quick = 85920; }
+      else if (amount > 420000) { rate = 0.30; quick = 52920; }
+      else if (amount > 300000) { rate = 0.25; quick = 31920; }
+      else if (amount > 144000) { rate = 0.20; quick = 16920; }
+      else if (amount > 36000) { rate = 0.10; quick = 2520; }
+      return { rate, quick };
+    };
+    const cumTaxAt = (months, cumulativeIncome) => {
+      const inc = cumulativeIncome;
+      const ins = inc * insRate;
+      const taxableAmt = Math.max(0, inc - ins - specialTotal * months - 5000 * months);
+      const { rate, quick } = bracket(taxableAmt);
+      return { inc, ins, taxableAmt, tax: Math.max(0, taxableAmt * rate - quick), rate };
+    };
+
+    // 本月税前 = 输入框（可由用户手工修正），历史月份 = 记录推算
+    const monthGross = gross;
+    const curCum = historyIncome(m - 1) + monthGross;
+    // 上月累计 = 1..(m-1) 月的收入合计，月份数与 historyIncome(m-1) 一致（原来写成 m-2，少算一个月）
+    const prevCum = m > 1 ? historyIncome(m - 1) : 0;
+    const cur = cumTaxAt(m, curCum);
+    const prev = m > 1 ? cumTaxAt(m - 1, prevCum) : { tax: 0 };
+    const monthTax = Math.max(0, cur.tax - prev.tax);
+
+    // 展示口径：税前/五险一金/税后都取「本月」，税率与应纳税所得额取「累计」
+    tax = monthTax;
+    byId('dtRate').textContent = '累计' + (cur.rate * 100).toFixed(0) + '%';
+    gross = monthGross;
+    insTotal = monthGross * insRate;
+    taxable = cur.taxableAmt;
+    cumInfo = { cur, prev, monthTax };
   }
   
   byId('dtGross').textContent = '¥' + gross.toFixed(2);
   byId('dtInsurance').textContent = '¥' + insTotal.toFixed(2);
-  byId('dtSpecial').textContent = '¥' + ((useCumulative ? 5000 * (currentDate.getMonth() + 1) : 5000) + (useCumulative ? specialTotal * (currentDate.getMonth() + 1) : specialTotal)).toFixed(2);
+  byId('dtSpecial').textContent = '¥' + (useCumulative
+    ? 5000 * (currentDate.getMonth() + 1) + specialTotal * (currentDate.getMonth() + 1)
+    : 5000 + specialTotal).toFixed(2);
   byId('dtTaxable').textContent = '¥' + taxable.toFixed(2);
   byId('dtTax').textContent = '¥' + tax.toFixed(2);
   byId('dtNet').textContent = '¥' + (gross - insTotal - tax).toFixed(2);
@@ -1488,6 +1702,44 @@ function calcSalary() {
   const days = clamp(byId('salaryDays').value, 0, 31, 0);
   byId('salaryDaily').textContent = '¥' + (rate * hours).toFixed(2);
   byId('salaryMonthly').textContent = '¥' + (rate * hours * days).toFixed(2);
+}
+
+/**
+ * 计算器求值：只支持 + - × ÷ 与数字的白名单解析器。
+ * 原实现用 new Function 执行拼接出来的字符串，等于把输入当代码跑；
+ * 一旦 CSP 收紧或页面被注入，这里就是现成的执行入口。
+ */
+function evaluateTokens(tokens) {
+  var values = [];
+  var ops = [];
+  var prec = { '+': 1, '-': 1, '*': 2, '/': 2 };
+  function apply() {
+    var b = values.pop();
+    var a = values.pop();
+    var op = ops.pop();
+    if (a === undefined || b === undefined || !op) throw new Error('bad expression');
+    if (op === '/') {
+      if (b === 0) throw new Error('divide by zero');
+      return a / b;
+    }
+    if (op === '*') return a * b;
+    if (op === '+') return a + b;
+    return a - b;
+  }
+  for (var i = 0; i < tokens.length; i++) {
+    var tk = tokens[i] === '×' ? '*' : (tokens[i] === '÷' ? '/' : tokens[i]);
+    if (tk === '+' || tk === '-' || tk === '*' || tk === '/') {
+      while (ops.length && prec[ops[ops.length - 1]] >= prec[tk]) values.push(apply());
+      ops.push(tk);
+    } else {
+      var n = Number(tk);
+      if (!Number.isFinite(n)) throw new Error('bad number');
+      values.push(n);
+    }
+  }
+  while (ops.length) values.push(apply());
+  if (values.length !== 1 || !Number.isFinite(values[0])) throw new Error('bad result');
+  return values[0];
 }
 
 let calcTokens = [], calcCurrent = '0', calcEval = false;
@@ -1507,7 +1759,7 @@ byId('calcKeys').onclick = e => {
     if (calcCurrent) calcTokens.push(calcCurrent);
     try {
       const expr = calcTokens.join('').replace(/×/g,'*').replace(/÷/g,'/');
-      const res = new Function('return ' + expr)();
+      const res = evaluateTokens(calcTokens);
       calcCurrent = String(parseFloat(res.toPrecision(12)));
       byId('calcExpr').textContent = expr + ' =';
       calcTokens = []; calcEval = true;
@@ -1551,10 +1803,29 @@ byId('importFile').onchange = e => {
   reader.onload = ev => {
     try {
       const parsed = JSON.parse(ev.target.result);
-      if (!parsed.records) throw new Error('格式错误');
-      Store.mutate(s => { s.records = Object.assign(s.records, parsed.records); if(parsed.settings) s.settings = parsed.settings; });
+      if (!parsed || typeof parsed !== 'object' || !parsed.records) throw new Error('格式错误');
+      // 走与缓存/服务端同一套归一化：拦截 2026-02-31、负数工时、非数字等脏数据
+      const clean = normalizeUserData(parsed);
+      // 跳过"没有工时、没有请假、也没有备注"的空记录（多为脏数据）
+      const keys = Object.keys(clean.records).filter((k) => {
+        const r = clean.records[k];
+        return num(r.normal) > 0 || num(r.ot) > 0 || r.leave !== 'none' || (r.note || '').trim();
+      });
+      if (!keys.length) throw new Error('没有可导入的有效记录');
+      const nowTs = Date.now();
+      Store.mutate(s => {
+        for (const k of keys) {
+          // updatedAt 置为当前时间：导入的数据必须能上行到云端（旧时间戳会被增量水位线跳过）
+          s.records[k] = Object.assign({}, clean.records[k], { updatedAt: nowTs });
+          delete Store.deleted[k];
+        }
+        if (parsed.settings) s.settings = Object.assign(defaultSettings(), parsed.settings);
+        if (parsed.goal !== undefined) s.goal = clamp(parsed.goal, 0, 1000, 0);
+        if (parsed.insurance) s.insurance = Object.assign(defaultInsurance(), clean.insurance);
+      });
+      Store.lastSyncedAt = 0;
       syncSettingsUI();
-      toast('导入成功'); byId('importModal').classList.remove('show');
+      toast('已导入 ' + keys.length + ' 天记录'); byId('importModal').classList.remove('show');
     } catch (err) { toast('导入失败：文件格式错误'); }
   };
   reader.readAsText(file);
@@ -1562,7 +1833,11 @@ byId('importFile').onchange = e => {
 
 byId('clearAllBtn').onclick = () => {
   if (confirm('确定要清空所有当前记录吗？')) {
+    // 关键：真正参与同步的是 Store.deleted，而不是 state.deleted。
+    // 原实现只清了 state.deleted，残留墓碑会在下次打卡时把新记录当作"已删除"。
     Store.mutate(s => { s.records = {}; s.deleted = {}; });
+    Store.deleted = {};
+    Store.lastSyncedAt = 0;
     syncSettingsUI();
     toast('数据已清空');
   }
@@ -1572,6 +1847,41 @@ byId('logoutBtn').onclick = () => { if(confirm('退出登录？云端数据不�
 byId('deleteAccountBtn').onclick = async () => {
   if (!confirm('永久注销账号？这将删除云端和本地所有数据！')) return;
   try { await Api.deleteUser(Session.username); forceLogout(); toast('账号已注销'); } catch(e) { toast('注销失败：' + e.message); }
+};
+
+/* 修改密码 */
+byId('openPasswordBtn').onclick = () => {
+  byId('oldPassword').value = '';
+  byId('newPassword').value = '';
+  byId('newPassword2').value = '';
+  byId('passwordModal').classList.add('show');
+};
+byId('changePasswordBtn').onclick = async () => {
+  const oldPw = byId('oldPassword').value;
+  const newPw = byId('newPassword').value;
+  const newPw2 = byId('newPassword2').value;
+  if (!oldPw) { toast('请输入当前密码'); return; }
+  if (newPw.length < 6) { toast('新密码至少 6 位'); return; }
+  if (newPw !== newPw2) { toast('两次输入的新密码不一致'); return; }
+  if (newPw === oldPw) { toast('新密码不能与当前密码相同'); return; }
+  const btn = byId('changePasswordBtn');
+  btn.disabled = true;
+  btn.textContent = '处理中…';
+  try {
+    const saltRes = await Api.getSalt(Session.username);
+    const oldHash = await Api.deriveHash(oldPw, saltRes.salt, saltRes.kdf, saltRes.iterations);
+    const newSalt = Api.generateSalt();
+    const newHash = await Api.deriveHash(newPw, newSalt, 'PBKDF2-SHA256', 600000);
+    await Api.changePassword(Session.username, oldHash, newHash, newSalt);
+    byId('passwordModal').classList.remove('show');
+    toast('密码已修改，请重新登录');
+    forceLogout();
+  } catch (e) {
+    toast(e && e.message ? e.message : '修改失败');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '确认修改';
+  }
 };
 
 /* Toast 与鉴权 */
@@ -1602,7 +1912,17 @@ byId('authForm').onsubmit = async (e) => {
     if (isLoginMode) {
       const saltRes = await Api.getSalt(u);
       const hash = await Api.deriveHash(p, saltRes.salt, saltRes.kdf, saltRes.iterations);
-      const res = await Api.login(u, hash);
+      // 旧格式账号（单轮 SHA-256）登录成功后自动升级为 PBKDF2：
+      // 服务端拿不到明文密码，只能由客户端顺带提交新哈希。
+      let upgrade = null;
+      if (saltRes.kdf && saltRes.kdf !== 'PBKDF2-SHA256') {
+        try {
+          const upSalt = Api.generateSalt();
+          const upHash = await Api.deriveHash(p, upSalt, 'PBKDF2-SHA256', 600000);
+          upgrade = { newHash: upHash, newSalt: upSalt };
+        } catch (e) { upgrade = null; }
+      }
+      const res = await Api.login(u, hash, upgrade);
       Session.set(u, res.token); enterApp();
     } else {
       const salt = Api.generateSalt();
@@ -1617,7 +1937,12 @@ byId('authForm').onsubmit = async (e) => {
 
 function enterApp() {
   byId('authPage').style.display = 'none'; byId('app').style.display = 'flex';
-  Holiday.ensure(); Store.load(); syncSettingsUI(); renderAll();
+  Holiday.ensure();
+  // 先复位，再读缓存：避免上一个账号的状态/墓碑串到新会话
+  Store.state = defaultUserData(); Store.deleted = {}; Store.rev = 0;
+  Store.settingsDirty = false; Store.syncStatus = 'idle'; Store.lastSyncedAt = 0;
+  Store.load();
+  syncSettingsUI(); renderAll(); updateSyncUI();
   Api.getData(Session.username).then(res => {
     Store.reconcile(res, { prefsDirty: Store.settingsDirty });
     syncSettingsUI(); Store.syncStatus = 'synced'; updateSyncUI();
@@ -1625,9 +1950,22 @@ function enterApp() {
 }
 
 function forceLogout() {
-  Session.clear(); Store.state = defaultUserData();
+  const username = Session.username;
+  clearTimeout(Store.saveTimer);
+  Session.clear();
+  // 缓存按用户名分键：退出时删除，避免共用设备残留他人数据
+  if (username) safeRemove(CACHE_PREFIX + username);
+  Store.state = defaultUserData();
+  Store.deleted = {};          // 原实现漏清，换账号后旧墓碑会误删新账号的记录
+  Store.rev = 0;
+  Store.settingsDirty = false;
+  Store.syncStatus = 'idle';
+  Store.inflight = null;
+  Store.lastSyncedAt = 0;
   byId('app').style.display = 'none'; byId('authPage').style.display = 'flex';
+  byId('password').value = ''; byId('confirmPassword').value = '';
   updateAuthUI('login');
+  updateSyncUI();
 }
 
 byId('syncPill').onclick = () => {
@@ -1635,42 +1973,6 @@ byId('syncPill').onclick = () => {
   Store.flush().then(() => { if (Store.syncStatus === 'synced') toast('同步完成'); else toast('同步失败'); });
 };
 
-function bindGlobal() {
-  window.addEventListener('storage', (e) => {
-    if (e.key !== SESSION_KEY && e.key !== USER_KEY) return;
-    if (sessionStorage.getItem('wc_sync_lock')) return;
-    sessionStorage.setItem('wc_sync_lock', '1');
-    setTimeout(() => sessionStorage.removeItem('wc_sync_lock'), 500);
-    
-    const newUser = safeGet(USER_KEY);
-    const newToken = safeGet(SESSION_KEY);
-    if (newUser === Session.username && newToken === Session.token) return;
-
-    if (newToken && newUser) {
-      Session.set(newUser, newToken);
-      if (syncChannel) syncChannel.postMessage({ type: 'LOGIN', user: newUser });
-      enterApp();
-    } else {
-      if (syncChannel) syncChannel.postMessage({ type: 'LOGOUT' });
-      forceLogout();
-    }
-  });
-  
-  if (syncChannel) {
-    syncChannel.onmessage = (e) => {
-      if (e.data.type === 'LOGIN' && e.data.user !== Session.username) {
-        toast('检测到其他标签页登录了新账号，正在切换…');
-        Store.clearCache(); Store.state = defaultUserData(); Store.rev = 0;
-        enterApp();
-      } else if (e.data.type === 'LOGOUT') {
-        toast('其他标签页已退出登录');
-        forceLogout();
-      }
-    };
-  }
-}
-
-bindGlobal();
 Session.init();
 if (Session.username && Session.token) enterApp();
 else { byId('authPage').style.display = 'flex'; updateAuthUI('login'); }
