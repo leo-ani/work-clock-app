@@ -8,8 +8,7 @@
 <meta name="app-version" content="V6.2">
 <link rel="preconnect" href="https://api.leoani.dpdns.org" crossorigin>
 <link rel="dns-prefetch" href="https://api.leoani.dpdns.org">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
-
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org http://127.0.0.1:8787; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>工时记录助手</title>
 <style>
 :root{
@@ -734,7 +733,12 @@ const APP_VERSION = 'V6.2';
 // 暴露版本号，便于在控制台确认线上构建（window.__APP_VERSION__）
 try { window.__APP_VERSION__ = APP_VERSION; } catch (e) {}
 const SCHEMA_VERSION = 4;
-const API_BASE = 'https://api.leoani.dpdns.org/';
+
+// ✅ 动态判断：本地走 8787，线上走真实域名
+const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.hostname === '10.12.106.7') 
+    ? 'http://127.0.0.1:8787/' 
+    : 'https://api.leoani.dpdns.org/';
+
 const SESSION_KEY = 'wc_session';
 const USER_KEY = 'wc_username';
 const CACHE_PREFIX = 'wc_cache_';
