@@ -1,0 +1,18 @@
+name = "work-clock-api"
+main = "worker.js" # 💡 改成了 worker.js，和你的 Cloudflare 保持一致
+compatibility_date = "2023-10-01"
+
+# 模拟 D1 数据库
+[[d1_databases]]
+binding = "DB"
+database_name = "work-clock-db"
+database_id = "local"
+
+# 模拟 KV 缓存
+[[kv_namespaces]]
+binding = "WC_KV"
+id = "local-kv-id"
+
+[vars]
+SESSION_SECRET = "super_secret_key_at_least_32_characters_long_123!"
+ALLOWED_ORIGINS = "http://localhost:8080,http://127.0.0.1:8080,http://10.12.106.7:32768"
