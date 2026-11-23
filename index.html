@@ -8,7 +8,7 @@
 <meta name="app-version" content="V6.2">
 <link rel="preconnect" href="https://api.leoani.dpdns.org" crossorigin>
 <link rel="dns-prefetch" href="https://api.leoani.dpdns.org">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org http://127.0.0.1:8787; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>工时记录助手</title>
 <style>
 :root{
@@ -113,7 +113,7 @@ button{background:none;border:none;cursor:pointer;}
 
 /* 按钮 */
 .action-row{display:flex;gap:16px;margin:0 16px 20px;}
-.btn-primary{flex:1;background:var(--sys-text);color:var(--sys-surface);border-radius:var(--radius-m);padding:16px;font-size:16px;font-weight:700;display:flex;justify-content:center;align-items:center;gap:8px;cursor:pointer;}
+.btn-primary{flex:1;background:#FF9500;color:#FFFFFF;border-radius:var(--radius-m);padding:16px;font-size:16px;font-weight:700;display:flex;justify-content:center;align-items:center;gap:8px;cursor:pointer;}
 .btn-primary:active{opacity:0.7;}
 .btn-secondary{flex:1;background:var(--brand-soft);color:var(--brand);border-radius:var(--radius-m);padding:16px;font-size:16px;font-weight:700;display:flex;justify-content:center;align-items:center;gap:8px;cursor:pointer;}
 .btn-secondary:active{opacity:0.7;}
@@ -163,7 +163,8 @@ button{background:none;border:none;cursor:pointer;}
 /* 表单 */
 .form-group{margin-bottom:20px;}
 .form-group label{display:block;font-size:14px;color:var(--sys-text-sec);font-weight:600;margin-bottom:10px;}
-.input-wrap{display:flex;align-items:center;background:var(--sys-bg);border-radius:var(--radius-m);padding:14px 16px;border:1.5px solid transparent;transition:border 0.2s;}
+.input-wrap{display:flex;align-items:center;background:var(--sys-bg);border-radius:var(--radius-m);padding:10px 14px;border:1.5px solid transparent;transition:border 0.2s; margin-bottom:12px;}
+.input-wrap input{font-size:17px; font-weight:700; color:var(--sys-text);} /* 让输入的数字更醒目 */
 .input-wrap:focus-within{border-color:var(--sys-blue);}
 .input-wrap input,.input-wrap select{flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:16px;font-weight:600;padding:0;line-height:1.2;}
 .input-wrap .prefix { margin-right: 10px; color: var(--sys-text-sec); font-size: 15px; font-weight: 600; }
@@ -282,6 +283,154 @@ button{background:none;border:none;cursor:pointer;}
 @keyframes toastIn{from{transform:translateY(-20px) scale(0.9);opacity:0;}to{transform:none;opacity:1;}}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:8px;}
 @keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* ==================== V6.3 全局布局与视觉重构 ==================== */
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,8px);
+  --page-gutter:20px;
+  --surface-shadow:0 8px 24px rgba(26,42,34,.045);
+}
+html,body{overscroll-behavior:none;}
+body{background:var(--sys-bg);}
+#app{max-width:560px;box-shadow:0 0 48px rgba(20,35,28,.045);}
+.header{padding:calc(var(--safe-top) + 12px) var(--page-gutter) 12px;background:rgba(242,242,247,.92);}
+.header.collapsed{padding-top:calc(var(--safe-top) + 10px);padding-bottom:10px;}
+.app-name{font-size:18px;letter-spacing:-.35px;}
+.header-stats{gap:10px;margin-top:14px;}
+.h-stat{padding:12px 8px;border:1px solid var(--sys-border);box-shadow:none;}
+.page-scroll{padding-bottom:calc(92px + var(--safe-bottom));scroll-behavior:smooth;}
+.page{overflow:visible;min-height:min-content;}
+.page.active{display:flex;}
+.card{margin-left:var(--page-gutter);margin-right:var(--page-gutter);border:1px solid var(--sys-border);box-shadow:var(--surface-shadow);}
+.month-nav{padding:18px var(--page-gutter) 12px;}
+.month-title{font-size:19px;}
+.action-row{margin-left:var(--page-gutter);margin-right:var(--page-gutter);gap:10px;}
+.btn-primary,.btn-secondary{min-height:52px;border-radius:15px;padding:14px 12px;}
+.btn-primary{background:var(--brand);}
+.btn-secondary{background:var(--sys-surface);border:1px solid color-mix(in srgb,var(--brand) 24%,transparent);}
+.tab-bar{padding:9px 12px calc(8px + var(--safe-bottom));background:rgba(255,255,255,.92);box-shadow:0 -8px 24px rgba(20,35,28,.045);}
+.tab-item{gap:4px;min-height:48px;justify-content:center;}
+.tab-icon{width:23px;height:23px;}
+.tab-label{font-size:11px;letter-spacing:0;}
+.tab-item.active{transform:none;}
+.stat-grid{gap:10px;margin:0 var(--page-gutter) 18px;}
+.stat-box{border:1px solid var(--sys-border);box-shadow:none;padding:18px 12px;}
+.stat-box-num{font-size:24px;}
+.settings-section{margin:0 var(--page-gutter) 18px;}
+.settings-title{margin:0 4px 9px;font-size:12px;letter-spacing:.3px;}
+.settings-card{border:1px solid var(--sys-border);box-shadow:var(--surface-shadow);}
+.settings-action{min-height:66px;}
+.form-group{margin-bottom:16px;}
+.input-wrap{min-height:50px;border:1px solid var(--sys-border);margin-bottom:0;padding:12px 14px;}
+.input-wrap:focus-within{border-color:var(--sys-blue);}
+.segmented-control{padding:4px;border-radius:13px;}
+.segmented-control button{min-height:40px;}
+
+
+.stats-section-title{margin:2px var(--page-gutter) 10px;font-size:13px;font-weight:800;color:var(--sys-text-sec);}
+.stat-timeoff-card{margin:0 var(--page-gutter) 18px;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:15px 18px;border:1px solid var(--sys-border);box-shadow:none;}
+.stat-timeoff-card .stat-box-num{margin:0;color:var(--sys-blue);}
+.stats-chart-card{padding:19px 16px;}
+.stats-chart-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.stats-chart-heading h2{font-size:16px;font-weight:800;}
+.stats-chart-heading span{font-size:11px;color:var(--sys-text-sec);}
+
+/* 工具中心：精简 iOS 分组列表；薪资与个税由各自入口打开独立页面 */
+.tool-home{padding:14px var(--page-gutter) 28px;}
+.tool-welcome{padding:5px 2px 15px;margin-bottom:15px;border:0;border-radius:0;background:transparent;color:var(--sys-text);box-shadow:none;}
+.tool-eyebrow{display:none;}
+.tool-welcome h1{font-size:25px;line-height:1.2;letter-spacing:-.55px;font-weight:800;}
+.tool-welcome p{font-size:12px;line-height:1.5;color:var(--sys-text-sec);margin-top:5px;opacity:1;}
+.tool-section-heading{font-size:12px;font-weight:700;color:var(--sys-text-sec);margin:0 4px 8px;}
+.tool-section-spaced{margin-top:21px;}
+.tool-card{display:flex;align-items:center;gap:12px;width:100%;padding:13px 13px;margin:0 0 8px;background:var(--sys-surface);border:1px solid var(--sys-border);border-radius:15px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.025);transition:background .16s,border-color .16s;}
+.tool-card:active{background:var(--sys-gray);transform:none;border-color:var(--sys-border);}
+.tool-card-primary{border-color:var(--sys-border);}
+.tool-icon{display:flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;border-radius:12px;}
+.tool-icon svg{width:21px;height:21px;}
+.tool-icon-green{background:var(--brand-soft);color:var(--brand);}
+.tool-icon-blue{background:rgba(0,122,255,.09);color:var(--sys-blue);}
+.tool-icon-orange{background:rgba(255,149,0,.11);color:var(--sys-orange);}
+.tool-card-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;}
+.tool-card-copy strong{font-size:15px;font-weight:700;color:var(--sys-text);}
+.tool-card-copy small{font-size:11px;line-height:1.4;color:var(--sys-text-sec);font-weight:500;}
+.tool-card-arrow{font-size:24px;line-height:1;color:#A1A1A6;font-weight:300;padding-left:4px;}
+.tool-tip{display:flex;align-items:flex-start;gap:8px;padding:11px 12px;margin-top:14px;border-radius:12px;background:rgba(46,125,79,.07);color:var(--brand);font-size:11px;line-height:1.5;font-weight:500;}
+.tool-tip-dot{width:6px;height:6px;flex:0 0 6px;margin-top:4px;border-radius:50%;background:var(--brand);}
+.calc-detail{padding:0 0 24px;}
+.calc-detail-heading{position:sticky;top:0;z-index:6;padding:13px var(--page-gutter) 13px;display:flex;align-items:center;gap:13px;background:rgba(242,242,247,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--sys-border);}
+.calc-back{display:inline-flex;align-items:center;gap:4px;color:var(--brand);font-size:14px;font-weight:650;white-space:nowrap;}
+.calc-back span{font-size:25px;line-height:16px;}
+.calc-detail-title{font-size:17px;font-weight:750;letter-spacing:-.2px;}
+.calc-tabs{display:none!important;}
+.calc-panel{padding:19px var(--page-gutter);}
+.calc-panel .form-group label{font-size:13px;margin-bottom:8px;}
+.calc-panel .card{margin-left:0;margin-right:0;}
+.calc-panel .detail-row{padding:12px 0;font-size:13px;}
+.calc-panel .detail-row:first-child{border-top:0;}
+.deduction-toggle{min-height:50px;border-color:var(--sys-border);}
+.salary-result-intro{margin:2px 0 17px;}
+.salary-result-kicker{font-size:10px;letter-spacing:1.4px;font-weight:800;color:var(--brand);margin-bottom:7px;}
+.salary-result-intro h2{font-size:22px;font-weight:800;letter-spacing:-.4px;}
+.salary-result-intro p{font-size:12px;color:var(--sys-text-sec);margin-top:6px;line-height:1.55;}
+.salary-result-card{display:grid;grid-template-columns:1fr 1px 1fr;gap:12px;align-items:center;padding:22px 16px;background:var(--sys-surface);border:1px solid var(--sys-border);border-radius:19px;box-shadow:var(--surface-shadow);}
+.salary-result-item{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;min-width:0;}
+.salary-result-item strong,.salary-hourly-result strong{font-size:25px;line-height:1.15;color:var(--brand);font-weight:850;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.salary-result-divider{height:46px;background:var(--sys-border);}
+.salary-hourly-result{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding-top:15px;margin-top:3px;border-top:1px solid var(--sys-border);}
+.salary-hourly-result strong{font-size:19px;}
+.salary-settings-callout{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;margin-top:14px;background:var(--brand-soft);border-radius:16px;}
+.salary-settings-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.salary-settings-copy strong{font-size:14px;color:var(--brand);}
+.salary-settings-copy span{font-size:11px;color:var(--sys-text-sec);line-height:1.45;}
+#salarySettingsShortcut{flex:0 0 auto;color:var(--brand);font-size:12px;font-weight:800;white-space:nowrap;}
+#salarySettingsShortcut span{font-size:19px;vertical-align:-1px;margin-left:2px;}
+.calc-data-note{font-size:11px;line-height:1.6;color:var(--sys-text-sec);margin:13px 3px 0;}
+
+/* 我的 · 薪资设置 */
+.salary-settings-card{padding:16px;overflow:visible;}
+.salary-settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.salary-settings-header div{display:flex;flex-direction:column;gap:4px;}
+.salary-settings-header strong{font-size:15px;font-weight:800;}
+.salary-settings-header small{font-size:11px;color:var(--sys-text-sec);}
+.settings-inline-icon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:var(--brand-soft);color:var(--brand);font-size:19px;font-weight:800;}
+.salary-mode-switch{margin-bottom:17px;}
+.settings-field-label{font-size:12px;font-weight:800;color:var(--sys-text-sec);margin:4px 0 11px;}
+.salary-fields-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;}
+.salary-fields-grid .form-group{min-width:0;}
+.salary-fields-grid .form-group label{font-size:12px;}
+.settings-select{width:100%;padding:13px 14px;border-radius:13px;border:1px solid var(--sys-border);background:var(--sys-bg);font-size:14px;font-weight:650;}
+.salary-common-label{padding-top:14px;margin-top:1px;border-top:1px solid var(--sys-border);}
+.salary-settings-footnote{padding:11px 12px;margin-top:3px;border-radius:11px;background:var(--sys-bg);color:var(--sys-text-sec);font-size:11px;line-height:1.55;}
+
+@media (min-width:600px){
+  .tool-home{padding-top:24px;}
+  .tool-welcome{padding:27px 24px;}
+  .calc-panel{padding-top:24px;}
+}
+@media (max-width:360px){
+  :root{--page-gutter:15px;}
+  .tool-card{gap:11px;padding:14px 12px;}
+  .tool-icon{flex-basis:43px;width:43px;height:43px;}
+  .salary-result-item strong{font-size:22px;}
+  .salary-fields-grid{grid-template-columns:1fr;}
+}
+
+
+/* 薪资设置默认折叠，首屏仅显示一行入口，细项按需展开 */
+.salary-settings-trigger{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:11px 14px;background:var(--sys-surface);border:1px solid var(--sys-border);border-radius:16px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.025);}
+.salary-settings-trigger:active{background:var(--sys-gray);}
+.salary-settings-trigger-icon{display:flex;align-items:center;justify-content:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:var(--brand-soft);color:var(--brand);font-size:19px;font-weight:800;}
+.salary-settings-trigger-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;}
+.salary-settings-trigger-copy strong{font-size:14px;font-weight:700;color:var(--sys-text);}
+.salary-settings-trigger-copy small{font-size:11px;color:var(--sys-text-sec);line-height:1.35;}
+.salary-settings-trigger-arrow{font-size:21px;color:var(--sys-text-sec);transition:transform .2s;}
+.salary-settings-trigger[aria-expanded="true"] .salary-settings-trigger-arrow{transform:rotate(180deg);}
+.salary-settings-card{margin-top:8px;}
+.salary-settings-card.hidden{display:none!important;}
+.calc-tabs-compat{display:none!important;}
+
 </style>
 </head>
 <body>
@@ -375,28 +524,64 @@ button{background:none;border:none;cursor:pointer;}
           </div>
         </div>
       </div>
+      <div class="stats-section-title">工时概览</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-box-num" id="boxDays">0</div><div class="stat-box-lbl">出勤天数</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxHours">0</div><div class="stat-box-lbl">总工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxNormal">0</div><div class="stat-box-lbl">正班工时</div></div>
         <div class="stat-box"><div class="stat-box-num" id="boxOt">0</div><div class="stat-box-lbl">加班工时</div></div>
-        <div class="stat-box" id="timeoffBox" style="grid-column:1/-1;"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额(累计)</div></div>
       </div>
-      <div class="card">
-        <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;">工时分布</h2>
+      <div class="stats-section-title">调休情况</div>
+      <div class="stat-box stat-timeoff-card" id="timeoffBox"><div class="stat-box-num" id="boxTimeoff" style="color:var(--sys-blue)">0.0</div><div class="stat-box-lbl">调休余额（累计）</div></div>
+      <div class="card stats-chart-card">
+        <div class="stats-chart-heading"><h2>工时结构</h2><span>正班与加班占比</span></div>
         <div id="hoursPie"></div>
       </div>
     </div>
 
-    <!-- 计算器页 -->
+    <!-- 工具中心：入口与具体计算分层，保留原计算表单 ID -->
     <div class="page" id="pageCalculator">
-      <div class="calc-tabs" id="calcTabs">
-        <div class="calc-tab active" data-tab="tax">个税</div>
-        <div class="calc-tab" data-tab="salary">工资</div>
-        <div class="calc-tab" data-tab="simple">计算器</div>
-      </div>
-      
-      <div class="calc-panel active" id="calcTax">
+      <section class="tool-home" id="toolHome">
+        <div class="tool-welcome">
+          <div class="tool-eyebrow">WORK & INCOME TOOLS</div>
+          <h1>工具中心</h1>
+          <p>把常用计算集中在这里，选择要处理的事项即可。</p>
+        </div>
+
+        <div class="tool-section-heading">薪资与税务</div>
+        <button class="tool-card tool-card-primary" type="button" data-open-tool="salary">
+          <span class="tool-icon tool-icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="5" width="18.4" height="14" rx="2.5"/><path d="M3 9h18M7 15h3"/><path d="M16.5 12.5v4m-2-2h4"/></svg></span>
+          <span class="tool-card-copy"><strong>薪资测算</strong><small>小时工、月薪制、日薪与月薪换算</small></span>
+          <span class="tool-card-arrow">›</span>
+        </button>
+        <button class="tool-card" type="button" data-open-tool="tax">
+          <span class="tool-icon tool-icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14a2 2 0 0 1 2 2v15H3v-15a2 2 0 0 1 2-2Z"/><path d="M7 8h10M7 12h3m4 0h3M7 16h3m4 0h3"/></svg></span>
+          <span class="tool-card-copy"><strong>个税计算</strong><small>五险一金、专项附加扣除、税后收入</small></span>
+          <span class="tool-card-arrow">›</span>
+        </button>
+
+        <div class="tool-section-heading tool-section-spaced">日常计算</div>
+        <button class="tool-card" type="button" id="fabCalc">
+          <span class="tool-icon tool-icon-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2.5"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></span>
+          <span class="tool-card-copy"><strong>普通计算器</strong><small>快速进行加减乘除等日常运算</small></span>
+          <span class="tool-card-arrow">›</span>
+        </button>
+
+        <div class="tool-tip"><span class="tool-tip-dot"></span>薪资参数统一在「我的 → 薪资设置」中管理，修改后会同步用于记录与统计。</div>
+      </section>
+
+      <section class="calc-detail hidden" id="calcDetail">
+        <div class="calc-detail-heading">
+          <button type="button" class="calc-back" id="calcBackBtn" aria-label="返回工具中心"><span>‹</span> 工具中心</button>
+          <div class="calc-detail-title" id="calcPageTitle">薪资测算</div>
+        </div>
+        <!-- 隐藏的兼容切换器：保留原有 data-tab / ID 绑定，由工具入口分别打开独立页面 -->
+        <div class="calc-tabs calc-tabs-compat" id="calcTabs" aria-hidden="true">
+          <button type="button" class="calc-tab" data-tab="salary" tabindex="-1">薪资测算</button>
+          <button type="button" class="calc-tab" data-tab="tax" tabindex="-1">个税计算</button>
+        </div>
+
+      <div class="calc-panel" id="calcTax">
         <div class="form-group"><label>税前月收入 (元)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="taxIncome" value="0" step="100" min="0" max="10000000" inputmode="decimal" placeholder="自动读取本月收入"></div></div>
         
         <div class="settings-card" style="margin-bottom:20px;">
@@ -414,12 +599,18 @@ button{background:none;border:none;cursor:pointer;}
           <div class="deduction-list collapsed" id="taxSpecialList"></div>
         </div>
 
-        <div class="form-group"><label>五险一金比例 (%)</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div class="input-wrap"><span class="prefix">养老</span><input type="number" id="taxPension" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">医疗</span><input type="number" id="taxMedical" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">失业</span><input type="number" id="taxUnemployment" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
-            <div class="input-wrap"><span class="prefix">公积金</span><input type="number" id="taxFund" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+        <div class="form-group">
+          <button type="button" class="deduction-toggle" id="insuranceToggle" aria-expanded="false">
+            <span>五险一金比例 (%)</span>
+            <span class="deduction-toggle-meta"><span class="chev">▾</span></span>
+          </button>
+          <div class="deduction-list collapsed" id="insuranceList" style="padding-top:8px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="input-wrap"><span class="prefix">养老</span><input type="number" id="taxPension" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+              <div class="input-wrap"><span class="prefix">医疗</span><input type="number" id="taxMedical" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+              <div class="input-wrap"><span class="prefix">失业</span><input type="number" id="taxUnemployment" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+              <div class="input-wrap"><span class="prefix">公积金</span><input type="number" id="taxFund" value="0" max="50" style="text-align:right"><span class="suffix">%</span></div>
+            </div>
           </div>
         </div>
         <div class="card" style="margin:0 0 16px;padding:16px;background:var(--sys-bg);box-shadow:none;border:0.5px solid var(--sys-border);">
@@ -436,76 +627,73 @@ button{background:none;border:none;cursor:pointer;}
         </div>
       </div>
 
-      <div class="calc-panel" id="calcSalary">
-        <div class="form-group">
-          <label>薪资模式</label>
-          <div class="segmented-control" id="modeSwitch">
-            <button data-mode="hourly" class="active">小时工</button>
-            <button data-mode="salary">月薪制</button>
+        <div class="calc-panel" id="calcSalary">
+          <div class="salary-result-intro">
+            <div class="salary-result-kicker">SALARY ESTIMATE</div>
+            <h2>薪资测算结果</h2>
+            <p>根据已保存的薪资模式与参数，自动换算日薪、月薪及折算时薪。</p>
           </div>
-        </div>
-
-        <div id="hourlyForm">
-          <div class="form-group"><label>日常时薪 (元/H)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inNormal" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>节假时薪 (元/H)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inHoliday" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
-        </div>
-
-        <div id="salaryForm" class="hidden">
-          <div class="form-group"><label>底薪发放方式</label>
-            <select id="inSalaryFixedMode" style="width:100%;padding:12px;border-radius:var(--radius-m);border:1px solid var(--sys-border);background:var(--sys-bg);font-size:16px;font-weight:600;">
-              <option value="daily">按出勤天数折算</option>
-              <option value="monthly">固定整月发放</option>
-            </select>
+          <div class="salary-result-card">
+            <div class="salary-result-item"><span class="stat-box-lbl">预计日薪</span><strong id="salaryDaily">¥0</strong></div>
+            <div class="salary-result-divider"></div>
+            <div class="salary-result-item"><span class="stat-box-lbl">预计月薪</span><strong id="salaryMonthly">¥0</strong></div>
+            <div class="hidden salary-hourly-result" id="calcHourlyFromMonthly"><span class="stat-box-lbl">折算时薪</span><strong id="salaryHourly">¥0</strong></div>
           </div>
-          <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inBaseSalary" step="100" min="0" max="500000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>绩效/奖金/津贴 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inPerformance" step="100" min="0" max="500000" inputmode="decimal"></div></div>
-          <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"><span class="suffix">天</span></div></div>
-        </div>
-
-        <div class="form-group"><label>每日工时 (H)</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"><span class="suffix">h</span></div></div>
-
-        <div class="card" style="margin:16px 0 0;background:var(--sys-bg);box-shadow:none;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center;">
-            <div><div class="stat-box-lbl">日薪</div><div style="font-size:20px;font-weight:800;color:var(--brand)" id="salaryDaily">¥0</div></div>
-            <div><div class="stat-box-lbl">月薪</div><div style="font-size:20px;font-weight:800;color:var(--brand)" id="salaryMonthly">¥0</div></div>
+          <div class="salary-settings-callout">
+            <div class="salary-settings-copy"><strong>薪资参数</strong><span>调整薪资模式、时薪、底薪、绩效和每日工时</span></div>
+            <button type="button" id="salarySettingsShortcut">前往设置 <span>›</span></button>
           </div>
-          <div class="hidden" id="calcHourlyFromMonthly" style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--sys-border);display:flex;justify-content:space-between;align-items:center;">
-            <span class="stat-box-lbl">折算时薪</span>
-            <span style="font-size:17px;font-weight:800;color:var(--brand)" id="salaryHourly">¥0</span>
-          </div>
-          <div style="margin-top:12px;font-size:11.5px;color:var(--sys-text-sec);line-height:1.6;">改动会立即保存到账号，并与「记录 / 统计」的收入计算共用同一份数据。</div>
+          <p class="calc-data-note">薪资参数与「记录 / 统计」共用同一份数据，修改后会立即保存并参与收入计算。</p>
         </div>
-      </div>
-
-      <div class="calc-panel" id="calcSimple">
-        <div class="calc-display"><div class="calc-expr" id="calcExpr"></div><div class="calc-result" id="calcResult" aria-live="polite">0</div></div>
-        <div class="calc-keys" id="calcKeys">
-          <button class="calc-key" type="button" data-key="C">C</button>
-          <button class="calc-key del" type="button" data-key="⌫">⌫</button>
-          <button class="calc-key" type="button" data-key="%">%</button>
-          <button class="calc-key op" type="button" data-key="÷">÷</button>
-          <button class="calc-key" type="button" data-key="7">7</button>
-          <button class="calc-key" type="button" data-key="8">8</button>
-          <button class="calc-key" type="button" data-key="9">9</button>
-          <button class="calc-key op" type="button" data-key="×">×</button>
-          <button class="calc-key" type="button" data-key="4">4</button>
-          <button class="calc-key" type="button" data-key="5">5</button>
-          <button class="calc-key" type="button" data-key="6">6</button>
-          <button class="calc-key op" type="button" data-key="-">−</button>
-          <button class="calc-key" type="button" data-key="1">1</button>
-          <button class="calc-key" type="button" data-key="2">2</button>
-          <button class="calc-key" type="button" data-key="3">3</button>
-          <button class="calc-key op" type="button" data-key="+">+</button>
-          <button class="calc-key" type="button" data-key="±">+/−</button>
-          <button class="calc-key" type="button" data-key="0">0</button>
-          <button class="calc-key" type="button" data-key=".">.</button>
-          <button class="calc-key eq" type="button" data-key="=">=</button>
-        </div>
-      </div>
+      </section>
     </div>
 
     <!-- 设置与我的页 -->
     <div class="page" id="pageSettings">
+      <div class="settings-section salary-settings-section" id="salarySettingsSection" style="margin-top:14px;">
+        <button type="button" class="salary-settings-trigger" id="salarySettingsToggle" aria-expanded="false" aria-controls="salarySettingsContent">
+          <span class="salary-settings-trigger-icon">¥</span>
+          <span class="salary-settings-trigger-copy">
+            <strong>薪资设置</strong>
+            <small>计薪方式、时薪、底薪与每日工时</small>
+          </span>
+          <span class="salary-settings-trigger-arrow" aria-hidden="true">⌄</span>
+        </button>
+        <div class="settings-card salary-settings-card hidden" id="salarySettingsContent">
+          <div class="salary-settings-header">
+            <div><strong>计薪方式</strong><small>选择与你的实际薪酬制度一致的模式</small></div>
+            <span class="settings-inline-icon">¥</span>
+          </div>
+          <div class="segmented-control salary-mode-switch" id="modeSwitch">
+            <button type="button" data-mode="hourly" class="active">小时工</button>
+            <button type="button" data-mode="salary">月薪制</button>
+          </div>
+          <div id="hourlyForm">
+            <div class="settings-field-label">小时工参数</div>
+            <div class="salary-fields-grid">
+              <div class="form-group"><label>日常时薪</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inNormal" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
+              <div class="form-group"><label>节假日时薪</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inHoliday" step="0.5" min="0" max="1000" inputmode="decimal"></div></div>
+            </div>
+          </div>
+          <div id="salaryForm" class="hidden">
+            <div class="settings-field-label">月薪制参数</div>
+            <div class="form-group"><label>底薪发放方式</label>
+              <select id="inSalaryFixedMode" class="settings-select">
+                <option value="daily">按出勤天数折算</option>
+                <option value="monthly">固定整月发放</option>
+              </select>
+            </div>
+            <div class="salary-fields-grid">
+              <div class="form-group"><label>基本工资 (元/月)</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inBaseSalary" step="100" min="0" max="500000" inputmode="decimal"></div></div>
+              <div class="form-group"><label>绩效 / 奖金 / 津贴</label><div class="input-wrap"><span class="prefix">¥</span><input type="number" id="inPerformance" step="100" min="0" max="500000" inputmode="decimal"></div></div>
+              <div class="form-group"><label>月计薪天数</label><div class="input-wrap"><input type="number" id="inSalaryDays" step="0.25" min="1" max="31"><span class="suffix">天</span></div></div>
+            </div>
+          </div>
+          <div class="settings-field-label salary-common-label">通用工时参数</div>
+          <div class="form-group"><label>每日工时</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"><span class="suffix">小时</span></div></div>
+          <div class="salary-settings-footnote">以上参数自动保存，并用于工时记录的收入估算和统计分析。</div>
+        </div>
+      </div>
       <div class="settings-section" style="margin-top:16px;">
         <div class="settings-title">账号</div>
         <div class="settings-card">
@@ -573,7 +761,9 @@ button{background:none;border:none;cursor:pointer;}
           </button>
         </div>
       </div>
-  </div>
+    </div><!-- ✅ 正确闭合设置页 -->
+  </div><!-- ✅ 正确闭合 page-scroll 滚动容器 -->
+
 
   <div class="tab-bar">
     <div class="tab-item active" data-page="pageRecord">
@@ -586,16 +776,16 @@ button{background:none;border:none;cursor:pointer;}
     </div>
     <div class="tab-item" data-page="pageCalculator">
       <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16.01" y2="14"></line><line x1="12" y1="14" x2="12.01" y2="14"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="16" y1="18" x2="16.01" y2="18"></line><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="8" y1="18" x2="8.01" y2="18"></line></svg>
-      <span class="tab-label">计算</span>
+      <span class="tab-label">工具</span>
     </div>
     <div class="tab-item" data-page="pageSettings">
       <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      <span class="tab-label">设置</span>
+      <span class="tab-label">我的</span>
     </div>
   </div>
-</div>
+</div> <!-- ✅ 这是 #app 的结束标签 -->
 
-<!-- 打卡弹窗 -->
+<!-- 以下是各种弹窗（必须放在 #app 外面） -->
 <div class="modal-overlay" id="clockModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -605,7 +795,7 @@ button{background:none;border:none;cursor:pointer;}
     <div class="segmented-control" id="shiftRow">
       <button data-shift="day" class="active">白班</button>
       <button data-shift="early">早班</button>
-      <button data-shift="mid">中班</button>
+      <button data-shift="mid" class="active">中班</button>
       <button data-shift="night">晚班</button>
     </div>
     
@@ -677,7 +867,6 @@ button{background:none;border:none;cursor:pointer;}
   </div>
 </div>
 
-<!-- 导出弹窗 -->
 <div class="modal-overlay" id="exportModal">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">导出数据</div><button class="modal-close" data-close="exportModal">✕</button></div>
@@ -696,7 +885,6 @@ button{background:none;border:none;cursor:pointer;}
   </div>
 </div>
 
-<!-- 导入弹窗 -->
 <div class="modal-overlay" id="importModal">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">导入数据</div><button class="modal-close" data-close="importModal">✕</button></div>
@@ -712,7 +900,6 @@ button{background:none;border:none;cursor:pointer;}
   </div>
 </div>
 
-<!-- 修改密码弹窗 -->
 <div class="modal-overlay" id="passwordModal">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">修改密码</div><button class="modal-close" data-close="passwordModal">✕</button></div>
@@ -726,8 +913,40 @@ button{background:none;border:none;cursor:pointer;}
   </div>
 </div>
 
-<div class="toast-wrap" id="toastWrap"></div>
+<!-- 把计算器弹窗移到这里，和别的弹窗平级 -->
+<div class="modal-overlay" id="calcSimpleModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">计算器</div>
+      <button class="modal-close" id="closeCalcBtn">✕</button>
+    </div>
+    <div class="calc-display"><div class="calc-expr" id="calcExpr"></div><div class="calc-result" id="calcResult" aria-live="polite">0</div></div>
+    <div class="calc-keys" id="calcKeys">
+      <button class="calc-key" type="button" data-key="C">C</button>
+      <button class="calc-key del" type="button" data-key="⌫">⌫</button>
+      <button class="calc-key" type="button" data-key="%">%</button>
+      <button class="calc-key op" type="button" data-key="÷">÷</button>
+      <button class="calc-key" type="button" data-key="7">7</button>
+      <button class="calc-key" type="button" data-key="8">8</button>
+      <button class="calc-key" type="button" data-key="9">9</button>
+      <button class="calc-key op" type="button" data-key="×">×</button>
+      <button class="calc-key" type="button" data-key="4">4</button>
+      <button class="calc-key" type="button" data-key="5">5</button>
+      <button class="calc-key" type="button" data-key="6">6</button>
+      <button class="calc-key op" type="button" data-key="-">−</button>
+      <button class="calc-key" type="button" data-key="1">1</button>
+      <button class="calc-key" type="button" data-key="2">2</button>
+      <button class="calc-key" type="button" data-key="3">3</button>
+      <button class="calc-key op" type="button" data-key="+">+</button>
+      <button class="calc-key" type="button" data-key="±">+/−</button>
+      <button class="calc-key" type="button" data-key="0">0</button>
+      <button class="calc-key" type="button" data-key=".">.</button>
+      <button class="calc-key eq" type="button" data-key="=">=</button>
+    </div>
+  </div>
+</div>
 
+<div class="toast-wrap" id="toastWrap"></div>
 <script>
 (function(){
 "use strict";
@@ -736,8 +955,8 @@ const APP_VERSION = 'V6.2';
 try { window.__APP_VERSION__ = APP_VERSION; } catch (e) {}
 const SCHEMA_VERSION = 4;
 
-// ✅ 动态判断：本地走 8787，线上走真实域名
-const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.hostname === '10.12.106.7') 
+
+const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') 
     ? 'http://127.0.0.1:8787/' 
     : 'https://api.leoani.dpdns.org/';
 
@@ -1503,7 +1722,7 @@ function renderAll() {
   }
 }
 
-/* 页面 Tab */
+/* 页面导航：记录 / 统计 / 工具 / 我的 */
 document.querySelectorAll('.tab-item').forEach(el => {
   el.onclick = () => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1511,9 +1730,49 @@ document.querySelectorAll('.tab-item').forEach(el => {
     byId(el.dataset.page).classList.add('active');
     el.classList.add('active');
     byId('appHeader').classList.toggle('collapsed', el.dataset.page !== 'pageRecord' && el.dataset.page !== 'pageStats');
+    if (el.dataset.page === 'pageCalculator') {
+      byId('toolHome').classList.remove('hidden');
+      byId('calcDetail').classList.add('hidden');
+    }
+    byId('mainScroll').scrollTop = 0;
     renderAll();
   };
 });
+
+/* 工具入口与计算详情 */
+document.querySelectorAll('[data-open-tool]').forEach(el => {
+  el.addEventListener('click', () => {
+    const tabName = el.dataset.openTool;
+    byId('toolHome').classList.add('hidden');
+    byId('calcDetail').classList.remove('hidden');
+    const tab = document.querySelector('.calc-tab[data-tab="' + tabName + '"]');
+    if (tab) tab.click();
+    byId('calcPageTitle').textContent = tabName === 'tax' ? '个税计算' : '薪资测算';
+    byId('mainScroll').scrollTop = 0;
+  });
+});
+byId('calcBackBtn').addEventListener('click', () => {
+  byId('calcDetail').classList.add('hidden');
+  byId('toolHome').classList.remove('hidden');
+  byId('mainScroll').scrollTop = 0;
+});
+byId('salarySettingsShortcut').addEventListener('click', () => {
+  const settingsTab = document.querySelector('.tab-item[data-page="pageSettings"]');
+  if (settingsTab) settingsTab.click();
+  const toggle = byId('salarySettingsToggle');
+  if (toggle && toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+  byId('mainScroll').scrollTop = 0;
+});
+
+// 「我的」中的薪资设置默认收起，点击后再展开详细参数；参数 ID 与保存逻辑保持不变。
+const salarySettingsToggle = byId('salarySettingsToggle');
+if (salarySettingsToggle) {
+  salarySettingsToggle.addEventListener('click', () => {
+    const expanded = salarySettingsToggle.getAttribute('aria-expanded') === 'true';
+    salarySettingsToggle.setAttribute('aria-expanded', String(!expanded));
+    byId('salarySettingsContent').classList.toggle('hidden', expanded);
+  });
+}
 
 // 月末切换必须先把日期归到 1 号，否则 3/31 setMonth(-1) 会变成 2/31 -> 3/3，月份原地不动。
 function shiftMonth(delta) {
@@ -1899,6 +2158,7 @@ document.querySelectorAll('.calc-tab').forEach(tab => tab.onclick = () => {
   document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
   tab.classList.add('active');
   byId('calc' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+  if (byId('calcPageTitle')) byId('calcPageTitle').textContent = tab.dataset.tab === 'tax' ? '个税计算' : '薪资测算';
   
   if (tab.dataset.tab === 'tax') {
     const sum = aggregateMonth(currentDate.getFullYear(), currentDate.getMonth(), Store.state.records, Store.state.settings);
@@ -2303,6 +2563,33 @@ byId('openPasswordBtn').onclick = () => {
   byId('newPassword2').value = '';
   byId('passwordModal').classList.add('show');
 };
+
+// 1. 五险一金折叠面板逻辑
+const insuranceToggle = byId('insuranceToggle');
+if (insuranceToggle) {
+    insuranceToggle.onclick = () => {
+        const isExpanded = insuranceToggle.getAttribute('aria-expanded') === 'true';
+        insuranceToggle.setAttribute('aria-expanded', !isExpanded);
+        byId('insuranceList').classList.toggle('collapsed', isExpanded);
+    };
+}
+
+// 2. 悬浮按钮打开计算器
+const fabCalc = byId('fabCalc');
+if (fabCalc) {
+    fabCalc.onclick = () => {
+        byId('calcSimpleModal').classList.add('show');
+    };
+}
+
+// 3. 关闭计算器弹窗
+const closeCalcBtn = byId('closeCalcBtn');
+if (closeCalcBtn) {
+    closeCalcBtn.onclick = () => {
+        byId('calcSimpleModal').classList.remove('show');
+    };
+}
+
 byId('changePasswordBtn').onclick = async () => {
   const oldPw = byId('oldPassword').value;
   const newPw = byId('newPassword').value;
