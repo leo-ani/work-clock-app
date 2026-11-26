@@ -380,15 +380,9 @@ body{background:var(--sys-bg);}
 .salary-result-divider{height:46px;background:var(--sys-border);}
 .salary-hourly-result{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding-top:15px;margin-top:3px;border-top:1px solid var(--sys-border);}
 .salary-hourly-result strong{font-size:19px;}
-.salary-settings-callout{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;margin-top:14px;background:var(--brand-soft);border-radius:16px;}
-.salary-settings-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
-.salary-settings-copy strong{font-size:14px;color:var(--brand);}
-.salary-settings-copy span{font-size:11px;color:var(--sys-text-sec);line-height:1.45;}
-#salarySettingsShortcut{flex:0 0 auto;color:var(--brand);font-size:12px;font-weight:800;white-space:nowrap;}
-#salarySettingsShortcut span{font-size:19px;vertical-align:-1px;margin-left:2px;}
 .calc-data-note{font-size:11px;line-height:1.6;color:var(--sys-text-sec);margin:13px 3px 0;}
 
-/* 我的 · 薪资设置 */
+/* 薪资测算页内的薪资参数 */
 .salary-settings-card{padding:16px;overflow:visible;}
 .salary-settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .salary-settings-header div{display:flex;flex-direction:column;gap:4px;}
@@ -418,16 +412,17 @@ body{background:var(--sys-bg);}
 }
 
 
-/* 薪资设置默认折叠，首屏仅显示一行入口，细项按需展开 */
-.salary-settings-trigger{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:11px 14px;background:var(--sys-surface);border:1px solid var(--sys-border);border-radius:16px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.025);}
+/* 薪资参数直接整合在薪资测算页：紧凑折叠入口，避免设置页重复入口 */
+.salary-settings-section{margin-top:14px;}
+.salary-settings-trigger{display:flex;align-items:center;gap:11px;width:100%;min-height:58px;padding:10px 13px;background:var(--sys-surface);border:1px solid var(--sys-border);border-radius:14px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.025);}
 .salary-settings-trigger:active{background:var(--sys-gray);}
 .salary-settings-trigger-icon{display:flex;align-items:center;justify-content:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:var(--brand-soft);color:var(--brand);font-size:19px;font-weight:800;}
 .salary-settings-trigger-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;}
 .salary-settings-trigger-copy strong{font-size:14px;font-weight:700;color:var(--sys-text);}
-.salary-settings-trigger-copy small{font-size:11px;color:var(--sys-text-sec);line-height:1.35;}
+.salary-settings-trigger-copy small{font-size:11px;color:var(--sys-text-sec);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .salary-settings-trigger-arrow{font-size:21px;color:var(--sys-text-sec);transition:transform .2s;}
 .salary-settings-trigger[aria-expanded="true"] .salary-settings-trigger-arrow{transform:rotate(180deg);}
-.salary-settings-card{margin-top:8px;}
+.salary-settings-card{margin-top:8px;padding:14px;border-radius:14px;}
 .salary-settings-card.hidden{display:none!important;}
 .calc-tabs-compat{display:none!important;}
 
@@ -567,7 +562,7 @@ body{background:var(--sys-bg);}
           <span class="tool-card-arrow">›</span>
         </button>
 
-        <div class="tool-tip"><span class="tool-tip-dot"></span>薪资参数统一在「我的 → 薪资设置」中管理，修改后会同步用于记录与统计。</div>
+        <div class="tool-tip"><span class="tool-tip-dot"></span>薪资模式、时薪和底薪可在「薪资测算」中直接调整，修改后自动同步到记录与统计。</div>
       </section>
 
       <section class="calc-detail hidden" id="calcDetail">
@@ -639,27 +634,16 @@ body{background:var(--sys-bg);}
             <div class="salary-result-item"><span class="stat-box-lbl">预计月薪</span><strong id="salaryMonthly">¥0</strong></div>
             <div class="hidden salary-hourly-result" id="calcHourlyFromMonthly"><span class="stat-box-lbl">折算时薪</span><strong id="salaryHourly">¥0</strong></div>
           </div>
-          <div class="salary-settings-callout">
-            <div class="salary-settings-copy"><strong>薪资参数</strong><span>调整薪资模式、时薪、底薪、绩效和每日工时</span></div>
-            <button type="button" id="salarySettingsShortcut">前往设置 <span>›</span></button>
-          </div>
-          <p class="calc-data-note">薪资参数与「记录 / 统计」共用同一份数据，修改后会立即保存并参与收入计算。</p>
-        </div>
-      </section>
-    </div>
-
-    <!-- 设置与我的页 -->
-    <div class="page" id="pageSettings">
-      <div class="settings-section salary-settings-section" id="salarySettingsSection" style="margin-top:14px;">
-        <button type="button" class="salary-settings-trigger" id="salarySettingsToggle" aria-expanded="false" aria-controls="salarySettingsContent">
-          <span class="salary-settings-trigger-icon">¥</span>
-          <span class="salary-settings-trigger-copy">
-            <strong>薪资设置</strong>
-            <small>计薪方式、时薪、底薪与每日工时</small>
-          </span>
-          <span class="salary-settings-trigger-arrow" aria-hidden="true">⌄</span>
-        </button>
-        <div class="settings-card salary-settings-card hidden" id="salarySettingsContent">
+          <div class="salary-settings-section" id="salarySettingsSection">
+            <button type="button" class="salary-settings-trigger" id="salarySettingsToggle" aria-expanded="false" aria-controls="salarySettingsContent">
+              <span class="salary-settings-trigger-icon">¥</span>
+              <span class="salary-settings-trigger-copy">
+                <strong>计薪方式与薪资参数</strong>
+                <small id="salaryParamSummary">小时工 · 设置时薪与每日工时</small>
+              </span>
+              <span class="salary-settings-trigger-arrow" aria-hidden="true">⌄</span>
+            </button>
+            <div class="settings-card salary-settings-card hidden" id="salarySettingsContent">
           <div class="salary-settings-header">
             <div><strong>计薪方式</strong><small>选择与你的实际薪酬制度一致的模式</small></div>
             <span class="settings-inline-icon">¥</span>
@@ -693,7 +677,14 @@ body{background:var(--sys-bg);}
           <div class="form-group"><label>每日工时</label><div class="input-wrap"><input type="number" id="inSalaryHours" step="0.5" min="1" max="24"><span class="suffix">小时</span></div></div>
           <div class="salary-settings-footnote">以上参数自动保存，并用于工时记录的收入估算和统计分析。</div>
         </div>
-      </div>
+          </div>
+          <p class="calc-data-note">参数修改后自动保存，并同步用于工时记录、收入统计和个税测算。</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- 设置与我的页 -->
+    <div class="page" id="pageSettings">
       <div class="settings-section" style="margin-top:16px;">
         <div class="settings-title">账号</div>
         <div class="settings-card">
@@ -1756,15 +1747,7 @@ byId('calcBackBtn').addEventListener('click', () => {
   byId('toolHome').classList.remove('hidden');
   byId('mainScroll').scrollTop = 0;
 });
-byId('salarySettingsShortcut').addEventListener('click', () => {
-  const settingsTab = document.querySelector('.tab-item[data-page="pageSettings"]');
-  if (settingsTab) settingsTab.click();
-  const toggle = byId('salarySettingsToggle');
-  if (toggle && toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
-  byId('mainScroll').scrollTop = 0;
-});
-
-// 「我的」中的薪资设置默认收起，点击后再展开详细参数；参数 ID 与保存逻辑保持不变。
+// 薪资测算页内的参数区默认收起，点击后展开；输入 ID 与自动保存逻辑保持不变。
 const salarySettingsToggle = byId('salarySettingsToggle');
 if (salarySettingsToggle) {
   salarySettingsToggle.addEventListener('click', () => {
@@ -2146,7 +2129,7 @@ document.querySelectorAll('#modeSwitch button').forEach(b => b.onclick = () => {
   Store.scheduleSave();
   syncCalcSalaryUI();
   syncInsuranceUI();
-  syncSettingsUI();   // 同步设置页的"当前模式"、目标显隐等
+  syncSettingsUI();   // 同步当前薪资模式、目标显隐等
   renderAll();
   calcTax();
 });
@@ -2340,6 +2323,13 @@ function fillTaxIncomeIfEmpty() {
 function syncCalcSalaryUI() {
   const s = Store.state.settings;
   const isSalary = s.mode === 'salary';
+  const summaryEl = byId('salaryParamSummary');
+  if (summaryEl) {
+    const money = value => Number(value || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+    summaryEl.textContent = isSalary
+      ? `月薪制 · ¥${money(num(s.baseSalary) + num(s.performance))}/月 · 每日${money(s.salaryHours)}H`
+      : `小时工 · ¥${money(s.normalRate)}/H · 每日${money(s.salaryHours)}H`;
+  }
   byId('hourlyForm').classList.toggle('hidden', isSalary);
   byId('salaryForm').classList.toggle('hidden', !isSalary);
   byId('calcHourlyFromMonthly').classList.toggle('hidden', !isSalary);
