@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F2F2F7">
 <meta name="color-scheme" content="light dark">
-<meta name="app-version" content="V6.2">
-<link rel="preconnect" href="https://api.leoani.dpdns.org" crossorigin>
-<link rel="dns-prefetch" href="https://api.leoani.dpdns.org">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="app-version" content="V6.3">
+<meta name="api-base" content="http://10.12.106.7:32768/proxy/8787/">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.leoani.dpdns.org; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>工时记录助手</title>
 <style>
 :root{
@@ -941,15 +940,25 @@ body{background:var(--sys-bg);}
 <script>
 (function(){
 "use strict";
-const APP_VERSION = 'V6.2';
+const APP_VERSION = 'V6.3';
 // 暴露版本号，便于在控制台确认线上构建（window.__APP_VERSION__）
 try { window.__APP_VERSION__ = APP_VERSION; } catch (e) {}
 const SCHEMA_VERSION = 4;
 
 
-const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') 
-    ? 'http://127.0.0.1:8787/' 
-    : 'https://api.leoani.dpdns.org/';
+const API_BASE = (() => {
+  // 1. 如果是在 Github Pages 线上环境（域名里包含 github.io）
+  if (window.location.hostname.includes('github.io')) {
+    return 'https://api.leoani.dpdns.org/';
+  }
+  // 2. 如果是在 Harness 的本地代理环境（路径里带 /proxy/）
+  if (window.location.pathname.includes('/proxy/')) {
+    // 自动把地址栏里的 8080 替换成 8787
+    return window.location.origin + window.location.pathname.replace('/proxy/8080/', '/proxy/8787/');
+  }
+  // 3. 默认兜底（本机 localhost 访问）
+  return 'http://127.0.0.1:8787/';
+})();
 
 const SESSION_KEY = 'wc_session';
 const USER_KEY = 'wc_username';
@@ -1186,7 +1195,7 @@ function normalizeUserData(raw) {
 }
 
 /* 网络与加密 */
-function ApiError(msg, code, status) { const err = new Error(msg); err.code = code; err.status = status; return err; }
+function ApiError(msg, code, status, retryAfterMs) { const err = new Error(msg); err.code = code; err.status = status; if (Number.isFinite(retryAfterMs)) err.retryAfterMs = retryAfterMs; return err; }
 const Api = {
   token: null,
   async call(action, payload, opts = {}) {
@@ -1217,10 +1226,14 @@ const Api = {
       if (!res.ok) {
         if (res.status === 404) throw ApiError(data.error || '未找到', 'USER_NOT_FOUND', 404);
         if (res.status === 401 || res.status === 403) throw ApiError('登录失效', 'UNAUTHORIZED', res.status);
-        // 保留服务端 code（如 MISSING_D1_BINDING / INTERNAL_ERROR），否则前端只能看到"500"
-        // 服务端若带了 detail（如 no such column: compensation），一并展示，便于直接定位
         const detail = typeof data.detail === 'string' && data.detail ? '：' + data.detail : '';
-        if (res.status >= 500 || res.status === 429) throw ApiError((data.error || '服务异常') + detail, data.code || 'RETRYABLE', res.status);
+        const retryHeader = res.headers && res.headers.get ? res.headers.get('Retry-After') : null;
+        let retryAfterMs = 0;
+        if (retryHeader) {
+          const seconds = Number(retryHeader);
+          retryAfterMs = Number.isFinite(seconds) ? seconds * 1000 : Math.max(0, Date.parse(retryHeader) - Date.now());
+        }
+        if (res.status >= 500 || res.status === 429) throw ApiError((data.error || '服务异常') + detail, data.code || 'RETRYABLE', res.status, retryAfterMs);
         throw ApiError(data.error || '请求失败', data.code || 'FATAL', res.status);
       }
       return data;
@@ -1237,9 +1250,16 @@ const Api = {
       if (typeof Worker !== 'undefined') {
         return new Promise((resolve, reject) => {
           const code = `self.onmessage=async function(e){const{password,salt,rounds}=e.data;try{const enc=new TextEncoder();const km=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:rounds,hash:'SHA-256'},km,256);const hash=Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');self.postMessage({hash});}catch(err){self.postMessage({error:err.message});}}`;
-          const worker = new Worker(URL.createObjectURL(new Blob([code], {type:'application/javascript'})));
-          worker.onmessage = e => { worker.terminate(); if(e.data.error) reject(new Error(e.data.error)); else resolve(e.data.hash); };
-          worker.postMessage({ password, salt, rounds });
+          const blobUrl = URL.createObjectURL(new Blob([code], {type:'application/javascript'}));
+          let worker, timer;
+          const cleanup = () => { if (timer) clearTimeout(timer); if (worker) worker.terminate(); URL.revokeObjectURL(blobUrl); };
+          try { worker = new Worker(blobUrl); }
+          catch (err) { cleanup(); reject(err); return; }
+          timer = setTimeout(() => { cleanup(); reject(new Error('密码计算超时，请重试')); }, 30000);
+          worker.onmessage = e => { const data = e.data || {}; cleanup(); if(data.error) reject(new Error(data.error)); else resolve(data.hash); };
+          worker.onerror = e => { cleanup(); reject(new Error('密码计算线程异常')); };
+          worker.onmessageerror = () => { cleanup(); reject(new Error('密码计算结果无法读取')); };
+          try { worker.postMessage({ password, salt, rounds }); } catch (err) { cleanup(); reject(err); }
         });
       }
       const enc = new TextEncoder();
@@ -1260,57 +1280,44 @@ const Api = {
   setData(username, data, settingsTouched, signal) { return this.call('setData', { username, data, settingsTouched }, { signal }); },
   deleteUser(username) { return this.call('deleteUser', { username }); },
   clearData(username) { return this.call('clearData', { username }); },
-  changePassword(username, oldHash, newHash, newSalt) { return this.call('changePassword', { username, oldHash, newHash, newSalt }); }
+  changePassword(username, oldHash, newHash, newSalt, iterations) { return this.call('changePassword', { username, oldHash, newHash, newSalt, iterations }); }
 };
 
 /* Store */
 const Store = {
-  state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null, lastSyncedAt: 0,
-  retryAttempt: 0, _retryTimer: null,
-  mutate(fn) { if (fn(this.state) === false) return; this.rev++; this.persist(); renderAll(); this.scheduleSave(); },
+  state: defaultUserData(), rev: 0, syncStatus: 'idle', settingsDirty: false, deleted: {}, inflight: null,
+  lastSyncedAt: 0, retryAttempt: 0, _retryTimer: null, _cachePending: false,
+  mutate(fn) {
+    if (fn(this.state) === false) return;
+    this.rev++; this.persist(); renderAll(); this.scheduleSave();
+  },
   reconcile(remote, opts = {}) {
     const next = normalizeUserData(remote);
     const serverDeleted = remote.deleted || {};
-
-    // 1) 墓碑：两端取较新的删除时间
-    for (const k in serverDeleted) {
-      if (num(serverDeleted[k]) > num(this.deleted[k])) this.deleted[k] = num(serverDeleted[k]);
-    }
-
-    // 2) 记录：做「并集」而不是「以服务端为准」。
-    //    服务端没有、本地有的记录必须保留 ——
-    //    否则新建的空库 / 换设备第一次同步时，本地已有数据会被整体清空（并写回缓存）。
+    for (const k in serverDeleted) if (num(serverDeleted[k]) > num(this.deleted[k])) this.deleted[k] = num(serverDeleted[k]);
     const merged = Object.assign({}, next.records);
     for (const k in this.state.records) {
-      const local = this.state.records[k];
-      const server = merged[k];
+      const local = this.state.records[k], server = merged[k];
       if (!server || num(local.updatedAt) >= num(server.updatedAt)) merged[k] = local;
     }
-
-    // 3) 应用墓碑：删除时间不早于记录更新时间 => 真正删除
     for (const k in this.deleted) {
       const rec = merged[k];
       if (rec && num(this.deleted[k]) >= num(rec.updatedAt)) delete merged[k];
     }
-
     next.records = merged;
-
-    // 4) 偏好字段：本地有未上传改动，或服务端还没有用户数据行时，以本地为准
     if (opts.prefsDirty || num(remote.dataRev) === 0) {
-      next.settings = this.state.settings;
-      next.goal = this.state.goal;
-      next.insurance = this.state.insurance;
+      next.settings = this.state.settings; next.goal = this.state.goal; next.insurance = this.state.insurance;
     }
-
     this.state = next; this.persist();
     if (!opts.silent) renderAll();
     if (typeof syncSettingsUI === 'function') syncSettingsUI();
   },
   persist() {
     if (!Session.username) return;
-    // dirty 一起落盘：离线改了设置后关页面，重开仍能以本地为准，不会被云端旧值覆盖
     safeSet(CACHE_PREFIX + Session.username, JSON.stringify({
       state: this.state, deleted: this.deleted, dirty: this.settingsDirty === true,
+      pending: this._cachePending || this.settingsDirty || this.syncStatus === 'pending' || this.syncStatus === 'error',
+      lastSyncedAt: this.lastSyncedAt || 0,
     }));
   },
   load() {
@@ -1320,95 +1327,107 @@ const Store = {
       this.state = normalizeUserData(parsed.state);
       this.deleted = parsed.deleted || {};
       this.settingsDirty = parsed.dirty === true;
-      // 顺带清理超过 30 天的墓碑，避免同步载荷越滚越大
+      // 旧缓存没有 pending 标记，按可能存在未上传数据处理，首次登录安全补传一次。
+      this._cachePending = parsed.pending === undefined ? true : parsed.pending === true;
+      this.lastSyncedAt = Math.max(0, num(parsed.lastSyncedAt));
       const cutoff = Date.now() - 30 * 86400000;
-      for (const k in this.deleted) { if (num(this.deleted[k]) < cutoff) delete this.deleted[k]; }
+      for (const k in this.deleted) if (num(this.deleted[k]) < cutoff) delete this.deleted[k];
       this.rev++;
       return true;
     }
+    this._cachePending = false; this.lastSyncedAt = 0; this.settingsDirty = false;
     return false;
   },
-  scheduleSave() { clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.flush(), 500); this.syncStatus = 'pending'; updateSyncUI(); },
-
-  /** 取消待执行的重试（退出登录、手动同步成功时调用） */
+  scheduleSave() {
+    this.rev++;
+    clearTimeout(this.saveTimer);
+    this._cachePending = true;
+    this.syncStatus = 'pending';
+    this.persist();
+    this.saveTimer = setTimeout(() => this.flush(), 500);
+    updateSyncUI();
+  },
   cancelRetry() {
     if (this._retryTimer) { clearTimeout(this._retryTimer); this._retryTimer = null; }
     this.retryAttempt = 0;
   },
-
-  /**
-   * 服务端 5xx / 限流时自动重试（3s、6s、12s、24s，最多 4 次）。
-   * 没有它，一旦某次上传失败，已删除的墓碑会一直卡在本地，
-   * 只能等用户下次改记录才「顺带」重传 —— 表现就是"删了又回来"。
-   */
-  scheduleRetry() {
+  scheduleRetry(error) {
     if (this._retryTimer) return;
-    const attempt = (this.retryAttempt || 0) + 1;
-    if (attempt > 4) { this.retryAttempt = attempt; return; }
-    this.retryAttempt = attempt;
-    const delay = Math.min(30000, 3000 * Math.pow(2, attempt - 1));
+    this.retryAttempt = Math.min(8, (this.retryAttempt || 0) + 1);
+    const base = Math.min(60000, 2000 * Math.pow(2, this.retryAttempt - 1));
+    const jittered = Math.round(base * (0.8 + Math.random() * 0.4));
+    const retryAfter = Math.max(0, Number(error && error.retryAfterMs) || 0);
+    const delay = Math.min(300000, Math.max(jittered, retryAfter));
     this._retryTimer = setTimeout(() => { this._retryTimer = null; this.flush(); }, delay);
   },
   async flush() {
-    if (!Session.token) return;
+    if (!Session.token) return false;
     if (this.inflight) { this.dirtyAgain = true; return this.inflight; }
     clearTimeout(this.saveTimer);
     this.syncStatus = 'saving'; updateSyncUI();
-    this.inflight = true;
-    const snapshotRev = this.rev;
-    const touched = this.settingsDirty;
-    // 水位线用「发请求前」的时间：若上传途中用户又改了记录，
-    // 它的 updatedAt 会大于该水位线，下一轮增量上传才不会把它漏掉。
-    // 原来成功后取 Date.now()，会把这期间的修改永久跳过（本地有、云端永远没有）。
-    const startedAt = Date.now();
-    
-    const ctrl = new AbortController();
-    const timeoutId = setTimeout(() => ctrl.abort(), 15000);
 
-    try {
-      // 按「上次同步成功的时间」增量上传，而不是固定 30 天窗口：
-      // 原窗口会把「导入/迁移进来的旧记录」永久排除在外，导致导入后永远上不了云。
-      const since = this.lastSyncedAt || 0;
-      const payload = {
-        records: {}, deleted: this.deleted,
-        settings: this.state.settings, goal: this.state.goal,
-        insurance: this.state.insurance || defaultInsurance(),
-      };
-      for (const k in this.state.records) {
-        const rec = this.state.records[k];
-        if (!since || num(rec.updatedAt) >= since) payload.records[k] = rec;
-      }
-      const res = await Api.setData(Session.username, payload, touched, ctrl.signal);
-      clearTimeout(timeoutId);
-      
-      if (touched) this.settingsDirty = false;
-      this.lastSyncedAt = startedAt;
-      if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
-      this.syncStatus = 'synced';
-      this.cancelRetry();
-      if (this.dirtyAgain || this.rev !== snapshotRev) {
+    const task = (async () => {
+      let succeeded = false;
+      let drained = false;
+      for (let pass = 0; pass < 6; pass++) {
         this.dirtyAgain = false;
-        this.inflight = null;
-        return this.flush();
+        const snapshotRev = this.rev;
+        const touched = this.settingsDirty;
+        const startedAt = Date.now();
+        const ctrl = new AbortController();
+        const timeoutId = setTimeout(() => ctrl.abort(), 20000);
+        const since = this.lastSyncedAt || 0;
+        const payload = {
+          records: {}, deleted: this.deleted,
+          settings: this.state.settings, goal: this.state.goal,
+          insurance: this.state.insurance || defaultInsurance(),
+        };
+        for (const k in this.state.records) {
+          const rec = this.state.records[k];
+          if (!since || num(rec.updatedAt) >= since) payload.records[k] = rec;
+        }
+        try {
+          const res = await Api.setData(Session.username, payload, touched, ctrl.signal);
+          clearTimeout(timeoutId);
+          if (touched && this.rev === snapshotRev) this.settingsDirty = false;
+          this.lastSyncedAt = startedAt;
+          if (res.data) this.reconcile(res.data, { silent: this.rev !== snapshotRev });
+          succeeded = true;
+          this._lastErrorCode = null;
+          if (this.rev === snapshotRev && !this.dirtyAgain) { drained = true; break; }
+          this.syncStatus = 'saving'; updateSyncUI();
+        } catch (e) {
+          clearTimeout(timeoutId);
+          if (e.name === 'AbortError' || e.code === 'TIMEOUT') toast('网络超时，已安排后台重试');
+          if (e.code === 'UNAUTHORIZED') { forceLogout(); return false; }
+          if (e.code && e.code !== 'TIMEOUT' && e.code !== 'NETWORK' && this._lastErrorCode !== e.code) {
+            this._lastErrorCode = e.code;
+            toast('同步失败：' + (e.message || '服务异常') + '（' + e.code + '）');
+          }
+          this.syncStatus = 'pending';
+          this._cachePending = true;
+          this.persist();
+          this.scheduleRetry(e);
+          return false;
+        }
       }
-    } catch (e) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError' || e.code === 'TIMEOUT') {
-        toast('网络超时，已在后台重试');
+      if (succeeded && drained) {
+        clearTimeout(this.saveTimer);
+        this._cachePending = false;
+        this.syncStatus = 'synced';
+        this.cancelRetry();
+        this.persist();
+        return true;
       }
-      if (e.code === 'UNAUTHORIZED') return forceLogout();
-      // 服务端 5xx 时把 code 报出来（同一个错误只提示一次，避免刷屏）
-      if (e.code && e.code !== 'TIMEOUT' && e.code !== 'NETWORK' && this._lastErrorCode !== e.code) {
-        this._lastErrorCode = e.code;
-        toast('同步失败：' + (e.message || '服务异常') + '（' + e.code + '）');
-      }
-      this.syncStatus = e.code === 'TIMEOUT' || e.code === 'NETWORK' ? 'pending' : 'error';
-      if (this.syncStatus === 'error') this.scheduleRetry();
-      if (this.syncStatus === 'pending') this.scheduleSave();
-    } finally { 
-      this.inflight = null; 
-      updateSyncUI(); 
-    }
+      this.syncStatus = 'pending'; this._cachePending = true; this.persist();
+      if (succeeded) this.saveTimer = setTimeout(() => this.flush(), 500);
+      else this.scheduleRetry();
+      return false;
+    })();
+
+    this.inflight = task;
+    try { return await task; }
+    finally { if (this.inflight === task) this.inflight = null; updateSyncUI(); }
   }
 };
 
@@ -2492,7 +2511,9 @@ byId('importFile').onchange = e => {
         if (parsed.goal !== undefined) s.goal = clamp(parsed.goal, 0, 1000, 0);
         if (parsed.insurance) s.insurance = Object.assign(defaultInsurance(), clean.insurance);
       });
-      Store.lastSyncedAt = 0;
+      const importedPrefs = !!parsed.settings || parsed.goal !== undefined || !!parsed.insurance;
+      if (importedPrefs) Store.settingsDirty = true;
+      Store.lastSyncedAt = 0; Store._cachePending = true; Store.persist();
       syncSettingsUI();
       toast('已导入 ' + keys.length + ' 天记录'); byId('importModal').classList.remove('show');
     } catch (err) { toast('导入失败：文件格式错误'); }
@@ -2524,11 +2545,13 @@ byId('clearAllBtn').onclick = async () => {
       s.settings.insuranceSalary = { pension: 0, medical: 0, unemployment: 0, fund: 0 };
       s.insurance = defaultInsurance();
     });
-    Store.settingsDirty = true;
+    clearTimeout(Store.saveTimer);
+    Store.settingsDirty = false;
     Store.deleted = {};
-    Store.lastSyncedAt = Date.now();
+    Store.lastSyncedAt = Date.now(); Store._cachePending = false;
     Store.syncStatus = 'synced';
     if (res && res.data) Store.reconcile(res.data, { silent: false });
+    Store.persist();
     byId('taxIncome').value = 0;
     syncSettingsUI();
     updateSyncUI();
@@ -2540,10 +2563,20 @@ byId('clearAllBtn').onclick = async () => {
   }
 };
 
-byId('logoutBtn').onclick = () => { if(confirm('退出登录？云端数据不会被删除。')) forceLogout(); };
+byId('logoutBtn').onclick = async () => {
+  if (!confirm('退出登录？云端数据不会被删除。未同步的数据会保留在本机，下次登录继续同步。')) return;
+  try {
+    if (Store.inflight) await Store.inflight;
+    if (Session.token && (Store._cachePending || Store.settingsDirty || Store.syncStatus === 'pending' || Store.syncStatus === 'error')) {
+      await Store.flush();
+    }
+  } catch (e) { /* 缓存会保留，退出不应清除未同步数据 */ }
+  if (Store._cachePending) toast('部分数据尚未上传，已保存在本机');
+  forceLogout();
+};
 byId('deleteAccountBtn').onclick = async () => {
   if (!confirm('永久注销账号？这将删除云端和本地所有数据！')) return;
-  try { await Api.deleteUser(Session.username); forceLogout(); toast('账号已注销'); } catch(e) { toast('注销失败：' + e.message); }
+  try { await Api.deleteUser(Session.username); forceLogout({ discardCache: true }); toast('账号已注销'); } catch(e) { toast('注销失败：' + e.message); }
 };
 
 /* 修改密码 */
@@ -2595,8 +2628,8 @@ byId('changePasswordBtn').onclick = async () => {
     const saltRes = await Api.getSalt(Session.username);
     const oldHash = await Api.deriveHash(oldPw, saltRes.salt, saltRes.kdf, saltRes.iterations);
     const newSalt = Api.generateSalt();
-    const newHash = await Api.deriveHash(newPw, newSalt, 'PBKDF2-SHA256', 600000);
-    await Api.changePassword(Session.username, oldHash, newHash, newSalt);
+    const newHash = await Api.deriveHash(newPw, newSalt, 'PBKDF2-SHA256', saltRes.targetIterations || 600000);
+    await Api.changePassword(Session.username, oldHash, newHash, newSalt, saltRes.targetIterations || 600000);
     byId('passwordModal').classList.remove('show');
     toast('密码已修改，请重新登录');
     forceLogout();
@@ -2642,17 +2675,20 @@ byId('authForm').onsubmit = async (e) => {
       if (saltRes.kdf && saltRes.kdf !== 'PBKDF2-SHA256') {
         try {
           const upSalt = Api.generateSalt();
-          const upHash = await Api.deriveHash(p, upSalt, 'PBKDF2-SHA256', 600000);
-          upgrade = { newHash: upHash, newSalt: upSalt };
+          const upHash = await Api.deriveHash(p, upSalt, 'PBKDF2-SHA256', saltRes.targetIterations || 600000);
+          upgrade = { newHash: upHash, newSalt: upSalt, newIterations: saltRes.targetIterations || 600000 };
         } catch (e) { upgrade = null; }
       }
       // withData: 登录响应里直接带回用户数据，省掉紧随其后的一次 getData 往返
       const res = await Api.login(u, hash, upgrade, true);
       Session.set(u, res.token); enterApp(res && res.data ? res.data : null);
     } else {
+      // 先向服务端取得当前目标迭代次数，避免 PASSWORD_ITERATIONS 与前端常量不一致。
+      const kdfConfig = await Api.getSalt(u);
+      const iterations = clamp(kdfConfig.targetIterations || kdfConfig.iterations, 100000, 2000000, 600000);
       const salt = Api.generateSalt();
-      const hash = await Api.deriveHash(p, salt, 'PBKDF2-SHA256', 600000);
-      await Api.register(u, hash, salt, 600000);
+      const hash = await Api.deriveHash(p, salt, 'PBKDF2-SHA256', iterations);
+      await Api.register(u, hash, salt, iterations);
       toast('注册成功，请登录'); isLoginMode = true; updateAuthUI('login'); byId('password').value = '';
     }
   } catch (err) {
@@ -2663,57 +2699,58 @@ byId('authForm').onsubmit = async (e) => {
 function enterApp(preloaded) {
   byId('authPage').style.display = 'none'; byId('app').style.display = 'flex';
   Holiday.ensure();
-  // 先复位，再读缓存：避免上一个账号的状态/墓碑串到新会话
   Store.state = defaultUserData(); Store.deleted = {}; Store.rev = 0;
-  Store.settingsDirty = false; Store.syncStatus = 'idle'; Store.lastSyncedAt = 0;
-  Store.load();
+  Store.settingsDirty = false; Store.syncStatus = 'idle'; Store.inflight = null;
+  Store.lastSyncedAt = 0; Store._cachePending = false;
+  const hadLocalCache = Store.load();
   syncSettingsUI(); renderAll(); updateSyncUI();
-  // 登录时已经带回数据：直接合并，不再多发一次请求
+
+  const finishLoginSync = (remote) => {
+    Store.reconcile(remote, { prefsDirty: Store.settingsDirty });
+    if (hadLocalCache && num(remote.dataRev) === 0) Store._cachePending = true;
+    syncSettingsUI(); renderAll();
+    if (Store._cachePending || Store.settingsDirty) {
+      Store.syncStatus = 'pending'; Store.persist(); updateSyncUI();
+      Store.flush();
+    } else {
+      Store.syncStatus = 'synced'; Store.persist(); updateSyncUI();
+    }
+  };
+
   if (preloaded && typeof preloaded === 'object') {
-    Store.reconcile(preloaded, { prefsDirty: Store.settingsDirty });
-    // 保持 lastSyncedAt = 0：本地缓存里可能还有未上传的改动（离线打卡），
-    // 若在这里把水位线推到"现在"，首次增量上传会跳过它们。宁可多发一次全量。
-    Store.syncStatus = 'synced';
-    syncSettingsUI();
-    renderAll();
-    updateSyncUI();
+    finishLoginSync(preloaded);
     return;
   }
-
-  Api.getData(Session.username).then(res => {
-    Store.reconcile(res, { prefsDirty: Store.settingsDirty });
-    syncSettingsUI(); Store.syncStatus = 'synced'; updateSyncUI();
-  }).catch(e => {
-    // 账号已在别处注销：本地留着也做不了什么，直接回登录页
+  Api.getData(Session.username).then(finishLoginSync).catch(e => {
     if (e && e.code === 'USER_NOT_FOUND') {
-      toast('账号不存在或已注销，请重新登录');
-      forceLogout();
-      return;
+      toast('账号不存在或已注销，请重新登录'); forceLogout(); return;
     }
-    Store.syncStatus = 'error';
-    updateSyncUI();
+    Store.syncStatus = 'error'; Store._cachePending = true; Store.persist(); updateSyncUI();
+    Store.scheduleRetry(e);
   });
 }
 
-function forceLogout() {
+function forceLogout(options = {}) {
   const username = Session.username;
   clearTimeout(Store.saveTimer);
   Store.cancelRetry();
+  // 仅保留尚未同步的缓存，避免退出时丢数据；已同步缓存退出时清理，降低共用设备的隐私风险。
+  if (username) {
+    if (options.discardCache === true || (!Store._cachePending && !Store.settingsDirty && Store.syncStatus === 'synced')) {
+      safeRemove(CACHE_PREFIX + username);
+    } else {
+      Store.persist();
+    }
+  }
   Session.clear();
-  // 缓存按用户名分键：退出时删除，避免共用设备残留他人数据
-  if (username) safeRemove(CACHE_PREFIX + username);
-  Store.state = defaultUserData();
-  Store.deleted = {};          // 原实现漏清，换账号后旧墓碑会误删新账号的记录
-  Store.rev = 0;
-  Store.settingsDirty = false;
-  Store.syncStatus = 'idle';
-  Store.inflight = null;
-  Store.lastSyncedAt = 0;
+  Store.state = defaultUserData(); Store.deleted = {}; Store.rev = 0;
+  Store.settingsDirty = false; Store.syncStatus = 'idle'; Store.inflight = null;
+  Store.lastSyncedAt = 0; Store._cachePending = false;
   byId('app').style.display = 'none'; byId('authPage').style.display = 'flex';
   byId('password').value = ''; byId('confirmPassword').value = '';
-  updateAuthUI('login');
-  updateSyncUI();
+  updateAuthUI('login'); updateSyncUI();
 }
+
 
 byId('syncPill').onclick = () => {
   if (Store.inflight) return;
@@ -2724,13 +2761,14 @@ byId('syncPill').onclick = () => {
 function flushOnHide() {
   if (!Session.token) return;
   if (!Store.settingsDirty && Store.syncStatus !== 'pending') return;
-  try { Store.flush(); } catch (e) {}
+  try { Store.flush().catch(() => {}); } catch (e) {}
 }
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushOnHide(); });
 }
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('pagehide', flushOnHide);
+  window.addEventListener('online', () => { if (Session.token && Store._cachePending) Store.flush(); });
 }
 
 Session.init();
